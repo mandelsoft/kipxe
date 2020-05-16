@@ -20,6 +20,8 @@ package kipxe
 
 import (
 	"sync"
+
+	"github.com/gardener/controller-manager-library/pkg/types/infodata/simple"
 )
 
 type Documents struct {
@@ -151,19 +153,31 @@ func (this *Documents) DeleteUsersForAll(set NameSet, user Name) {
 
 type Document struct {
 	Element
-	error  error
-	source Source
+	error   error
+	values  simple.Values
+	mapping *Mapping
+	source  Source
 }
 
-func NewDocument(name Name, src Source) *Document {
+func NewDocument(name Name, mapping *Mapping, values simple.Values, src Source) *Document {
 	return &Document{
 		Element: NewElement(name),
 		source:  src,
+		values:  values,
+		mapping: mapping,
 	}
 }
 
-func (this *Document) Source() Source {
+func (this *Document) GetSource() Source {
 	return this.source
+}
+
+func (this *Document) GetValues() simple.Values {
+	return this.values
+}
+
+func (this *Document) GetMapping() *Mapping {
+	return this.mapping
 }
 
 ////////////////////////////////////////////////////////////////////////////////

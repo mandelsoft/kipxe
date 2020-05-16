@@ -127,5 +127,9 @@ func NewDocument(m *v1alpha1.Document) (*kipxe.Document, error) {
 			source = kipxe.NewDataSource(mime, nil)
 		}
 	}
-	return kipxe.NewDocument(resources.NewObjectName(m.Namespace, m.Name), source), nil
+	mapping, err := Compile("mapping", m.Spec.Mapping)
+	if err != nil {
+		return nil, err
+	}
+	return kipxe.NewDocument(resources.NewObjectName(m.Namespace, m.Name), mapping, m.Spec.Values.Values, source), nil
 }

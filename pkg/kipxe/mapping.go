@@ -36,20 +36,18 @@ func NewMapping(m yaml.Node) *Mapping {
 	}
 }
 
-func (this *Mapping) Map(name string, input, values simple.Values) (simple.Values, error) {
+func (this *Mapping) Map(name string, values ...simple.Values) (simple.Values, error) {
 	inp := []yaml.Node{}
-	if values != nil {
-		i, err := yaml.Sanitize(name+":values", values)
-		if err != nil {
-			return nil, fmt.Errorf("invalid values: %s", err)
+	for i, v := range values {
+		if v != nil {
+			i, err := yaml.Sanitize(fmt.Sprintf("%s:values[%d]", name, i), v)
+			if err != nil {
+				return nil, fmt.Errorf("invalid values: %s", err)
+			}
+			inp = append(inp, i)
 		}
-		inp = append(inp, i)
 	}
-	i, err := yaml.Sanitize(name+":input", input)
-	if err != nil {
-		return nil, fmt.Errorf("invalid input: %s", err)
-	}
-	inp = append(inp, i)
+
 	stubs, err := flow.PrepareStubs(nil, false, inp...)
 	if err != nil {
 		return nil, err

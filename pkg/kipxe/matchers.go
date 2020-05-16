@@ -20,6 +20,7 @@ package kipxe
 
 import (
 	"fmt"
+	"sort"
 	"strings"
 	"sync"
 
@@ -111,7 +112,7 @@ func NewMatcher(name Name, sel labels.Selector, profile Name, weight int) *Match
 }
 
 func (this Matcher) PreferOver(m *Matcher) bool {
-	return this.Weight() < m.Weight() ||
+	return this.Weight() > m.Weight() ||
 		(this.Weight() == m.Weight() && strings.Compare(this.Key(), m.Key()) < 0)
 }
 
@@ -129,14 +130,32 @@ func (this Matcher) ProfileName() Name {
 
 ////////////////////////////////////////////////////////////////////////////////
 
-func Match(labels labels.Labels, list []*Matcher) Name {
-	var found *Matcher
-	for _, m := range list {
-		if found == nil || m.PreferOver(found) {
-			if m.Matches(labels) {
-				found = m
-			}
+type MatcherSlice []*Matcher
+
+var _ sort.Interface = MatcherSlice{}
+
+func (s MatcherSlice) Len() int {
+	return len(s)
+}
+
+func (s MatcherSlice) Less(i, j int) bool {
+	return s[i].PreferOver(s[j])
+}
+
+func (s MatcherSlice) Swap(i, j int) {
+	s[i], s[j] = s[j], s[i]
+}
+
+func (this *Matchers) Match(labels labels.Labels) MatcherSlice {
+	this.lock.RLock()
+	defer this.lock.RUnlock()
+
+	var found []*Matcher
+	for _, m := range this.elements {
+		if m.Matches(labels) {
+			found = append(found, m)
 		}
 	}
-	return found.ProfileName()
+	sort.Sort(MatcherSlice(found))
+	return found
 }

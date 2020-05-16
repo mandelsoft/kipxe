@@ -36,6 +36,7 @@ type DocumentList struct {
 // +kubebuilder:object:root=true
 // +kubebuilder:resource:scope=Namespaced,path=documents,singular=document
 // +kubebuilder:subresource:status
+// +kubebuilder:printcolumn:name=State,JSONPath=".status.state",type=string
 // +genclient
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
@@ -51,10 +52,16 @@ type DocumentSpec struct {
 	MimeType string `json:"mimeType,omitempty"`
 	// +kubebuilder:validation:XPreserveUnknownFields
 	// +kubebuilder:pruning:PreserveUnknownFields
+	// +optional
 	Mapping Values `json:"mapping,omitempty"`
-	URL     string `json:"URL,omitempty"`
-	Text    string `json:"Text,omitempty"`
-	Binary  string `json:"Binary,omitempty"`
+	// +optional
+	Values Values `json:"values,omitempty"`
+	// +optional
+	URL string `json:"URL,omitempty"`
+	// +optional
+	Text string `json:"Text,omitempty"`
+	// +optional
+	Binary string `json:"Binary,omitempty"`
 }
 
 type DocumentStatus struct {

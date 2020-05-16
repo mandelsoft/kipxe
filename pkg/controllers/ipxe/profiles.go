@@ -118,5 +118,5 @@ func NewProfile(m *v1alpha1.Profile) (*kipxe.Profile, error) {
 	if err != nil {
 		return nil, err
 	}
-	return kipxe.NewProfile(name, mapping, deliverables...)
+	return kipxe.NewProfile(name, mapping, m.Spec.Values.Values, deliverables...)
 }

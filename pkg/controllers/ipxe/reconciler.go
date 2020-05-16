@@ -19,13 +19,21 @@
 package ipxe
 
 import (
+	"time"
+
 	"github.com/gardener/controller-manager-library/pkg/controllermanager/controller"
 	"github.com/gardener/controller-manager-library/pkg/controllermanager/controller/reconcile"
 	"github.com/gardener/controller-manager-library/pkg/logger"
 	"github.com/gardener/controller-manager-library/pkg/resources"
+	"github.com/gardener/controller-manager-library/pkg/server"
 
 	"github.com/mandelsoft/kipxe/pkg/apis/ipxe/v1alpha1"
+	"github.com/mandelsoft/kipxe/pkg/controllers/ipxe/ready"
 )
+
+type Ready struct{}
+
+func (this Ready) IsReady() bool { return true }
 
 type reconciler struct {
 	reconcile.DefaultReconciler
@@ -39,6 +47,20 @@ var _ reconcile.Interface = &reconciler{}
 
 func (this *reconciler) Setup() {
 	this.infobase.Setup()
+}
+
+func (this *reconciler) Start() {
+	logger := this.controller.NewContext("server", "kipxe")
+	ipxe := server.NewHTTPServer(this.controller.GetContext(), logger, "kipxe")
+
+	ipxe.RegisterHandler("/", NewHandler("/", this))
+	ipxe.Register("/ready", ready.Ready)
+
+	ipxe.Start(nil, "", this.config.PXEPort)
+	go func() {
+		time.Sleep(2 * time.Second)
+		ready.Register(&Ready{})
+	}()
 }
 
 ///////////////////////////////////////////////////////////////////////////////

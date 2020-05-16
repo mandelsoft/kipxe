@@ -44,7 +44,11 @@ spec:
     singular: document
   scope: Namespaced
   versions:
-  - name: v1alpha1
+  - additionalPrinterColumns:
+    - jsonPath: .status.state
+      name: State
+      type: string
+    name: v1alpha1
     schema:
       openAPIV3Schema:
         properties:
@@ -76,6 +80,11 @@ spec:
                 x-kubernetes-preserve-unknown-fields: true
               mimeType:
                 type: string
+              values:
+                description: Values is a workarround for kubebuilder to be able to
+                  generate an API spec. The Values MUST be marked with "-" to avoud
+                  errors.
+                type: object
             type: object
           status:
             properties:

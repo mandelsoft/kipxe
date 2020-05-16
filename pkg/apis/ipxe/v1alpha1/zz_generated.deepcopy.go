@@ -90,6 +90,7 @@ func (in *DocumentList) DeepCopyObject() runtime.Object {
 func (in *DocumentSpec) DeepCopyInto(out *DocumentSpec) {
 	*out = *in
 	in.Mapping.DeepCopyInto(&out.Mapping)
+	in.Values.DeepCopyInto(&out.Values)
 	return
 }
 

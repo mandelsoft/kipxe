@@ -24,6 +24,7 @@ import (
 	"sync"
 
 	"github.com/gardener/controller-manager-library/pkg/logger"
+	"github.com/gardener/controller-manager-library/pkg/types/infodata/simple"
 )
 
 type Profiles struct {
@@ -151,6 +152,9 @@ type Deliverable struct {
 }
 
 func NewDeliverable(name Name, path string) *Deliverable {
+	if strings.HasPrefix(path, "/") {
+		path = path[1:]
+	}
 	return &Deliverable{name, path}
 }
 
@@ -168,11 +172,14 @@ type Profile struct {
 	Element
 	error        error
 	mapping      *Mapping
+	values       simple.Values
 	deliverables map[string]*Deliverable
+	paths        map[string]*Deliverable
 }
 
-func NewProfile(name Name, mapping *Mapping, deliverables ...*Deliverable) (*Profile, error) {
+func NewProfile(name Name, mapping *Mapping, values simple.Values, deliverables ...*Deliverable) (*Profile, error) {
 	m := map[string]*Deliverable{}
+	p := map[string]*Deliverable{}
 	for i, d := range deliverables {
 		if strings.TrimSpace(d.name.String()) == "" {
 			return nil, fmt.Errorf("entry %d: empty document name", i)
@@ -183,12 +190,15 @@ func NewProfile(name Name, mapping *Mapping, deliverables ...*Deliverable) (*Pro
 		if old := m[d.path]; old != nil {
 			return nil, fmt.Errorf("duplicate deliverable for path %s (%s and %s)", old.name, d.name)
 		}
-		m[d.path] = d
+		p[d.path] = d
+		m[d.name.String()] = d
 	}
 	return &Profile{
 		Element:      NewElement(name),
 		mapping:      mapping,
+		values:       values,
 		deliverables: m,
+		paths:        p,
 	}, nil
 }
 
@@ -202,6 +212,18 @@ func (this *Profile) Documents() NameSet {
 		set.Add(d.Name())
 	}
 	return set
+}
+
+func (this *Profile) GetMapping() *Mapping {
+	return this.mapping
+}
+
+func (this *Profile) GetValues() simple.Values {
+	return this.values
+}
+
+func (this *Profile) GetDeliverableForPath(path string) *Deliverable {
+	return this.paths[path]
 }
 
 ////////////////////////////////////////////////////////////////////////////////

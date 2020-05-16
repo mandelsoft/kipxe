@@ -16,22 +16,42 @@
  *  limitations under the License.
  */
 
-package ipxe
+package ready
 
 import (
-	"github.com/gardener/controller-manager-library/pkg/config"
+	"fmt"
+	"sync"
 )
 
-type Config struct {
-	LocalNamespaceOnly bool
-	PXEPort            int
+type ReadyReporter interface {
+	IsReady() bool
 }
 
-func (this *Config) AddOptionsToSet(set config.OptionSet) {
-	set.AddBoolOption(&this.LocalNamespaceOnly, "local-namespace-only", "", false, "server only resources in local namespace")
-	set.AddIntOption(&this.PXEPort, "pxe-port", "", 8081, "pxe server port")
+var lock sync.Mutex
+var reporters []ReadyReporter
+
+func Register(reporter ReadyReporter) {
+	lock.Lock()
+	defer lock.Unlock()
+
+	reporters = append(reporters, reporter)
 }
 
-func (this *Config) Prepare() error {
-	return nil
+func ReadyInfo() (bool, string) {
+	lock.Lock()
+	defer lock.Unlock()
+
+	if len(reporters) == 0 {
+		return false, "no ready reported configured"
+	}
+	ready_cnt := 0
+	notready_cnt := 0
+	for _, r := range reporters {
+		if r.IsReady() {
+			ready_cnt++
+		} else {
+			notready_cnt++
+		}
+	}
+	return notready_cnt == 0, fmt.Sprintf("ready: %d, not ready %d", ready_cnt, notready_cnt)
 }
