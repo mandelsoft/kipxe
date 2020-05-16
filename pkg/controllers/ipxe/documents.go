@@ -19,6 +19,9 @@
 package ipxe
 
 import (
+	"fmt"
+	"strings"
+
 	"github.com/gardener/controller-manager-library/pkg/logger"
 	"github.com/gardener/controller-manager-library/pkg/resources"
 	"k8s.io/apimachinery/pkg/labels"
@@ -76,6 +79,7 @@ func (this *Documents) Update(logger logger.LogContext, obj resources.Object) (*
 		this.recheckUsers(logger, this.elements.Set(m))
 	}
 	if err != nil {
+		this.recheckUsers(logger, this.elements.Delete(obj.ObjectName()))
 		logger.Errorf("invalid document: %s", err)
 		_, err2 := resources.ModifyStatus(obj, func(mod *resources.ModificationState) error {
 			m := mod.Data().(*v1alpha1.Document)
@@ -99,5 +103,29 @@ func (this *Documents) Delete(logger logger.LogContext, name resources.ObjectNam
 }
 
 func NewDocument(m *v1alpha1.Document) (*kipxe.Document, error) {
-	return kipxe.NewDocument(resources.NewObjectName(m.Namespace, m.Name)), nil
+	var source kipxe.Source
+	mime := strings.TrimSpace(m.Spec.MimeType)
+	if mime == "" {
+		return nil, fmt.Errorf("mime type empty")
+	}
+	if m.Spec.Text != "" {
+		if m.Spec.Binary != "" || m.Spec.URL != "" {
+			return nil, fmt.Errorf("Text cannot be combined with URL or Binary")
+		}
+		source = kipxe.NewTextSource(mime, m.Spec.Text)
+	} else {
+		if m.Spec.Binary != "" {
+			s, err := kipxe.NewBinarySource(mime, m.Spec.Binary)
+			if err != nil {
+				return nil, fmt.Errorf("invalid binary data:%s", err)
+			}
+			source = s
+		} else {
+			if m.Spec.URL != "" {
+				return nil, fmt.Errorf("URL not supported yet")
+			}
+			source = kipxe.NewDataSource(mime, nil)
+		}
+	}
+	return kipxe.NewDocument(resources.NewObjectName(m.Namespace, m.Name), source), nil
 }

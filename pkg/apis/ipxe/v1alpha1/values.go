@@ -23,12 +23,13 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"reflect"
 
 	"github.com/gardener/controller-manager-library/pkg/types/infodata/simple"
 )
 
 func NormValues(v simple.Values) simple.Values {
-	return simple.Values(deepcopy(v).(map[string]interface{}))
+	return simple.Values(CopyAndNormalize(v).(map[string]interface{}))
 }
 
 // Values is a workarround for kubebuilder to be able to generate
@@ -61,7 +62,10 @@ func (this *Values) UnmarshalJSON(in []byte) error {
 	return nil
 }
 
-func deepcopy(in interface{}) interface{} {
+var mapType = reflect.TypeOf(map[string]interface{}{})
+var arrayType = reflect.TypeOf([]interface{}{})
+
+func CopyAndNormalize(in interface{}) interface{} {
 	if in == nil {
 		return in
 	}
@@ -69,13 +73,19 @@ func deepcopy(in interface{}) interface{} {
 	case map[string]interface{}:
 		r := map[string]interface{}{}
 		for k, v := range e {
-			r[k] = deepcopy(v)
+			r[k] = CopyAndNormalize(v)
+		}
+		return r
+	case Values:
+		r := map[string]interface{}{}
+		for k, v := range e.Values {
+			r[k] = CopyAndNormalize(v)
 		}
 		return r
 	case simple.Values:
 		r := map[string]interface{}{}
 		for k, v := range e {
-			r[k] = deepcopy(v)
+			r[k] = CopyAndNormalize(v)
 		}
 		return r
 	case []interface{}:
@@ -96,6 +106,13 @@ func deepcopy(in interface{}) interface{} {
 	case int64, float64:
 		return e
 	default:
+		value := reflect.ValueOf(e)
+		if value.Type().ConvertibleTo(mapType) {
+			return CopyAndNormalize(value.Convert(mapType).Interface())
+		}
+		if value.Type().ConvertibleTo(arrayType) {
+			return CopyAndNormalize(value.Convert(arrayType).Interface())
+		}
 		panic(fmt.Errorf("invalid type %T", e))
 	}
 }

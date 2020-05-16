@@ -81,6 +81,7 @@ func (this *Profiles) Update(logger logger.LogContext, obj resources.Object) (*k
 		this.recheckUsers(logger, users)
 	}
 	if err != nil {
+		this.recheckUsers(logger, this.elements.Delete(obj.ObjectName()))
 		logger.Errorf("invalid profile: %s", err)
 		_, err2 := resources.ModifyStatus(obj, func(mod *resources.ModificationState) error {
 			m := mod.Data().(*v1alpha1.Profile)
@@ -104,6 +105,7 @@ func (this *Profiles) Delete(logger logger.LogContext, name resources.ObjectName
 }
 
 func NewProfile(m *v1alpha1.Profile) (*kipxe.Profile, error) {
+	name := resources.NewObjectName(m.Namespace, m.Name)
 	deliverables := []*kipxe.Deliverable{}
 	for i, r := range m.Spec.Resources {
 		if strings.TrimSpace(r.DocumentName) == "" {
@@ -111,5 +113,10 @@ func NewProfile(m *v1alpha1.Profile) (*kipxe.Profile, error) {
 		}
 		deliverables = append(deliverables, kipxe.NewDeliverable(resources.NewObjectName(m.Namespace, r.DocumentName), r.Path))
 	}
-	return kipxe.NewProfile(resources.NewObjectName(m.Namespace, m.Name), deliverables...)
+
+	mapping, err := Compile("mapping", m.Spec.Mapping)
+	if err != nil {
+		return nil, err
+	}
+	return kipxe.NewProfile(name, mapping, deliverables...)
 }

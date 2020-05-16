@@ -21,6 +21,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"reflect"
 
 	values "github.com/gardener/controller-manager-library/pkg/types/infodata/simple"
 
@@ -50,4 +51,17 @@ func main() {
 	}
 	fmt.Printf("=== %v\n", u)
 
+	var i interface{}
+
+	m := reflect.TypeOf(map[string]interface{}{})
+	value := reflect.ValueOf(v)
+	if value.Type().ConvertibleTo(m) {
+		i = value.Convert(m).Interface()
+	}
+	switch i.(type) {
+	case map[string]interface{}:
+		fmt.Printf("found map\n")
+	default:
+		fmt.Printf("found something else\n")
+	}
 }

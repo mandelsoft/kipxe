@@ -167,10 +167,11 @@ func (this *Deliverable) Path() string {
 type Profile struct {
 	Element
 	error        error
+	mapping      *Mapping
 	deliverables map[string]*Deliverable
 }
 
-func NewProfile(name Name, deliverables ...*Deliverable) (*Profile, error) {
+func NewProfile(name Name, mapping *Mapping, deliverables ...*Deliverable) (*Profile, error) {
 	m := map[string]*Deliverable{}
 	for i, d := range deliverables {
 		if strings.TrimSpace(d.name.String()) == "" {
@@ -186,6 +187,7 @@ func NewProfile(name Name, deliverables ...*Deliverable) (*Profile, error) {
 	}
 	return &Profile{
 		Element:      NewElement(name),
+		mapping:      mapping,
 		deliverables: m,
 	}, nil
 }

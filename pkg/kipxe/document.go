@@ -151,13 +151,19 @@ func (this *Documents) DeleteUsersForAll(set NameSet, user Name) {
 
 type Document struct {
 	Element
-	error error
+	error  error
+	source Source
 }
 
-func NewDocument(name Name) *Document {
+func NewDocument(name Name, src Source) *Document {
 	return &Document{
 		Element: NewElement(name),
+		source:  src,
 	}
+}
+
+func (this *Document) Source() Source {
+	return this.source
 }
 
 ////////////////////////////////////////////////////////////////////////////////
