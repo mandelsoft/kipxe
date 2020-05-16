@@ -1,0 +1,103 @@
+/*
+ * Copyright 2020 Mandelsoft. All rights reserved.
+ *  This file is licensed under the Apache Software License, v. 2 except as noted
+ *  otherwise in the LICENSE file
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *       http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ */
+
+package ipxe
+
+import (
+	"github.com/gardener/controller-manager-library/pkg/logger"
+	"github.com/gardener/controller-manager-library/pkg/resources"
+	"k8s.io/apimachinery/pkg/labels"
+
+	"github.com/mandelsoft/kipxe/pkg/apis/ipxe/v1alpha1"
+	"github.com/mandelsoft/kipxe/pkg/kipxe"
+)
+
+type Documents struct {
+	ResourceCache
+	elements *kipxe.Documents
+}
+
+func newDocuments(infobase *InfoBase) *Documents {
+	return &Documents{
+		ResourceCache: NewResourceCache(infobase, &v1alpha1.Document{}),
+		elements:      kipxe.NewDocuments(),
+	}
+}
+
+func (this *Documents) Setup(logger logger.LogContext) {
+	if this.initialized {
+		return
+	}
+	this.initialized = true
+	if logger != nil {
+		logger.Infof("setup documents")
+	}
+	list, _ := this.resource.ListCached(labels.Everything())
+
+	for _, l := range list {
+		elem, err := this.Update(logger, l)
+		if elem != nil {
+			logger.Infof("found document %s", elem)
+		}
+		if err != nil {
+			logger.Infof("errorneous document %s: %s", l.GetName(), err)
+		}
+	}
+}
+
+func (this *Documents) recheckUsers(logger logger.LogContext, users kipxe.NameSet) {
+	logger.Infof("found users: %s", users)
+	this.profiles.Recheck(users)
+}
+
+func (this *Documents) Recheck(users kipxe.NameSet) {
+	this.EnqueueAll(users, v1alpha1.DOCUMENT)
+	this.elements.Recheck(users)
+}
+
+func (this *Documents) Update(logger logger.LogContext, obj resources.Object) (*kipxe.Document, error) {
+	m, err := NewDocument(obj.Data().(*v1alpha1.Document))
+	if err == nil {
+		this.recheckUsers(logger, this.elements.Set(m))
+	}
+	if err != nil {
+		logger.Errorf("invalid document: %s", err)
+		_, err2 := resources.ModifyStatus(obj, func(mod *resources.ModificationState) error {
+			m := mod.Data().(*v1alpha1.Document)
+			mod.AssureStringValue(&m.Status.State, v1alpha1.STATE_INVALID)
+			mod.AssureStringValue(&m.Status.Message, err.Error())
+			return nil
+		})
+		return nil, err2
+	}
+	_, err = resources.ModifyStatus(obj, func(mod *resources.ModificationState) error {
+		m := mod.Data().(*v1alpha1.Document)
+		mod.AssureStringValue(&m.Status.State, v1alpha1.STATE_READY)
+		mod.AssureStringValue(&m.Status.Message, "document ok")
+		return nil
+	})
+	return m, err
+}
+
+func (this *Documents) Delete(logger logger.LogContext, name resources.ObjectName) {
+	this.recheckUsers(logger, this.elements.Delete(name))
+}
+
+func NewDocument(m *v1alpha1.Document) (*kipxe.Document, error) {
+	return kipxe.NewDocument(resources.NewObjectName(m.Namespace, m.Name)), nil
+}
