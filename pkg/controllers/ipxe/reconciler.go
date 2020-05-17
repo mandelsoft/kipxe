@@ -68,6 +68,10 @@ func (this *reconciler) Start() {
 		time.Sleep(2 * time.Second)
 		ready.Register(&Ready{})
 	}()
+
+	if this.config.CacheDir != "" {
+		this.controller.EnqueueCommand(CMD_CLEANUP)
+	}
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -100,5 +104,10 @@ func (this *reconciler) Deleted(logger logger.LogContext, key resources.ClusterO
 	case v1alpha1.DOCUMENT:
 		this.infobase.documents.Delete(logger, key.ObjectName())
 	}
+	return reconcile.Succeeded(logger)
+}
+
+func (this *reconciler) Command(logger logger.LogContext, cmd string) reconcile.Status {
+	this.infobase.cache.Cleanup(logger, this.config.CacheTTL)
 	return reconcile.Succeeded(logger)
 }

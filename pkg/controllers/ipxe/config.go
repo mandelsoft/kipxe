@@ -19,6 +19,8 @@
 package ipxe
 
 import (
+	"time"
+
 	"github.com/gardener/controller-manager-library/pkg/config"
 )
 
@@ -26,10 +28,12 @@ type Config struct {
 	LocalNamespaceOnly bool
 	PXEPort            int
 	CacheDir           string
+	CacheTTL           time.Duration
 }
 
 func (this *Config) AddOptionsToSet(set config.OptionSet) {
 	set.AddStringOption(&this.CacheDir, "cache-dir", "", "", "enable URL caching in a dedicated directory")
+	set.AddDurationOption(&this.CacheTTL, "cache-ttl", "", 10*time.Minute, "TTL for cache entries")
 	set.AddBoolOption(&this.LocalNamespaceOnly, "local-namespace-only", "", false, "server only resources in local namespace")
 	set.AddIntOption(&this.PXEPort, "pxe-port", "", 8081, "pxe server port")
 }

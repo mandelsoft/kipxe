@@ -35,7 +35,7 @@ func GetSharedInfoBase(controller controller.Interface) *InfoBase {
 
 type InfoBase struct {
 	controller controller.Interface
-	cache      kipxe.Cache
+	cache      *kipxe.DirCache
 	matchers   *Matchers
 	profiles   *Profiles
 	documents  *Documents

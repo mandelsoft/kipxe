@@ -134,7 +134,7 @@ func NewDocument(m *v1alpha1.Document, cache kipxe.Cache) (*kipxe.Document, erro
 					return nil, fmt.Errorf("invalid URL (%s): %s", m.Spec.URL, err)
 				}
 				if m.Spec.Volatile {
-					cache=nil
+					cache = nil
 				}
 				source = kipxe.NewURLSource(mime, u, cache)
 			} else {

@@ -20,6 +20,7 @@ package ipxe
 
 import (
 	"path/filepath"
+	"time"
 
 	"github.com/gardener/controller-manager-library/pkg/controllermanager/controller"
 	"github.com/gardener/controller-manager-library/pkg/controllermanager/controller/reconcile"
@@ -35,6 +36,8 @@ import (
 
 const NAME = "ipxe"
 
+const CMD_CLEANUP = "cache-cleanup"
+
 var secretGK = resources.NewGroupKind("", "Secret")
 
 func init() {
@@ -45,19 +48,21 @@ func init() {
 	_ = _apps.Deployment{}
 	controller.Configure(NAME).
 		RequireLease().
+		Reconciler(Create).
 		DefaultWorkerPool(5, 0).
 		OptionsByExample("options", &Config{}).
 		MainResourceByGK(api.MATCHER).
 		CustomResourceDefinitions(api.MATCHER, api.PROFILE, api.DOCUMENT).
 		WatchesByGK(api.PROFILE, api.DOCUMENT).
-		Reconciler(Create).
+		WorkerPool(CMD_CLEANUP, 1, time.Minute).
+		Commands(CMD_CLEANUP).
 		MustRegister()
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 
 func Create(controller controller.Interface) (reconcile.Interface, error) {
-	var cache kipxe.Cache
+	var cache *kipxe.DirCache
 
 	cfg, _ := controller.GetOptionSource("options")
 	config := cfg.(*Config)

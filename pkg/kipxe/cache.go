@@ -24,11 +24,14 @@ import (
 	"encoding/base64"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"net/http"
 	"net/url"
 	"os"
 	"path/filepath"
 	"sync"
+	"syscall"
+	"time"
 
 	"github.com/gardener/controller-manager-library/pkg/logger"
 )
@@ -50,6 +53,7 @@ func fileExists(filename string) bool {
 type Cache interface {
 	Bytes(url *url.URL) ([]byte, error)
 	Serve(url *url.URL, w http.ResponseWriter, r *http.Request)
+	Cleanup(logger logger.LogContext, ttl time.Duration)
 }
 
 type DirCache struct {
@@ -64,6 +68,12 @@ type DirCache struct {
 type CacheAction struct {
 	lock sync.Mutex
 	ref  *cacheAction
+}
+
+func (this *CacheAction) Execute(f func()) {
+	this.lock.Lock()
+	defer this.lock.Unlock()
+	f()
 }
 
 func (this *CacheAction) Bytes() ([]byte, error) {
@@ -268,7 +278,7 @@ func (this *cacheAction) Serve(w http.ResponseWriter, r *http.Request) {
 
 ////////////////////////////////////////////////////////////////////////////////
 
-func NewDirectoryCache(logger logger.LogContext, path string) (Cache, error) {
+func NewDirectoryCache(logger logger.LogContext, path string) (*DirCache, error) {
 	err := os.MkdirAll(path, 0770)
 	if err != nil {
 		return nil, err
@@ -287,7 +297,14 @@ func (this *DirCache) release(key string) {
 }
 
 func (this *DirCache) GetAction(url *url.URL) *CacheAction {
-	key := Hash(url.String())
+	return this.getAction(Hash(url.String()), url)
+}
+
+func (this *DirCache) GetActionForKey(key string) *CacheAction {
+	return this.getAction(key, nil)
+}
+
+func (this *DirCache) getAction(key string, url *url.URL) *CacheAction {
 	base := filepath.Join(this.path, key)
 
 	this.lock.Lock()
@@ -302,6 +319,10 @@ func (this *DirCache) GetAction(url *url.URL) *CacheAction {
 			cache: this,
 		}
 		this.actions[key] = action
+	} else {
+		if url != nil {
+			action.url = url
+		}
 	}
 	action.usecount++
 	return &CacheAction{ref: action}
@@ -317,4 +338,33 @@ func (this *DirCache) Serve(url *url.URL, w http.ResponseWriter, r *http.Request
 	action := this.GetAction(url)
 	defer action.Done()
 	action.Serve(w, r)
+}
+
+func (this *DirCache) Cleanup(logger logger.LogContext, duration time.Duration) {
+	if logger == nil {
+		logger = this
+	}
+	files, err := ioutil.ReadDir(this.path)
+	if err != nil {
+		return
+	}
+
+	now := time.Now()
+	for _, f := range files {
+		action := this.GetActionForKey(f.Name())
+		action.Execute(func() {
+			fpath := filepath.Join(this.path, f.Name())
+			finfo, err := os.Stat(fpath)
+			if err == nil {
+				ts := finfo.Sys().(*syscall.Stat_t).Atim
+				t := time.Unix(int64(ts.Sec), int64(ts.Nsec))
+
+				now.Sub(t)
+				if now.Sub(t) > duration {
+					logger.Infof("cleanup %s [%s]", f.Name(), now.Sub(t))
+					os.Remove(fpath)
+				}
+			}
+		})
+	}
 }
