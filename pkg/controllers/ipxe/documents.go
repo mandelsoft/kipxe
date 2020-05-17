@@ -21,6 +21,7 @@ package ipxe
 import (
 	"fmt"
 	"html/template"
+	"net/url"
 	"strings"
 
 	"github.com/gardener/controller-manager-library/pkg/logger"
@@ -56,7 +57,7 @@ func (this *Documents) Setup(logger logger.LogContext) {
 	for _, l := range list {
 		elem, err := this.Update(logger, l)
 		if elem != nil {
-			logger.Infof("found document %s", elem)
+			logger.Infof("found document %s", elem.Name())
 		}
 		if err != nil {
 			logger.Infof("errorneous document %s: %s", l.GetName(), err)
@@ -75,7 +76,7 @@ func (this *Documents) Recheck(users kipxe.NameSet) {
 }
 
 func (this *Documents) Update(logger logger.LogContext, obj resources.Object) (*kipxe.Document, error) {
-	m, err := NewDocument(obj.Data().(*v1alpha1.Document))
+	m, err := NewDocument(obj.Data().(*v1alpha1.Document), this.InfoBase.cache)
 	if err == nil {
 		this.recheckUsers(logger, this.elements.Set(m))
 	}
@@ -103,7 +104,7 @@ func (this *Documents) Delete(logger logger.LogContext, name resources.ObjectNam
 	this.recheckUsers(logger, this.elements.Delete(name))
 }
 
-func NewDocument(m *v1alpha1.Document) (*kipxe.Document, error) {
+func NewDocument(m *v1alpha1.Document, cache kipxe.Cache) (*kipxe.Document, error) {
 	var source kipxe.Source
 	mime := strings.TrimSpace(m.Spec.MimeType)
 	if mime == "" {
@@ -128,9 +129,17 @@ func NewDocument(m *v1alpha1.Document) (*kipxe.Document, error) {
 			source = s
 		} else {
 			if m.Spec.URL != "" {
-				return nil, fmt.Errorf("URL not supported yet")
+				u, err := url.Parse(m.Spec.URL)
+				if err != nil {
+					return nil, fmt.Errorf("invalid URL (%s): %s", m.Spec.URL, err)
+				}
+				if m.Spec.Volatile {
+					cache=nil
+				}
+				source = kipxe.NewURLSource(mime, u, cache)
+			} else {
+				source = kipxe.NewDataSource(mime, nil)
 			}
-			source = kipxe.NewDataSource(mime, nil)
 		}
 	}
 	mapping, err := Compile("mapping", m.Spec.Mapping)

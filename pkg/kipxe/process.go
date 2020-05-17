@@ -19,98 +19,14 @@
 package kipxe
 
 import (
-	"encoding/base64"
 	"encoding/json"
 	"html/template"
-	"net/http"
 	"strings"
 
-	"github.com/emicklei/go-restful"
 	"github.com/gardener/controller-manager-library/pkg/logger"
 	"github.com/gardener/controller-manager-library/pkg/types/infodata/simple"
 	"gopkg.in/yaml.v2"
 )
-
-const MIME_OCTET = restful.MIME_OCTET
-const MIME_XML = restful.MIME_XML
-const MIME_JSON = restful.MIME_JSON
-const MIME_YAML = "application/x-yaml"
-const MIME_TEXT = "text/plain"
-const MIME_GTEXT = "text/"
-
-type Source interface {
-	MimeType() string
-	Serve(w http.ResponseWriter, r *http.Request)
-	Bytes() []byte
-}
-
-////////////////////////////////////////////////////////////////////////////////
-
-type DataSource struct {
-	mime string
-	data []byte
-}
-
-func (this *DataSource) MimeType() string {
-	return this.mime
-}
-
-func (this *DataSource) Bytes() []byte {
-	return this.data
-}
-
-func (this *DataSource) Serve(w http.ResponseWriter, r *http.Request) {
-	mime := this.MimeType()
-	if mime != "" {
-		w.Header().Add("Content-Type", mime)
-	}
-	w.Write(this.data)
-}
-
-func NewDataSource(mime string, data []byte) Source {
-	return &DataSource{
-		mime: mime,
-		data: data,
-	}
-}
-
-func NewTextSource(mime, text string) Source {
-	logger.Infof("TXT: %s", text)
-	return &DataSource{
-		mime: mime,
-		data: []byte(text),
-	}
-}
-
-func NewBinarySource(mime, b64 string) (Source, error) {
-	bytes := []byte(b64)
-	l := base64.StdEncoding.DecodedLen(len(bytes))
-	out := make([]byte, l, l)
-	l, err := base64.StdEncoding.Decode(out, bytes)
-	if err != nil {
-		return nil, err
-	}
-	return NewDataSource(mime, out), nil
-}
-
-////////////////////////////////////////////////////////////////////////////////
-
-type FilteredSource struct {
-	DataSource
-	source Source
-}
-
-func NewFilteredSource(src Source, data []byte) Source {
-	return &FilteredSource{
-		DataSource: DataSource{
-			mime: src.MimeType(),
-			data: data,
-		},
-		source: nil,
-	}
-}
-
-////////////////////////////////////////////////////////////////////////////////
 
 func Process(name string, values simple.Values, src Source) (Source, error) {
 	var data []byte
@@ -121,22 +37,32 @@ func Process(name string, values simple.Values, src Source) (Source, error) {
 	}
 	switch src.MimeType() {
 	case MIME_JSON:
-		in := src.Bytes()
+		in, err := src.Bytes()
+		if err != nil {
+			return nil, err
+		}
 		if in == nil {
 			data, err = json.Marshal(values)
 		} else {
 			return src, nil
 		}
 	case MIME_YAML:
-		in := src.Bytes()
+		in, err := src.Bytes()
+		if err != nil {
+			return nil, err
+		}
 		if in == nil {
 			data, err = yaml.Marshal(values)
 		} else {
 			return src, nil
 		}
 	case MIME_TEXT, MIME_GTEXT:
-		logger.Infof("go template with %s\n%s", values, string(src.Bytes()))
-		t, err := template.New(name).Parse(string(src.Bytes()))
+		b, err := src.Bytes()
+		if err != nil {
+			return nil, err
+		}
+		logger.Infof("go template (len %d) with %s\n", len(b), values)
+		t, err := template.New(name).Parse(string(b))
 		if err != nil {
 			return nil, err
 		}

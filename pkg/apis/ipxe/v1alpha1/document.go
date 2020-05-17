@@ -59,6 +59,8 @@ type DocumentSpec struct {
 	// +optional
 	URL string `json:"URL,omitempty"`
 	// +optional
+	Volatile bool `json:"volatile"`
+	// +optional
 	Text string `json:"text,omitempty"`
 	// +optional
 	Binary string `json:"binary,omitempty"`

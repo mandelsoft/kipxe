@@ -21,6 +21,8 @@ package ipxe
 import (
 	"github.com/gardener/controller-manager-library/pkg/controllermanager/controller"
 	"github.com/gardener/controller-manager-library/pkg/ctxutil"
+
+	"github.com/mandelsoft/kipxe/pkg/kipxe"
 )
 
 var infobaseKey = ctxutil.SimpleKey("infobase")
@@ -33,6 +35,7 @@ func GetSharedInfoBase(controller controller.Interface) *InfoBase {
 
 type InfoBase struct {
 	controller controller.Interface
+	cache      kipxe.Cache
 	matchers   *Matchers
 	profiles   *Profiles
 	documents  *Documents

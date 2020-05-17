@@ -53,9 +53,9 @@ func (this *Profiles) Setup(logger logger.LogContext) {
 	list, _ := this.resource.ListCached(labels.Everything())
 
 	for _, l := range list {
-		matcher, err := this.Update(logger, l)
-		if matcher != nil {
-			logger.Infof("found profile %s", matcher)
+		elem, err := this.Update(logger, l)
+		if elem != nil {
+			logger.Infof("found profile %s", elem.Name())
 		}
 		if err != nil {
 			logger.Infof("errorneous profile %s: %s", l.GetName(), err)

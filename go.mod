@@ -7,7 +7,7 @@ require (
 	github.com/cloudfoundry-incubator/candiedyaml v0.0.0-20170901234223-a41693b7b7af // indirect
 	github.com/coreos/go-iptables v0.4.5 // indirect
 	github.com/emicklei/go-restful v2.9.5+incompatible
-	github.com/gardener/controller-manager-library v0.1.1-0.20200515130547-d01454e4c5c4
+	github.com/gardener/controller-manager-library v0.1.1-0.20200517152919-640aaea59d94
 	github.com/ghodss/yaml v1.0.0
 	github.com/mandelsoft/spiff v1.3.0-beta-7.0.20200517124258-872a3a49a15d
 	github.com/mdlayher/ethernet v0.0.0-20190606142754-0394541c37b7 // indirect

@@ -25,9 +25,11 @@ import (
 type Config struct {
 	LocalNamespaceOnly bool
 	PXEPort            int
+	CacheDir           string
 }
 
 func (this *Config) AddOptionsToSet(set config.OptionSet) {
+	set.AddStringOption(&this.CacheDir, "cache-dir", "", "", "enable URL caching in a dedicated directory")
 	set.AddBoolOption(&this.LocalNamespaceOnly, "local-namespace-only", "", false, "server only resources in local namespace")
 	set.AddIntOption(&this.PXEPort, "pxe-port", "", 8081, "pxe server port")
 }

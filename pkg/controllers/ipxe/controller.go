@@ -19,6 +19,8 @@
 package ipxe
 
 import (
+	"path/filepath"
+
 	"github.com/gardener/controller-manager-library/pkg/controllermanager/controller"
 	"github.com/gardener/controller-manager-library/pkg/controllermanager/controller/reconcile"
 	"github.com/gardener/controller-manager-library/pkg/resources"
@@ -28,6 +30,7 @@ import (
 
 	"github.com/mandelsoft/kipxe/pkg/apis/ipxe/crds"
 	api "github.com/mandelsoft/kipxe/pkg/apis/ipxe/v1alpha1"
+	"github.com/mandelsoft/kipxe/pkg/kipxe"
 )
 
 const NAME = "ipxe"
@@ -54,13 +57,26 @@ func init() {
 ///////////////////////////////////////////////////////////////////////////////
 
 func Create(controller controller.Interface) (reconcile.Interface, error) {
+	var cache kipxe.Cache
 
 	cfg, _ := controller.GetOptionSource("options")
-	this := &reconciler{
-		controller: controller,
-		config:     cfg.(*Config),
-		infobase:   GetSharedInfoBase(controller),
+	config := cfg.(*Config)
+	if config.CacheDir != "" {
+		path, err := filepath.Abs(config.CacheDir)
+		if err != nil {
+			return nil, err
+		}
+		cache, err = kipxe.NewDirectoryCache(controller, path)
+		if err != nil {
+			return nil, err
+		}
 	}
 
+	this := &reconciler{
+		controller: controller,
+		config:     config,
+		infobase:   GetSharedInfoBase(controller),
+	}
+	this.infobase.cache = cache
 	return this, nil
 }

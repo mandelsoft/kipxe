@@ -85,6 +85,8 @@ spec:
                   generate an API spec. The Values MUST be marked with "-" to avoud
                   errors.
                 type: object
+              volatile:
+                type: boolean
             type: object
           status:
             properties:
