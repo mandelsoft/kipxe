@@ -18,24 +18,31 @@
 
 package kipxe
 
-type InfoBase struct {
-	Registry  *Registry
-	Documents *Documents
-	Profiles  *Profiles
-	Matchers  *Matchers
+import (
+	"github.com/gardener/controller-manager-library/pkg/types/infodata/simple"
+	"k8s.io/apimachinery/pkg/labels"
+)
+
+////////////////////////////////////////////////////////////////////////////////
+
+type MetaData simple.Values
+
+var _ labels.Labels = MetaData{}
+
+func (this MetaData) Has(key string) bool {
+	if v, ok := this[key]; ok {
+		if _, ok := v.(string); ok {
+			return ok
+		}
+	}
+	return false
 }
 
-func (this *InfoBase) SetDocument(e *Document) NameSet {
-	users := this.Documents.Set(e)
-	users = this.Profiles.Recheck(users)
-	return this.Matchers.Recheck(users)
-}
-
-func (this *InfoBase) SetProfile(e *Profile) (NameSet, error) {
-	users, err := this.Profiles.Set(e)
-	return this.Matchers.Recheck(users), err
-}
-
-func (this *InfoBase) SetMatcher(e *Matcher) error {
-	return this.Matchers.Set(e)
+func (this MetaData) Get(key string) string {
+	if v, ok := this[key]; ok {
+		if s, ok := v.(string); ok {
+			return s
+		}
+	}
+	return ""
 }

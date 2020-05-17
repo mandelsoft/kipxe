@@ -20,6 +20,7 @@ package ipxe
 
 import (
 	"fmt"
+	"html/template"
 	"strings"
 
 	"github.com/gardener/controller-manager-library/pkg/logger"
@@ -109,6 +110,11 @@ func NewDocument(m *v1alpha1.Document) (*kipxe.Document, error) {
 		return nil, fmt.Errorf("mime type empty")
 	}
 	if m.Spec.Text != "" {
+		_, err := template.New(m.Name).Parse(m.Spec.Text)
+		if err != nil {
+			return nil, fmt.Errorf("text is no valid go template: %s", err)
+		}
+
 		if m.Spec.Binary != "" || m.Spec.URL != "" {
 			return nil, fmt.Errorf("Text cannot be combined with URL or Binary")
 		}

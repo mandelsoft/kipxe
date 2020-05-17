@@ -66,11 +66,9 @@ spec:
             type: object
           spec:
             properties:
-              Binary:
-                type: string
-              Text:
-                type: string
               URL:
+                type: string
+              binary:
                 type: string
               mapping:
                 description: Values is a workarround for kubebuilder to be able to
@@ -79,6 +77,8 @@ spec:
                 type: object
                 x-kubernetes-preserve-unknown-fields: true
               mimeType:
+                type: string
+              text:
                 type: string
               values:
                 description: Values is a workarround for kubebuilder to be able to

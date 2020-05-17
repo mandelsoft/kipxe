@@ -213,6 +213,8 @@ github.com/mandelsoft/spiff v1.3.0-beta-7.0.20200516150320-732cd20c23ee h1:XxJu9
 github.com/mandelsoft/spiff v1.3.0-beta-7.0.20200516150320-732cd20c23ee/go.mod h1:ySrI0I40exZhvVthh/L0KKtYwLzwDG6jAZVypeqHmk4=
 github.com/mandelsoft/spiff v1.3.0-beta-7.0.20200516152320-d720d3709af1 h1:FatzZnMd6eZnqWtZCXXj0fGClNSL0NuSqL+hheHonDg=
 github.com/mandelsoft/spiff v1.3.0-beta-7.0.20200516152320-d720d3709af1/go.mod h1:ySrI0I40exZhvVthh/L0KKtYwLzwDG6jAZVypeqHmk4=
+github.com/mandelsoft/spiff v1.3.0-beta-7.0.20200517124258-872a3a49a15d h1:Jt1/JXGWlxsC8hH1EZok4eEspnuWDWTKaGy3VhnLYjQ=
+github.com/mandelsoft/spiff v1.3.0-beta-7.0.20200517124258-872a3a49a15d/go.mod h1:ySrI0I40exZhvVthh/L0KKtYwLzwDG6jAZVypeqHmk4=
 github.com/mandelsoft/spiff v1.4.0 h1:CCxvVTmKmMcR6HaiuiseyZ2punPJiaJdPCyw0Xfj4Oo=
 github.com/mandelsoft/spiff v1.4.0/go.mod h1:ySrI0I40exZhvVthh/L0KKtYwLzwDG6jAZVypeqHmk4=
 github.com/mattn/go-colorable v0.1.2 h1:/bC9yWikZXAL9uJdulbSfyVNIR3n3trXl+v8+1sx8mU=

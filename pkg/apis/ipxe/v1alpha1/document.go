@@ -59,9 +59,9 @@ type DocumentSpec struct {
 	// +optional
 	URL string `json:"URL,omitempty"`
 	// +optional
-	Text string `json:"Text,omitempty"`
+	Text string `json:"text,omitempty"`
 	// +optional
-	Binary string `json:"Binary,omitempty"`
+	Binary string `json:"binary,omitempty"`
 }
 
 type DocumentStatus struct {

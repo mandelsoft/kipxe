@@ -26,6 +26,7 @@ import (
 	"strings"
 
 	"github.com/emicklei/go-restful"
+	"github.com/gardener/controller-manager-library/pkg/logger"
 	"github.com/gardener/controller-manager-library/pkg/types/infodata/simple"
 	"gopkg.in/yaml.v2"
 )
@@ -74,6 +75,7 @@ func NewDataSource(mime string, data []byte) Source {
 }
 
 func NewTextSource(mime, text string) Source {
+	logger.Infof("TXT: %s", text)
 	return &DataSource{
 		mime: mime,
 		data: []byte(text),
@@ -133,6 +135,7 @@ func Process(name string, values simple.Values, src Source) (Source, error) {
 			return src, nil
 		}
 	case MIME_TEXT, MIME_GTEXT:
+		logger.Infof("go template with %s\n%s", values, string(src.Bytes()))
 		t, err := template.New(name).Parse(string(src.Bytes()))
 		if err != nil {
 			return nil, err

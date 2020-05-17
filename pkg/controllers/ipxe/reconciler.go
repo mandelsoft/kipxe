@@ -29,6 +29,7 @@ import (
 
 	"github.com/mandelsoft/kipxe/pkg/apis/ipxe/v1alpha1"
 	"github.com/mandelsoft/kipxe/pkg/controllers/ipxe/ready"
+	"github.com/mandelsoft/kipxe/pkg/kipxe"
 )
 
 type Ready struct{}
@@ -53,7 +54,13 @@ func (this *reconciler) Start() {
 	logger := this.controller.NewContext("server", "kipxe")
 	ipxe := server.NewHTTPServer(this.controller.GetContext(), logger, "kipxe")
 
-	ipxe.RegisterHandler("/", NewHandler("/", this))
+	infobase := &kipxe.InfoBase{
+		Registry:  nil,
+		Documents: this.infobase.documents.elements,
+		Profiles:  this.infobase.profiles.elements,
+		Matchers:  this.infobase.matchers.elements,
+	}
+	ipxe.RegisterHandler("/", kipxe.NewHandler(this.controller, "/", infobase))
 	ipxe.Register("/ready", ready.Ready)
 
 	ipxe.Start(nil, "", this.config.PXEPort)

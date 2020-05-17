@@ -22,6 +22,7 @@ import (
 	"fmt"
 
 	"github.com/gardener/controller-manager-library/pkg/types/infodata/simple"
+	yaml2 "github.com/ghodss/yaml"
 	"github.com/mandelsoft/spiff/flow"
 	"github.com/mandelsoft/spiff/yaml"
 )
@@ -36,7 +37,28 @@ func NewMapping(m yaml.Node) *Mapping {
 	}
 }
 
+var logMap = false
+
 func (this *Mapping) Map(name string, values ...simple.Values) (simple.Values, error) {
+	var err error
+	var v interface{}
+
+	if logMap {
+		fmt.Printf("map %s\n", name)
+		for i, s := range values {
+			fmt.Printf("* stub %d:\n", i)
+			b, _ := yaml2.Marshal(s)
+			fmt.Printf("%s\n", string(b))
+		}
+		fmt.Printf("* template:\n")
+		// v, err = yaml.Normalize(dynaml.ResetUnresolvedNodes(this.mapping))
+		if err != nil {
+			return nil, err
+		}
+		b, _ := yaml2.Marshal(v)
+		fmt.Printf("%s\n", string(b))
+	}
+
 	inp := []yaml.Node{}
 	for i, v := range values {
 		if v != nil {
@@ -56,9 +78,14 @@ func (this *Mapping) Map(name string, values ...simple.Values) (simple.Values, e
 	if err != nil {
 		return nil, err
 	}
-	v, err := yaml.Normalize(result)
+	v, err = yaml.Normalize(result)
 	if err != nil {
 		return nil, err
+	}
+	if logMap {
+		fmt.Printf("* result:\n")
+		b, _ := yaml2.Marshal(v)
+		fmt.Printf("%s\n", string(b))
 	}
 	return v.(map[string]interface{}), nil
 }
