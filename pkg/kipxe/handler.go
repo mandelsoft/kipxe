@@ -211,23 +211,27 @@ func (this *Handler) serve(w http.ResponseWriter, req *http.Request) error {
 		}
 
 		logger.Infof("found document %s in profile %s", d.Name(), pname)
-		intermediate := metavalues
-		intermediate, err = this.mapit(fmt.Sprintf("matcher %s", m.Name()), m.GetMapping(), metavalues, m.GetValues(), intermediate)
-		if err != nil {
-			return this.error(w, http.StatusUnprocessableEntity, err.Error())
-		}
-		intermediate, err = this.mapit(fmt.Sprintf("profile %s", pname), profile.GetMapping(), metavalues, profile.GetValues(), intermediate)
-		if err != nil {
-			return this.error(w, http.StatusUnprocessableEntity, err.Error())
-		}
-		intermediate, err = this.mapit(fmt.Sprintf("profile %s, document %s", pname, d.Name()), doc.GetMapping(), metavalues, doc.GetValues(), intermediate)
-		if err != nil {
-			return this.error(w, http.StatusUnprocessableEntity, err.Error())
-		}
 
-		source, err := Process("document", intermediate, doc.GetSource())
-		if err != nil {
-			return this.error(w, http.StatusUnprocessableEntity, err.Error())
+		source := doc.GetSource()
+		if !doc.skipProcessing {
+			intermediate := metavalues
+			intermediate, err = this.mapit(fmt.Sprintf("matcher %s", m.Name()), m.GetMapping(), metavalues, m.GetValues(), intermediate)
+			if err != nil {
+				return this.error(w, http.StatusUnprocessableEntity, err.Error())
+			}
+			intermediate, err = this.mapit(fmt.Sprintf("profile %s", pname), profile.GetMapping(), metavalues, profile.GetValues(), intermediate)
+			if err != nil {
+				return this.error(w, http.StatusUnprocessableEntity, err.Error())
+			}
+			intermediate, err = this.mapit(fmt.Sprintf("profile %s, document %s", pname, d.Name()), doc.GetMapping(), metavalues, doc.GetValues(), intermediate)
+			if err != nil {
+				return this.error(w, http.StatusUnprocessableEntity, err.Error())
+			}
+
+			source, err = Process("document", intermediate, source)
+			if err != nil {
+				return this.error(w, http.StatusUnprocessableEntity, err.Error())
+			}
 		}
 
 		source.Serve(w, req)

@@ -153,18 +153,20 @@ func (this *BootResources) DeleteUsersForAll(set NameSet, user Name) {
 
 type BootResource struct {
 	Element
-	error   error
-	values  simple.Values
-	mapping *Mapping
-	source  Source
+	error          error
+	values         simple.Values
+	mapping        *Mapping
+	source         Source
+	skipProcessing bool
 }
 
-func NewResource(name Name, mapping *Mapping, values simple.Values, src Source) *BootResource {
+func NewResource(name Name, mapping *Mapping, values simple.Values, src Source, skipProcessing bool) *BootResource {
 	return &BootResource{
-		Element: NewElement(name),
-		source:  src,
-		values:  values,
-		mapping: mapping,
+		Element:        NewElement(name),
+		source:         src,
+		values:         values,
+		mapping:        mapping,
+		skipProcessing: skipProcessing,
 	}
 }
 

@@ -51,6 +51,8 @@ type BootResource struct {
 type BootResourceSpec struct {
 	// +optional
 	MimeType string `json:"mimeType,omitempty"`
+	// +optional
+	Plain *bool `json:"plainContent,omitempty"`
 	// +kubebuilder:validation:XPreserveUnknownFields
 	// +kubebuilder:pruning:PreserveUnknownFields
 	// +optional

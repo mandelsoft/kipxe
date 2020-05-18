@@ -150,5 +150,6 @@ func NewResource(m *v1alpha1.BootResource, cache kipxe.Cache) (*kipxe.BootResour
 	if err != nil {
 		return nil, err
 	}
-	return kipxe.NewResource(resources.NewObjectName(m.Namespace, m.Name), mapping, m.Spec.Values.Values, source), nil
+	return kipxe.NewResource(resources.NewObjectName(m.Namespace, m.Name),
+		mapping, m.Spec.Values.Values, source, m.Spec.Plain != nil && *m.Spec.Plain), nil
 }

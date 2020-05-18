@@ -21,8 +21,8 @@ package kipxe
 import (
 	"bufio"
 	"bytes"
-	"crypto/md5"
-	"encoding/base64"
+	"crypto/sha1"
+	"encoding/hex"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -39,7 +39,8 @@ import (
 )
 
 func Hash(key string) string {
-	return base64.StdEncoding.EncodeToString(md5.New().Sum([]byte(key)))
+	data := sha1.Sum([]byte(key))
+	return hex.EncodeToString(data[:])
 }
 
 func fileExists(filename string) bool {
