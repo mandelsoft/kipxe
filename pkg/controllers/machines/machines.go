@@ -19,6 +19,7 @@
 package machines
 
 import (
+	"net/http"
 	"sync"
 
 	"github.com/gardener/controller-manager-library/pkg/controllermanager/controller"
@@ -170,7 +171,7 @@ func (this *Machines) Update(logger logger.LogContext, obj resources.Object) (*M
 	return m, err
 }
 
-func (this *Machines) Map(logger logger.LogContext, values kipxe.MetaData) (kipxe.MetaData, error) {
+func (this *Machines) Map(logger logger.LogContext, values kipxe.MetaData, req *http.Request) (kipxe.MetaData, error) {
 	logger.Infof("matching %s", values)
 	values = values.DeepCopy()
 	m := this.Lookup(values)

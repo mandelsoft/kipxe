@@ -28,5 +28,5 @@ import (
 )
 
 func main() {
-	controllermanager.Start("kipxe", "Launch Kubernetes iPXE Server", "kipxe servers iPXE requests baed on kubernetes rosources")
+	controllermanager.Start("kipxe", "Launch Kubernetes iPXE Server", "kipxe serves iPXE requests based on Kubernetes rosources")
 }

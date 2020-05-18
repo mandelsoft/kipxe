@@ -30,7 +30,7 @@ import (
 )
 
 type MetaDataMapper interface {
-	Map(logger logger.LogContext, values MetaData) (MetaData, error)
+	Map(logger logger.LogContext, values MetaData, req *http.Request) (MetaData, error)
 }
 
 type Registry struct {
@@ -52,13 +52,13 @@ func (this *Registry) Register(m MetaDataMapper) {
 	}
 }
 
-func (this *Registry) Map(logger logger.LogContext, values MetaData) (MetaData, error) {
+func (this *Registry) Map(logger logger.LogContext, values MetaData, req *http.Request) (MetaData, error) {
 	this.lock.RLock()
 	defer this.lock.RUnlock()
 	var err error
 
 	for _, m := range this.registry {
-		values, err = m.Map(logger, values)
+		values, err = m.Map(logger, values, req)
 		if err != nil {
 			break
 		}
@@ -176,7 +176,7 @@ func (this *Handler) serve(w http.ResponseWriter, req *http.Request) error {
 	this.Infof("request %s: %s", path, metadata)
 
 	if this.infobase.Registry != nil {
-		metadata, err = this.infobase.Registry.Map(this, metadata)
+		metadata, err = this.infobase.Registry.Map(this, metadata, req)
 		if err != nil {
 			return this.error(w, http.StatusBadRequest, "cannot map metadata: %s", err)
 		}
