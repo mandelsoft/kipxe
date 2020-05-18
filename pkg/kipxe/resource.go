@@ -24,20 +24,20 @@ import (
 	"github.com/gardener/controller-manager-library/pkg/types/infodata/simple"
 )
 
-type Documents struct {
+type BootResources struct {
 	lock     sync.RWMutex
-	elements map[string]*Document
+	elements map[string]*BootResource
 	users    map[string]NameSet
 }
 
-func NewDocuments() *Documents {
-	return &Documents{
-		elements: map[string]*Document{},
+func NewResources() *BootResources {
+	return &BootResources{
+		elements: map[string]*BootResource{},
 		users:    map[string]NameSet{},
 	}
 }
 
-func (this *Documents) Recheck(set NameSet) NameSet {
+func (this *BootResources) Recheck(set NameSet) NameSet {
 	this.lock.Lock()
 	this.lock.Unlock()
 	recheck := NameSet{}
@@ -50,17 +50,17 @@ func (this *Documents) Recheck(set NameSet) NameSet {
 	return recheck
 }
 
-func (this *Documents) check(m *Document) error {
+func (this *BootResources) check(m *BootResource) error {
 	return nil
 }
 
-func (this *Documents) Get(name Name) *Document {
+func (this *BootResources) Get(name Name) *BootResource {
 	this.lock.Lock()
 	this.lock.Unlock()
 	return this.elements[name.String()]
 }
 
-func (this *Documents) Set(m *Document) NameSet {
+func (this *BootResources) Set(m *BootResource) NameSet {
 	this.lock.Lock()
 	defer this.lock.Unlock()
 
@@ -75,7 +75,7 @@ func (this *Documents) Set(m *Document) NameSet {
 	return users.Copy()
 }
 
-func (this *Documents) Delete(name Name) NameSet {
+func (this *BootResources) Delete(name Name) NameSet {
 	this.lock.Lock()
 	defer this.lock.Unlock()
 
@@ -91,7 +91,7 @@ func (this *Documents) Delete(name Name) NameSet {
 	return users.Copy()
 }
 
-func (this *Documents) AddUser(name Name, user Name) {
+func (this *BootResources) AddUser(name Name, user Name) {
 	this.lock.Lock()
 	defer this.lock.Unlock()
 
@@ -104,7 +104,7 @@ func (this *Documents) AddUser(name Name, user Name) {
 	set.Add(user)
 }
 
-func (this *Documents) AddUsersForAll(set NameSet, user Name) {
+func (this *BootResources) AddUsersForAll(set NameSet, user Name) {
 	this.lock.Lock()
 	defer this.lock.Unlock()
 
@@ -119,7 +119,7 @@ func (this *Documents) AddUsersForAll(set NameSet, user Name) {
 	}
 }
 
-func (this *Documents) DeleteUser(name Name, user Name) {
+func (this *BootResources) DeleteUser(name Name, user Name) {
 	this.lock.Lock()
 	defer this.lock.Unlock()
 
@@ -133,7 +133,7 @@ func (this *Documents) DeleteUser(name Name, user Name) {
 	}
 }
 
-func (this *Documents) DeleteUsersForAll(set NameSet, user Name) {
+func (this *BootResources) DeleteUsersForAll(set NameSet, user Name) {
 	this.lock.Lock()
 	defer this.lock.Unlock()
 
@@ -151,7 +151,7 @@ func (this *Documents) DeleteUsersForAll(set NameSet, user Name) {
 
 ////////////////////////////////////////////////////////////////////////////////
 
-type Document struct {
+type BootResource struct {
 	Element
 	error   error
 	values  simple.Values
@@ -159,8 +159,8 @@ type Document struct {
 	source  Source
 }
 
-func NewDocument(name Name, mapping *Mapping, values simple.Values, src Source) *Document {
-	return &Document{
+func NewResource(name Name, mapping *Mapping, values simple.Values, src Source) *BootResource {
+	return &BootResource{
 		Element: NewElement(name),
 		source:  src,
 		values:  values,
@@ -168,15 +168,15 @@ func NewDocument(name Name, mapping *Mapping, values simple.Values, src Source) 
 	}
 }
 
-func (this *Document) GetSource() Source {
+func (this *BootResource) GetSource() Source {
 	return this.source
 }
 
-func (this *Document) GetValues() simple.Values {
+func (this *BootResource) GetValues() simple.Values {
 	return this.values
 }
 
-func (this *Document) GetMapping() *Mapping {
+func (this *BootResource) GetMapping() *Mapping {
 	return this.mapping
 }
 

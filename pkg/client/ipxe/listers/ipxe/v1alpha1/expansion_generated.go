@@ -18,26 +18,34 @@ limitations under the License.
 
 package v1alpha1
 
-// DocumentListerExpansion allows custom methods to be added to
-// DocumentLister.
-type DocumentListerExpansion interface{}
+// BootProfileListerExpansion allows custom methods to be added to
+// BootProfileLister.
+type BootProfileListerExpansion interface{}
 
-// DocumentNamespaceListerExpansion allows custom methods to be added to
-// DocumentNamespaceLister.
-type DocumentNamespaceListerExpansion interface{}
+// BootProfileNamespaceListerExpansion allows custom methods to be added to
+// BootProfileNamespaceLister.
+type BootProfileNamespaceListerExpansion interface{}
 
-// MatcherListerExpansion allows custom methods to be added to
-// MatcherLister.
-type MatcherListerExpansion interface{}
+// BootProfileMatcherListerExpansion allows custom methods to be added to
+// BootProfileMatcherLister.
+type BootProfileMatcherListerExpansion interface{}
 
-// MatcherNamespaceListerExpansion allows custom methods to be added to
-// MatcherNamespaceLister.
-type MatcherNamespaceListerExpansion interface{}
+// BootProfileMatcherNamespaceListerExpansion allows custom methods to be added to
+// BootProfileMatcherNamespaceLister.
+type BootProfileMatcherNamespaceListerExpansion interface{}
 
-// ProfileListerExpansion allows custom methods to be added to
-// ProfileLister.
-type ProfileListerExpansion interface{}
+// BootResourceListerExpansion allows custom methods to be added to
+// BootResourceLister.
+type BootResourceListerExpansion interface{}
 
-// ProfileNamespaceListerExpansion allows custom methods to be added to
-// ProfileNamespaceLister.
-type ProfileNamespaceListerExpansion interface{}
+// BootResourceNamespaceListerExpansion allows custom methods to be added to
+// BootResourceNamespaceLister.
+type BootResourceNamespaceListerExpansion interface{}
+
+// MachineListerExpansion allows custom methods to be added to
+// MachineLister.
+type MachineListerExpansion interface{}
+
+// MachineNamespaceListerExpansion allows custom methods to be added to
+// MachineNamespaceLister.
+type MachineNamespaceListerExpansion interface{}

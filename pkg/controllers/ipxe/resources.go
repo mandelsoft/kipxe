@@ -32,19 +32,19 @@ import (
 	"github.com/mandelsoft/kipxe/pkg/kipxe"
 )
 
-type Documents struct {
+type BootResources struct {
 	ResourceCache
-	elements *kipxe.Documents
+	elements *kipxe.BootResources
 }
 
-func newDocuments(infobase *InfoBase) *Documents {
-	return &Documents{
-		ResourceCache: NewResourceCache(infobase, &v1alpha1.Document{}),
-		elements:      kipxe.NewDocuments(),
+func newResources(infobase *InfoBase) *BootResources {
+	return &BootResources{
+		ResourceCache: NewResourceCache(infobase, &v1alpha1.BootResource{}),
+		elements:      kipxe.NewResources(),
 	}
 }
 
-func (this *Documents) Setup(logger logger.LogContext) {
+func (this *BootResources) Setup(logger logger.LogContext) {
 	if this.initialized {
 		return
 	}
@@ -65,18 +65,18 @@ func (this *Documents) Setup(logger logger.LogContext) {
 	}
 }
 
-func (this *Documents) recheckUsers(logger logger.LogContext, users kipxe.NameSet) {
+func (this *BootResources) recheckUsers(logger logger.LogContext, users kipxe.NameSet) {
 	logger.Infof("found users: %s", users)
 	this.profiles.Recheck(users)
 }
 
-func (this *Documents) Recheck(users kipxe.NameSet) {
-	this.EnqueueAll(users, v1alpha1.DOCUMENT)
+func (this *BootResources) Recheck(users kipxe.NameSet) {
+	this.EnqueueAll(users, v1alpha1.RESOURCE)
 	this.elements.Recheck(users)
 }
 
-func (this *Documents) Update(logger logger.LogContext, obj resources.Object) (*kipxe.Document, error) {
-	m, err := NewDocument(obj.Data().(*v1alpha1.Document), this.InfoBase.cache)
+func (this *BootResources) Update(logger logger.LogContext, obj resources.Object) (*kipxe.BootResource, error) {
+	m, err := NewResource(obj.Data().(*v1alpha1.BootResource), this.InfoBase.cache)
 	if err == nil {
 		this.recheckUsers(logger, this.elements.Set(m))
 	}
@@ -84,7 +84,7 @@ func (this *Documents) Update(logger logger.LogContext, obj resources.Object) (*
 		this.recheckUsers(logger, this.elements.Delete(obj.ObjectName()))
 		logger.Errorf("invalid document: %s", err)
 		_, err2 := resources.ModifyStatus(obj, func(mod *resources.ModificationState) error {
-			m := mod.Data().(*v1alpha1.Document)
+			m := mod.Data().(*v1alpha1.BootResource)
 			mod.AssureStringValue(&m.Status.State, v1alpha1.STATE_INVALID)
 			mod.AssureStringValue(&m.Status.Message, err.Error())
 			return nil
@@ -92,7 +92,7 @@ func (this *Documents) Update(logger logger.LogContext, obj resources.Object) (*
 		return nil, err2
 	}
 	_, err = resources.ModifyStatus(obj, func(mod *resources.ModificationState) error {
-		m := mod.Data().(*v1alpha1.Document)
+		m := mod.Data().(*v1alpha1.BootResource)
 		mod.AssureStringValue(&m.Status.State, v1alpha1.STATE_READY)
 		mod.AssureStringValue(&m.Status.Message, "document ok")
 		return nil
@@ -100,11 +100,11 @@ func (this *Documents) Update(logger logger.LogContext, obj resources.Object) (*
 	return m, err
 }
 
-func (this *Documents) Delete(logger logger.LogContext, name resources.ObjectName) {
+func (this *BootResources) Delete(logger logger.LogContext, name resources.ObjectName) {
 	this.recheckUsers(logger, this.elements.Delete(name))
 }
 
-func NewDocument(m *v1alpha1.Document, cache kipxe.Cache) (*kipxe.Document, error) {
+func NewResource(m *v1alpha1.BootResource, cache kipxe.Cache) (*kipxe.BootResource, error) {
 	var source kipxe.Source
 	mime := strings.TrimSpace(m.Spec.MimeType)
 	if mime == "" {
@@ -146,5 +146,5 @@ func NewDocument(m *v1alpha1.Document, cache kipxe.Cache) (*kipxe.Document, erro
 	if err != nil {
 		return nil, err
 	}
-	return kipxe.NewDocument(resources.NewObjectName(m.Namespace, m.Name), mapping, m.Spec.Values.Values, source), nil
+	return kipxe.NewResource(resources.NewObjectName(m.Namespace, m.Name), mapping, m.Spec.Values.Values, source), nil
 }

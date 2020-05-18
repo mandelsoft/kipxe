@@ -30,7 +30,7 @@ import (
 )
 
 type MetaDataMapper interface {
-	Map(values MetaData) (MetaData, error)
+	Map(logger logger.LogContext, values MetaData) (MetaData, error)
 }
 
 type Registry struct {
@@ -52,13 +52,13 @@ func (this *Registry) Register(m MetaDataMapper) {
 	}
 }
 
-func (this *Registry) Map(values MetaData) (MetaData, error) {
+func (this *Registry) Map(logger logger.LogContext, values MetaData) (MetaData, error) {
 	this.lock.RLock()
 	defer this.lock.RUnlock()
 	var err error
 
 	for _, m := range this.registry {
-		values, err = m.Map(values)
+		values, err = m.Map(logger, values)
 		if err != nil {
 			break
 		}
@@ -176,7 +176,7 @@ func (this *Handler) serve(w http.ResponseWriter, req *http.Request) error {
 	this.Infof("request %s: %s", path, metadata)
 
 	if this.infobase.Registry != nil {
-		metadata, err = this.infobase.Registry.Map(metadata)
+		metadata, err = this.infobase.Registry.Map(this, metadata)
 		if err != nil {
 			return this.error(w, http.StatusBadRequest, "cannot map metadata: %s", err)
 		}
@@ -205,13 +205,17 @@ func (this *Handler) serve(w http.ResponseWriter, req *http.Request) error {
 			continue
 		}
 
-		doc := this.infobase.Documents.Get(d.Name())
+		doc := this.infobase.Resources.Get(d.Name())
 		if doc == nil {
 			return this.error(w, http.StatusNotFound, "document %q for profile %q resource %q not found", d.Name(), pname, path)
 		}
 
 		logger.Infof("found document %s in profile %s", d.Name(), pname)
 		intermediate := metavalues
+		intermediate, err = this.mapit(fmt.Sprintf("matcher %s", m.Name()), m.GetMapping(), metavalues, m.GetValues(), intermediate)
+		if err != nil {
+			return this.error(w, http.StatusUnprocessableEntity, err.Error())
+		}
 		intermediate, err = this.mapit(fmt.Sprintf("profile %s", pname), profile.GetMapping(), metavalues, profile.GetValues(), intermediate)
 		if err != nil {
 			return this.error(w, http.StatusUnprocessableEntity, err.Error())

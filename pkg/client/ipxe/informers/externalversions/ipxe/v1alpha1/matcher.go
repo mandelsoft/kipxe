@@ -44,14 +44,14 @@ type matcherInformer struct {
 	namespace        string
 }
 
-// NewMatcherInformer constructs a new informer for Matcher type.
+// NewMatcherInformer constructs a new informer for BootProfileMatcher type.
 // Always prefer using an informer factory to get a shared informer instead of getting an independent
 // one. This reduces memory footprint and number of connections to the server.
 func NewMatcherInformer(client versioned.Interface, namespace string, resyncPeriod time.Duration, indexers cache.Indexers) cache.SharedIndexInformer {
 	return NewFilteredMatcherInformer(client, namespace, resyncPeriod, indexers, nil)
 }
 
-// NewFilteredMatcherInformer constructs a new informer for Matcher type.
+// NewFilteredMatcherInformer constructs a new informer for BootProfileMatcher type.
 // Always prefer using an informer factory to get a shared informer instead of getting an independent
 // one. This reduces memory footprint and number of connections to the server.
 func NewFilteredMatcherInformer(client versioned.Interface, namespace string, resyncPeriod time.Duration, indexers cache.Indexers, tweakListOptions internalinterfaces.TweakListOptionsFunc) cache.SharedIndexInformer {
@@ -70,7 +70,7 @@ func NewFilteredMatcherInformer(client versioned.Interface, namespace string, re
 				return client.IpxeV1alpha1().Matchers(namespace).Watch(options)
 			},
 		},
-		&ipxev1alpha1.Matcher{},
+		&ipxev1alpha1.BootProfileMatcher{},
 		resyncPeriod,
 		indexers,
 	)
@@ -81,7 +81,7 @@ func (f *matcherInformer) defaultInformer(client versioned.Interface, resyncPeri
 }
 
 func (f *matcherInformer) Informer() cache.SharedIndexInformer {
-	return f.factory.InformerFor(&ipxev1alpha1.Matcher{}, f.defaultInformer)
+	return f.factory.InformerFor(&ipxev1alpha1.BootProfileMatcher{}, f.defaultInformer)
 }
 
 func (f *matcherInformer) Lister() v1alpha1.MatcherLister {

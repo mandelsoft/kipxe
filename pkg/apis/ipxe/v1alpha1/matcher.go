@@ -24,37 +24,46 @@ import (
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
-type MatcherList struct {
+type BootProfileMatcherList struct {
 	metav1.TypeMeta `json:",inline"`
 	// Standard list metadata
 	// More info: http://releases.k8s.io/HEAD/docs/devel/api-conventions.md#metadata
 	metav1.ListMeta `json:"metadata,omitempty"`
-	Items           []Matcher `json:"items"`
+	Items           []BootProfileMatcher `json:"items"`
 }
 
 // +kubebuilder:storageversion
 // +kubebuilder:object:root=true
-// +kubebuilder:resource:scope=Namespaced,path=matchers,singular=matcher
+// +kubebuilder:resource:scope=Namespaced,shortName=bmatch,path=bootprofilematchers,singular=bootprofilematcher
 // +kubebuilder:subresource:status
+// +kubebuilder:printcolumn:name=Profile,JSONPath=".spec.profileName",type=string
 // +kubebuilder:printcolumn:name=State,JSONPath=".status.state",type=string
 // +genclient
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
-type Matcher struct {
+type BootProfileMatcher struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
-	Spec              MatcherSpec `json:"spec"`
+	Spec              BootProfileMatcherSpec `json:"spec"`
 	// +optional
-	Status MatcherStatus `json:"status,omitempty"`
+	Status BootProfileMatcherStatus `json:"status,omitempty"`
 }
 
-type MatcherSpec struct {
+type BootProfileMatcherSpec struct {
 	// +optional
 	Selector *metav1.LabelSelector `json:"selector"`
-	Profile  string                `json:"profileName"`
+	// +kubebuilder:validation:XPreserveUnknownFields
+	// +kubebuilder:pruning:PreserveUnknownFields
+	// +optional
+	Mapping Values `json:"mapping,omitempty"`
+	// +optional
+	Values Values `json:"values,omitempty"`
+	// +optional
+	Weight  *int   `json:"weight,omitempty"`
+	Profile string `json:"profileName"`
 }
 
-type MatcherStatus struct {
+type BootProfileMatcherStatus struct {
 	// +optional
 	State string `json:"state"`
 

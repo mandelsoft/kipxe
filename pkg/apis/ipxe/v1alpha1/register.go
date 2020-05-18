@@ -32,9 +32,10 @@ const (
 	GroupName = ipxe.GroupName
 )
 
-var MATCHER = resources.NewGroupKind(GroupName, "Matcher")
-var PROFILE = resources.NewGroupKind(GroupName, "Profile")
-var DOCUMENT = resources.NewGroupKind(GroupName, "Document")
+var MATCHER = resources.NewGroupKind(GroupName, "BootProfileMatcher")
+var PROFILE = resources.NewGroupKind(GroupName, "BootProfile")
+var RESOURCE = resources.NewGroupKind(GroupName, "BootResource")
+var MACHINE = resources.NewGroupKind(GroupName, "Machine")
 
 // SchemeGroupVersion is group version used to register these objects
 var SchemeGroupVersion = schema.GroupVersion{Group: GroupName, Version: Version}
@@ -57,14 +58,17 @@ var (
 // Adds the list of known types to Scheme.
 func addKnownTypes(scheme *runtime.Scheme) error {
 	scheme.AddKnownTypes(SchemeGroupVersion,
-		&Matcher{},
-		&MatcherList{},
+		&BootProfileMatcher{},
+		&BootProfileMatcherList{},
 
-		&Profile{},
-		&ProfileList{},
+		&BootProfile{},
+		&BootProfileList{},
 
-		&Document{},
-		&DocumentList{},
+		&BootResource{},
+		&BootResourceList{},
+
+		&Machine{},
+		&MachineList{},
 	)
 	metav1.AddToGroupVersion(scheme, SchemeGroupVersion)
 	return nil

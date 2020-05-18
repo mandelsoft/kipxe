@@ -28,6 +28,7 @@ import (
 	"github.com/gardener/controller-manager-library/pkg/server"
 
 	"github.com/mandelsoft/kipxe/pkg/apis/ipxe/v1alpha1"
+	"github.com/mandelsoft/kipxe/pkg/controllers"
 	"github.com/mandelsoft/kipxe/pkg/controllers/ipxe/ready"
 	"github.com/mandelsoft/kipxe/pkg/kipxe"
 )
@@ -55,8 +56,8 @@ func (this *reconciler) Start() {
 	ipxe := server.NewHTTPServer(this.controller.GetContext(), logger, "kipxe")
 
 	infobase := &kipxe.InfoBase{
-		Registry:  nil,
-		Documents: this.infobase.documents.elements,
+		Registry:  controllers.GetSharedRegistry(this.controller),
+		Resources: this.infobase.resources.elements,
 		Profiles:  this.infobase.profiles.elements,
 		Matchers:  this.infobase.matchers.elements,
 	}
@@ -84,12 +85,12 @@ func (this *reconciler) Reconcile(logger logger.LogContext, obj resources.Object
 	var err error
 	logger.Infof("reconcile")
 	switch obj.Data().(type) {
-	case *v1alpha1.Profile:
+	case *v1alpha1.BootProfile:
 		_, err = this.infobase.profiles.Update(logger, obj)
-	case *v1alpha1.Matcher:
+	case *v1alpha1.BootProfileMatcher:
 		_, err = this.infobase.matchers.Update(logger, obj)
-	case *v1alpha1.Document:
-		_, err = this.infobase.documents.Update(logger, obj)
+	case *v1alpha1.BootResource:
+		_, err = this.infobase.resources.Update(logger, obj)
 	}
 	return reconcile.DelayOnError(logger, err)
 }
@@ -101,8 +102,8 @@ func (this *reconciler) Deleted(logger logger.LogContext, key resources.ClusterO
 		this.infobase.profiles.Delete(logger, key.ObjectName())
 	case v1alpha1.MATCHER:
 		this.infobase.matchers.Delete(logger, key.ObjectName())
-	case v1alpha1.DOCUMENT:
-		this.infobase.documents.Delete(logger, key.ObjectName())
+	case v1alpha1.RESOURCE:
+		this.infobase.resources.Delete(logger, key.ObjectName())
 	}
 	return reconcile.Succeeded(logger)
 }

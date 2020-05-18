@@ -29,46 +29,46 @@ import (
 	rest "k8s.io/client-go/rest"
 )
 
-// DocumentsGetter has a method to return a DocumentInterface.
+// MachinesGetter has a method to return a MachineInterface.
 // A group's client should implement this interface.
-type DocumentsGetter interface {
-	Documents(namespace string) DocumentInterface
+type MachinesGetter interface {
+	Machines(namespace string) MachineInterface
 }
 
-// DocumentInterface has methods to work with BootResource resources.
-type DocumentInterface interface {
-	Create(*v1alpha1.BootResource) (*v1alpha1.BootResource, error)
-	Update(*v1alpha1.BootResource) (*v1alpha1.BootResource, error)
-	UpdateStatus(*v1alpha1.BootResource) (*v1alpha1.BootResource, error)
+// MachineInterface has methods to work with Machine resources.
+type MachineInterface interface {
+	Create(*v1alpha1.Machine) (*v1alpha1.Machine, error)
+	Update(*v1alpha1.Machine) (*v1alpha1.Machine, error)
+	UpdateStatus(*v1alpha1.Machine) (*v1alpha1.Machine, error)
 	Delete(name string, options *v1.DeleteOptions) error
 	DeleteCollection(options *v1.DeleteOptions, listOptions v1.ListOptions) error
-	Get(name string, options v1.GetOptions) (*v1alpha1.BootResource, error)
-	List(opts v1.ListOptions) (*v1alpha1.BootResourceList, error)
+	Get(name string, options v1.GetOptions) (*v1alpha1.Machine, error)
+	List(opts v1.ListOptions) (*v1alpha1.MachineList, error)
 	Watch(opts v1.ListOptions) (watch.Interface, error)
-	Patch(name string, pt types.PatchType, data []byte, subresources ...string) (result *v1alpha1.BootResource, err error)
-	DocumentExpansion
+	Patch(name string, pt types.PatchType, data []byte, subresources ...string) (result *v1alpha1.Machine, err error)
+	MachineExpansion
 }
 
-// documents implements DocumentInterface
-type documents struct {
+// machines implements MachineInterface
+type machines struct {
 	client rest.Interface
 	ns     string
 }
 
-// newDocuments returns a Documents
-func newDocuments(c *IpxeV1alpha1Client, namespace string) *documents {
-	return &documents{
+// newMachines returns a Machines
+func newMachines(c *IpxeV1alpha1Client, namespace string) *machines {
+	return &machines{
 		client: c.RESTClient(),
 		ns:     namespace,
 	}
 }
 
-// Get takes name of the document, and returns the corresponding document object, and an error if there is any.
-func (c *documents) Get(name string, options v1.GetOptions) (result *v1alpha1.BootResource, err error) {
-	result = &v1alpha1.BootResource{}
+// Get takes name of the machine, and returns the corresponding machine object, and an error if there is any.
+func (c *machines) Get(name string, options v1.GetOptions) (result *v1alpha1.Machine, err error) {
+	result = &v1alpha1.Machine{}
 	err = c.client.Get().
 		Namespace(c.ns).
-		Resource("documents").
+		Resource("machines").
 		Name(name).
 		VersionedParams(&options, scheme.ParameterCodec).
 		Do().
@@ -76,16 +76,16 @@ func (c *documents) Get(name string, options v1.GetOptions) (result *v1alpha1.Bo
 	return
 }
 
-// List takes label and field selectors, and returns the list of Documents that match those selectors.
-func (c *documents) List(opts v1.ListOptions) (result *v1alpha1.BootResourceList, err error) {
+// List takes label and field selectors, and returns the list of Machines that match those selectors.
+func (c *machines) List(opts v1.ListOptions) (result *v1alpha1.MachineList, err error) {
 	var timeout time.Duration
 	if opts.TimeoutSeconds != nil {
 		timeout = time.Duration(*opts.TimeoutSeconds) * time.Second
 	}
-	result = &v1alpha1.BootResourceList{}
+	result = &v1alpha1.MachineList{}
 	err = c.client.Get().
 		Namespace(c.ns).
-		Resource("documents").
+		Resource("machines").
 		VersionedParams(&opts, scheme.ParameterCodec).
 		Timeout(timeout).
 		Do().
@@ -93,8 +93,8 @@ func (c *documents) List(opts v1.ListOptions) (result *v1alpha1.BootResourceList
 	return
 }
 
-// Watch returns a watch.Interface that watches the requested documents.
-func (c *documents) Watch(opts v1.ListOptions) (watch.Interface, error) {
+// Watch returns a watch.Interface that watches the requested machines.
+func (c *machines) Watch(opts v1.ListOptions) (watch.Interface, error) {
 	var timeout time.Duration
 	if opts.TimeoutSeconds != nil {
 		timeout = time.Duration(*opts.TimeoutSeconds) * time.Second
@@ -102,32 +102,32 @@ func (c *documents) Watch(opts v1.ListOptions) (watch.Interface, error) {
 	opts.Watch = true
 	return c.client.Get().
 		Namespace(c.ns).
-		Resource("documents").
+		Resource("machines").
 		VersionedParams(&opts, scheme.ParameterCodec).
 		Timeout(timeout).
 		Watch()
 }
 
-// Create takes the representation of a document and creates it.  Returns the server's representation of the document, and an error, if there is any.
-func (c *documents) Create(document *v1alpha1.BootResource) (result *v1alpha1.BootResource, err error) {
-	result = &v1alpha1.BootResource{}
+// Create takes the representation of a machine and creates it.  Returns the server's representation of the machine, and an error, if there is any.
+func (c *machines) Create(machine *v1alpha1.Machine) (result *v1alpha1.Machine, err error) {
+	result = &v1alpha1.Machine{}
 	err = c.client.Post().
 		Namespace(c.ns).
-		Resource("documents").
-		Body(document).
+		Resource("machines").
+		Body(machine).
 		Do().
 		Into(result)
 	return
 }
 
-// Update takes the representation of a document and updates it. Returns the server's representation of the document, and an error, if there is any.
-func (c *documents) Update(document *v1alpha1.BootResource) (result *v1alpha1.BootResource, err error) {
-	result = &v1alpha1.BootResource{}
+// Update takes the representation of a machine and updates it. Returns the server's representation of the machine, and an error, if there is any.
+func (c *machines) Update(machine *v1alpha1.Machine) (result *v1alpha1.Machine, err error) {
+	result = &v1alpha1.Machine{}
 	err = c.client.Put().
 		Namespace(c.ns).
-		Resource("documents").
-		Name(document.Name).
-		Body(document).
+		Resource("machines").
+		Name(machine.Name).
+		Body(machine).
 		Do().
 		Into(result)
 	return
@@ -136,24 +136,24 @@ func (c *documents) Update(document *v1alpha1.BootResource) (result *v1alpha1.Bo
 // UpdateStatus was generated because the type contains a Status member.
 // Add a +genclient:noStatus comment above the type to avoid generating UpdateStatus().
 
-func (c *documents) UpdateStatus(document *v1alpha1.BootResource) (result *v1alpha1.BootResource, err error) {
-	result = &v1alpha1.BootResource{}
+func (c *machines) UpdateStatus(machine *v1alpha1.Machine) (result *v1alpha1.Machine, err error) {
+	result = &v1alpha1.Machine{}
 	err = c.client.Put().
 		Namespace(c.ns).
-		Resource("documents").
-		Name(document.Name).
+		Resource("machines").
+		Name(machine.Name).
 		SubResource("status").
-		Body(document).
+		Body(machine).
 		Do().
 		Into(result)
 	return
 }
 
-// Delete takes name of the document and deletes it. Returns an error if one occurs.
-func (c *documents) Delete(name string, options *v1.DeleteOptions) error {
+// Delete takes name of the machine and deletes it. Returns an error if one occurs.
+func (c *machines) Delete(name string, options *v1.DeleteOptions) error {
 	return c.client.Delete().
 		Namespace(c.ns).
-		Resource("documents").
+		Resource("machines").
 		Name(name).
 		Body(options).
 		Do().
@@ -161,14 +161,14 @@ func (c *documents) Delete(name string, options *v1.DeleteOptions) error {
 }
 
 // DeleteCollection deletes a collection of objects.
-func (c *documents) DeleteCollection(options *v1.DeleteOptions, listOptions v1.ListOptions) error {
+func (c *machines) DeleteCollection(options *v1.DeleteOptions, listOptions v1.ListOptions) error {
 	var timeout time.Duration
 	if listOptions.TimeoutSeconds != nil {
 		timeout = time.Duration(*listOptions.TimeoutSeconds) * time.Second
 	}
 	return c.client.Delete().
 		Namespace(c.ns).
-		Resource("documents").
+		Resource("machines").
 		VersionedParams(&listOptions, scheme.ParameterCodec).
 		Timeout(timeout).
 		Body(options).
@@ -176,12 +176,12 @@ func (c *documents) DeleteCollection(options *v1.DeleteOptions, listOptions v1.L
 		Error()
 }
 
-// Patch applies the patch and returns the patched document.
-func (c *documents) Patch(name string, pt types.PatchType, data []byte, subresources ...string) (result *v1alpha1.BootResource, err error) {
-	result = &v1alpha1.BootResource{}
+// Patch applies the patch and returns the patched machine.
+func (c *machines) Patch(name string, pt types.PatchType, data []byte, subresources ...string) (result *v1alpha1.Machine, err error) {
+	result = &v1alpha1.Machine{}
 	err = c.client.Patch(pt).
 		Namespace(c.ns).
-		Resource("documents").
+		Resource("machines").
 		SubResource(subresources...).
 		Name(name).
 		Body(data).

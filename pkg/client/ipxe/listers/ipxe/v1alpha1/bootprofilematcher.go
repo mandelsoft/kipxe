@@ -25,56 +25,56 @@ import (
 	"k8s.io/client-go/tools/cache"
 )
 
-// MatcherLister helps list Matchers.
-type MatcherLister interface {
-	// List lists all Matchers in the indexer.
+// BootProfileMatcherLister helps list BootProfileMatchers.
+type BootProfileMatcherLister interface {
+	// List lists all BootProfileMatchers in the indexer.
 	List(selector labels.Selector) (ret []*v1alpha1.BootProfileMatcher, err error)
-	// Matchers returns an object that can list and get Matchers.
-	Matchers(namespace string) MatcherNamespaceLister
-	MatcherListerExpansion
+	// BootProfileMatchers returns an object that can list and get BootProfileMatchers.
+	BootProfileMatchers(namespace string) BootProfileMatcherNamespaceLister
+	BootProfileMatcherListerExpansion
 }
 
-// matcherLister implements the MatcherLister interface.
-type matcherLister struct {
+// bootProfileMatcherLister implements the BootProfileMatcherLister interface.
+type bootProfileMatcherLister struct {
 	indexer cache.Indexer
 }
 
-// NewMatcherLister returns a new MatcherLister.
-func NewMatcherLister(indexer cache.Indexer) MatcherLister {
-	return &matcherLister{indexer: indexer}
+// NewBootProfileMatcherLister returns a new BootProfileMatcherLister.
+func NewBootProfileMatcherLister(indexer cache.Indexer) BootProfileMatcherLister {
+	return &bootProfileMatcherLister{indexer: indexer}
 }
 
-// List lists all Matchers in the indexer.
-func (s *matcherLister) List(selector labels.Selector) (ret []*v1alpha1.BootProfileMatcher, err error) {
+// List lists all BootProfileMatchers in the indexer.
+func (s *bootProfileMatcherLister) List(selector labels.Selector) (ret []*v1alpha1.BootProfileMatcher, err error) {
 	err = cache.ListAll(s.indexer, selector, func(m interface{}) {
 		ret = append(ret, m.(*v1alpha1.BootProfileMatcher))
 	})
 	return ret, err
 }
 
-// Matchers returns an object that can list and get Matchers.
-func (s *matcherLister) Matchers(namespace string) MatcherNamespaceLister {
-	return matcherNamespaceLister{indexer: s.indexer, namespace: namespace}
+// BootProfileMatchers returns an object that can list and get BootProfileMatchers.
+func (s *bootProfileMatcherLister) BootProfileMatchers(namespace string) BootProfileMatcherNamespaceLister {
+	return bootProfileMatcherNamespaceLister{indexer: s.indexer, namespace: namespace}
 }
 
-// MatcherNamespaceLister helps list and get Matchers.
-type MatcherNamespaceLister interface {
-	// List lists all Matchers in the indexer for a given namespace.
+// BootProfileMatcherNamespaceLister helps list and get BootProfileMatchers.
+type BootProfileMatcherNamespaceLister interface {
+	// List lists all BootProfileMatchers in the indexer for a given namespace.
 	List(selector labels.Selector) (ret []*v1alpha1.BootProfileMatcher, err error)
 	// Get retrieves the BootProfileMatcher from the indexer for a given namespace and name.
 	Get(name string) (*v1alpha1.BootProfileMatcher, error)
-	MatcherNamespaceListerExpansion
+	BootProfileMatcherNamespaceListerExpansion
 }
 
-// matcherNamespaceLister implements the MatcherNamespaceLister
+// bootProfileMatcherNamespaceLister implements the BootProfileMatcherNamespaceLister
 // interface.
-type matcherNamespaceLister struct {
+type bootProfileMatcherNamespaceLister struct {
 	indexer   cache.Indexer
 	namespace string
 }
 
-// List lists all Matchers in the indexer for a given namespace.
-func (s matcherNamespaceLister) List(selector labels.Selector) (ret []*v1alpha1.BootProfileMatcher, err error) {
+// List lists all BootProfileMatchers in the indexer for a given namespace.
+func (s bootProfileMatcherNamespaceLister) List(selector labels.Selector) (ret []*v1alpha1.BootProfileMatcher, err error) {
 	err = cache.ListAllByNamespace(s.indexer, s.namespace, selector, func(m interface{}) {
 		ret = append(ret, m.(*v1alpha1.BootProfileMatcher))
 	})
@@ -82,13 +82,13 @@ func (s matcherNamespaceLister) List(selector labels.Selector) (ret []*v1alpha1.
 }
 
 // Get retrieves the BootProfileMatcher from the indexer for a given namespace and name.
-func (s matcherNamespaceLister) Get(name string) (*v1alpha1.BootProfileMatcher, error) {
+func (s bootProfileMatcherNamespaceLister) Get(name string) (*v1alpha1.BootProfileMatcher, error) {
 	obj, exists, err := s.indexer.GetByKey(s.namespace + "/" + name)
 	if err != nil {
 		return nil, err
 	}
 	if !exists {
-		return nil, errors.NewNotFound(v1alpha1.Resource("matcher"), name)
+		return nil, errors.NewNotFound(v1alpha1.Resource("bootprofilematcher"), name)
 	}
 	return obj.(*v1alpha1.BootProfileMatcher), nil
 }

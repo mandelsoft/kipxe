@@ -31,43 +31,43 @@ import (
 	cache "k8s.io/client-go/tools/cache"
 )
 
-// ProfileInformer provides access to a shared informer and lister for
-// Profiles.
-type ProfileInformer interface {
+// BootProfileInformer provides access to a shared informer and lister for
+// BootProfiles.
+type BootProfileInformer interface {
 	Informer() cache.SharedIndexInformer
-	Lister() v1alpha1.ProfileLister
+	Lister() v1alpha1.BootProfileLister
 }
 
-type profileInformer struct {
+type bootProfileInformer struct {
 	factory          internalinterfaces.SharedInformerFactory
 	tweakListOptions internalinterfaces.TweakListOptionsFunc
 	namespace        string
 }
 
-// NewProfileInformer constructs a new informer for BootProfile type.
+// NewBootProfileInformer constructs a new informer for BootProfile type.
 // Always prefer using an informer factory to get a shared informer instead of getting an independent
 // one. This reduces memory footprint and number of connections to the server.
-func NewProfileInformer(client versioned.Interface, namespace string, resyncPeriod time.Duration, indexers cache.Indexers) cache.SharedIndexInformer {
-	return NewFilteredProfileInformer(client, namespace, resyncPeriod, indexers, nil)
+func NewBootProfileInformer(client versioned.Interface, namespace string, resyncPeriod time.Duration, indexers cache.Indexers) cache.SharedIndexInformer {
+	return NewFilteredBootProfileInformer(client, namespace, resyncPeriod, indexers, nil)
 }
 
-// NewFilteredProfileInformer constructs a new informer for BootProfile type.
+// NewFilteredBootProfileInformer constructs a new informer for BootProfile type.
 // Always prefer using an informer factory to get a shared informer instead of getting an independent
 // one. This reduces memory footprint and number of connections to the server.
-func NewFilteredProfileInformer(client versioned.Interface, namespace string, resyncPeriod time.Duration, indexers cache.Indexers, tweakListOptions internalinterfaces.TweakListOptionsFunc) cache.SharedIndexInformer {
+func NewFilteredBootProfileInformer(client versioned.Interface, namespace string, resyncPeriod time.Duration, indexers cache.Indexers, tweakListOptions internalinterfaces.TweakListOptionsFunc) cache.SharedIndexInformer {
 	return cache.NewSharedIndexInformer(
 		&cache.ListWatch{
 			ListFunc: func(options v1.ListOptions) (runtime.Object, error) {
 				if tweakListOptions != nil {
 					tweakListOptions(&options)
 				}
-				return client.IpxeV1alpha1().Profiles(namespace).List(options)
+				return client.IpxeV1alpha1().BootProfiles(namespace).List(options)
 			},
 			WatchFunc: func(options v1.ListOptions) (watch.Interface, error) {
 				if tweakListOptions != nil {
 					tweakListOptions(&options)
 				}
-				return client.IpxeV1alpha1().Profiles(namespace).Watch(options)
+				return client.IpxeV1alpha1().BootProfiles(namespace).Watch(options)
 			},
 		},
 		&ipxev1alpha1.BootProfile{},
@@ -76,14 +76,14 @@ func NewFilteredProfileInformer(client versioned.Interface, namespace string, re
 	)
 }
 
-func (f *profileInformer) defaultInformer(client versioned.Interface, resyncPeriod time.Duration) cache.SharedIndexInformer {
-	return NewFilteredProfileInformer(client, f.namespace, resyncPeriod, cache.Indexers{cache.NamespaceIndex: cache.MetaNamespaceIndexFunc}, f.tweakListOptions)
+func (f *bootProfileInformer) defaultInformer(client versioned.Interface, resyncPeriod time.Duration) cache.SharedIndexInformer {
+	return NewFilteredBootProfileInformer(client, f.namespace, resyncPeriod, cache.Indexers{cache.NamespaceIndex: cache.MetaNamespaceIndexFunc}, f.tweakListOptions)
 }
 
-func (f *profileInformer) Informer() cache.SharedIndexInformer {
+func (f *bootProfileInformer) Informer() cache.SharedIndexInformer {
 	return f.factory.InformerFor(&ipxev1alpha1.BootProfile{}, f.defaultInformer)
 }
 
-func (f *profileInformer) Lister() v1alpha1.ProfileLister {
-	return v1alpha1.NewProfileLister(f.Informer().GetIndexer())
+func (f *bootProfileInformer) Lister() v1alpha1.BootProfileLister {
+	return v1alpha1.NewBootProfileLister(f.Informer().GetIndexer())
 }

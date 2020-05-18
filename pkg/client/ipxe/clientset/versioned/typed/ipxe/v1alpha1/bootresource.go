@@ -29,14 +29,14 @@ import (
 	rest "k8s.io/client-go/rest"
 )
 
-// DocumentsGetter has a method to return a DocumentInterface.
+// BootResourcesGetter has a method to return a BootResourceInterface.
 // A group's client should implement this interface.
-type DocumentsGetter interface {
-	Documents(namespace string) DocumentInterface
+type BootResourcesGetter interface {
+	BootResources(namespace string) BootResourceInterface
 }
 
-// DocumentInterface has methods to work with BootResource resources.
-type DocumentInterface interface {
+// BootResourceInterface has methods to work with BootResource resources.
+type BootResourceInterface interface {
 	Create(*v1alpha1.BootResource) (*v1alpha1.BootResource, error)
 	Update(*v1alpha1.BootResource) (*v1alpha1.BootResource, error)
 	UpdateStatus(*v1alpha1.BootResource) (*v1alpha1.BootResource, error)
@@ -46,29 +46,29 @@ type DocumentInterface interface {
 	List(opts v1.ListOptions) (*v1alpha1.BootResourceList, error)
 	Watch(opts v1.ListOptions) (watch.Interface, error)
 	Patch(name string, pt types.PatchType, data []byte, subresources ...string) (result *v1alpha1.BootResource, err error)
-	DocumentExpansion
+	BootResourceExpansion
 }
 
-// documents implements DocumentInterface
-type documents struct {
+// bootResources implements BootResourceInterface
+type bootResources struct {
 	client rest.Interface
 	ns     string
 }
 
-// newDocuments returns a Documents
-func newDocuments(c *IpxeV1alpha1Client, namespace string) *documents {
-	return &documents{
+// newBootResources returns a BootResources
+func newBootResources(c *IpxeV1alpha1Client, namespace string) *bootResources {
+	return &bootResources{
 		client: c.RESTClient(),
 		ns:     namespace,
 	}
 }
 
-// Get takes name of the document, and returns the corresponding document object, and an error if there is any.
-func (c *documents) Get(name string, options v1.GetOptions) (result *v1alpha1.BootResource, err error) {
+// Get takes name of the bootResource, and returns the corresponding bootResource object, and an error if there is any.
+func (c *bootResources) Get(name string, options v1.GetOptions) (result *v1alpha1.BootResource, err error) {
 	result = &v1alpha1.BootResource{}
 	err = c.client.Get().
 		Namespace(c.ns).
-		Resource("documents").
+		Resource("bootresources").
 		Name(name).
 		VersionedParams(&options, scheme.ParameterCodec).
 		Do().
@@ -76,8 +76,8 @@ func (c *documents) Get(name string, options v1.GetOptions) (result *v1alpha1.Bo
 	return
 }
 
-// List takes label and field selectors, and returns the list of Documents that match those selectors.
-func (c *documents) List(opts v1.ListOptions) (result *v1alpha1.BootResourceList, err error) {
+// List takes label and field selectors, and returns the list of BootResources that match those selectors.
+func (c *bootResources) List(opts v1.ListOptions) (result *v1alpha1.BootResourceList, err error) {
 	var timeout time.Duration
 	if opts.TimeoutSeconds != nil {
 		timeout = time.Duration(*opts.TimeoutSeconds) * time.Second
@@ -85,7 +85,7 @@ func (c *documents) List(opts v1.ListOptions) (result *v1alpha1.BootResourceList
 	result = &v1alpha1.BootResourceList{}
 	err = c.client.Get().
 		Namespace(c.ns).
-		Resource("documents").
+		Resource("bootresources").
 		VersionedParams(&opts, scheme.ParameterCodec).
 		Timeout(timeout).
 		Do().
@@ -93,8 +93,8 @@ func (c *documents) List(opts v1.ListOptions) (result *v1alpha1.BootResourceList
 	return
 }
 
-// Watch returns a watch.Interface that watches the requested documents.
-func (c *documents) Watch(opts v1.ListOptions) (watch.Interface, error) {
+// Watch returns a watch.Interface that watches the requested bootResources.
+func (c *bootResources) Watch(opts v1.ListOptions) (watch.Interface, error) {
 	var timeout time.Duration
 	if opts.TimeoutSeconds != nil {
 		timeout = time.Duration(*opts.TimeoutSeconds) * time.Second
@@ -102,32 +102,32 @@ func (c *documents) Watch(opts v1.ListOptions) (watch.Interface, error) {
 	opts.Watch = true
 	return c.client.Get().
 		Namespace(c.ns).
-		Resource("documents").
+		Resource("bootresources").
 		VersionedParams(&opts, scheme.ParameterCodec).
 		Timeout(timeout).
 		Watch()
 }
 
-// Create takes the representation of a document and creates it.  Returns the server's representation of the document, and an error, if there is any.
-func (c *documents) Create(document *v1alpha1.BootResource) (result *v1alpha1.BootResource, err error) {
+// Create takes the representation of a bootResource and creates it.  Returns the server's representation of the bootResource, and an error, if there is any.
+func (c *bootResources) Create(bootResource *v1alpha1.BootResource) (result *v1alpha1.BootResource, err error) {
 	result = &v1alpha1.BootResource{}
 	err = c.client.Post().
 		Namespace(c.ns).
-		Resource("documents").
-		Body(document).
+		Resource("bootresources").
+		Body(bootResource).
 		Do().
 		Into(result)
 	return
 }
 
-// Update takes the representation of a document and updates it. Returns the server's representation of the document, and an error, if there is any.
-func (c *documents) Update(document *v1alpha1.BootResource) (result *v1alpha1.BootResource, err error) {
+// Update takes the representation of a bootResource and updates it. Returns the server's representation of the bootResource, and an error, if there is any.
+func (c *bootResources) Update(bootResource *v1alpha1.BootResource) (result *v1alpha1.BootResource, err error) {
 	result = &v1alpha1.BootResource{}
 	err = c.client.Put().
 		Namespace(c.ns).
-		Resource("documents").
-		Name(document.Name).
-		Body(document).
+		Resource("bootresources").
+		Name(bootResource.Name).
+		Body(bootResource).
 		Do().
 		Into(result)
 	return
@@ -136,24 +136,24 @@ func (c *documents) Update(document *v1alpha1.BootResource) (result *v1alpha1.Bo
 // UpdateStatus was generated because the type contains a Status member.
 // Add a +genclient:noStatus comment above the type to avoid generating UpdateStatus().
 
-func (c *documents) UpdateStatus(document *v1alpha1.BootResource) (result *v1alpha1.BootResource, err error) {
+func (c *bootResources) UpdateStatus(bootResource *v1alpha1.BootResource) (result *v1alpha1.BootResource, err error) {
 	result = &v1alpha1.BootResource{}
 	err = c.client.Put().
 		Namespace(c.ns).
-		Resource("documents").
-		Name(document.Name).
+		Resource("bootresources").
+		Name(bootResource.Name).
 		SubResource("status").
-		Body(document).
+		Body(bootResource).
 		Do().
 		Into(result)
 	return
 }
 
-// Delete takes name of the document and deletes it. Returns an error if one occurs.
-func (c *documents) Delete(name string, options *v1.DeleteOptions) error {
+// Delete takes name of the bootResource and deletes it. Returns an error if one occurs.
+func (c *bootResources) Delete(name string, options *v1.DeleteOptions) error {
 	return c.client.Delete().
 		Namespace(c.ns).
-		Resource("documents").
+		Resource("bootresources").
 		Name(name).
 		Body(options).
 		Do().
@@ -161,14 +161,14 @@ func (c *documents) Delete(name string, options *v1.DeleteOptions) error {
 }
 
 // DeleteCollection deletes a collection of objects.
-func (c *documents) DeleteCollection(options *v1.DeleteOptions, listOptions v1.ListOptions) error {
+func (c *bootResources) DeleteCollection(options *v1.DeleteOptions, listOptions v1.ListOptions) error {
 	var timeout time.Duration
 	if listOptions.TimeoutSeconds != nil {
 		timeout = time.Duration(*listOptions.TimeoutSeconds) * time.Second
 	}
 	return c.client.Delete().
 		Namespace(c.ns).
-		Resource("documents").
+		Resource("bootresources").
 		VersionedParams(&listOptions, scheme.ParameterCodec).
 		Timeout(timeout).
 		Body(options).
@@ -176,12 +176,12 @@ func (c *documents) DeleteCollection(options *v1.DeleteOptions, listOptions v1.L
 		Error()
 }
 
-// Patch applies the patch and returns the patched document.
-func (c *documents) Patch(name string, pt types.PatchType, data []byte, subresources ...string) (result *v1alpha1.BootResource, err error) {
+// Patch applies the patch and returns the patched bootResource.
+func (c *bootResources) Patch(name string, pt types.PatchType, data []byte, subresources ...string) (result *v1alpha1.BootResource, err error) {
 	result = &v1alpha1.BootResource{}
 	err = c.client.Patch(pt).
 		Namespace(c.ns).
-		Resource("documents").
+		Resource("bootresources").
 		SubResource(subresources...).
 		Name(name).
 		Body(data).

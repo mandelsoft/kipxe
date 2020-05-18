@@ -28,16 +28,20 @@ type FakeIpxeV1alpha1 struct {
 	*testing.Fake
 }
 
-func (c *FakeIpxeV1alpha1) Documents(namespace string) v1alpha1.DocumentInterface {
-	return &FakeDocuments{c, namespace}
+func (c *FakeIpxeV1alpha1) BootProfiles(namespace string) v1alpha1.BootProfileInterface {
+	return &FakeBootProfiles{c, namespace}
 }
 
-func (c *FakeIpxeV1alpha1) Matchers(namespace string) v1alpha1.MatcherInterface {
-	return &FakeMatchers{c, namespace}
+func (c *FakeIpxeV1alpha1) BootProfileMatchers(namespace string) v1alpha1.BootProfileMatcherInterface {
+	return &FakeBootProfileMatchers{c, namespace}
 }
 
-func (c *FakeIpxeV1alpha1) Profiles(namespace string) v1alpha1.ProfileInterface {
-	return &FakeProfiles{c, namespace}
+func (c *FakeIpxeV1alpha1) BootResources(namespace string) v1alpha1.BootResourceInterface {
+	return &FakeBootResources{c, namespace}
+}
+
+func (c *FakeIpxeV1alpha1) Machines(namespace string) v1alpha1.MachineInterface {
+	return &FakeMachines{c, namespace}
 }
 
 // RESTClient returns a RESTClient that is used to communicate

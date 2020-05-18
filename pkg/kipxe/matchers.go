@@ -24,23 +24,24 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/gardener/controller-manager-library/pkg/types/infodata/simple"
 	"k8s.io/apimachinery/pkg/labels"
 )
 
-type Matchers struct {
+type BootProfileMatchers struct {
 	lock     sync.RWMutex
-	elements map[string]*Matcher
-	nested   *Profiles
+	elements map[string]*BootProfileMatcher
+	nested   *BootProfiles
 }
 
-func NewMatchers(nested *Profiles) *Matchers {
-	return &Matchers{
-		elements: map[string]*Matcher{},
+func NewMatchers(nested *BootProfiles) *BootProfileMatchers {
+	return &BootProfileMatchers{
+		elements: map[string]*BootProfileMatcher{},
 		nested:   nested,
 	}
 }
 
-func (this *Matchers) Recheck(set NameSet) NameSet {
+func (this *BootProfileMatchers) Recheck(set NameSet) NameSet {
 	this.lock.Lock()
 	this.lock.Unlock()
 	recheck := NameSet{}
@@ -53,7 +54,7 @@ func (this *Matchers) Recheck(set NameSet) NameSet {
 	return recheck
 }
 
-func (this *Matchers) check(m *Matcher) error {
+func (this *BootProfileMatchers) check(m *BootProfileMatcher) error {
 	if e := this.nested.Get(m.profile); e != nil {
 		if e.Error() != nil {
 			return fmt.Errorf("profile %s: %s", e.Name(), e.Error())
@@ -64,7 +65,7 @@ func (this *Matchers) check(m *Matcher) error {
 	return nil
 }
 
-func (this *Matchers) Set(m *Matcher) error {
+func (this *BootProfileMatchers) Set(m *BootProfileMatcher) error {
 	this.lock.Lock()
 	defer this.lock.Unlock()
 
@@ -81,7 +82,7 @@ func (this *Matchers) Set(m *Matcher) error {
 	return m.error
 }
 
-func (this *Matchers) Delete(name Name) {
+func (this *BootProfileMatchers) Delete(name Name) {
 	this.lock.Lock()
 	defer this.lock.Unlock()
 
@@ -95,67 +96,79 @@ func (this *Matchers) Delete(name Name) {
 
 ////////////////////////////////////////////////////////////////////////////////
 
-type Matcher struct {
+type BootProfileMatcher struct {
 	Element
 	selector labels.Selector
+	mapping  *Mapping
+	values   simple.Values
 	profile  Name
 	weight   int
 }
 
-func NewMatcher(name Name, sel labels.Selector, profile Name, weight int) *Matcher {
-	return &Matcher{
+func NewMatcher(name Name, sel labels.Selector, mapping *Mapping, values simple.Values, profile Name, weight int) *BootProfileMatcher {
+	return &BootProfileMatcher{
 		Element:  NewElement(name),
 		selector: sel,
+		mapping:  mapping,
+		values:   values,
 		profile:  profile,
 		weight:   weight,
 	}
 }
 
-func (this Matcher) PreferOver(m *Matcher) bool {
+func (this BootProfileMatcher) PreferOver(m *BootProfileMatcher) bool {
 	return this.Weight() > m.Weight() ||
 		(this.Weight() == m.Weight() && strings.Compare(this.Key(), m.Key()) < 0)
 }
 
-func (this Matcher) Matches(labels labels.Labels) bool {
+func (this BootProfileMatcher) Matches(labels labels.Labels) bool {
 	return this.selector.Matches(labels)
 }
 
-func (this Matcher) Weight() int {
+func (this *BootProfileMatcher) GetMapping() *Mapping {
+	return this.mapping
+}
+
+func (this *BootProfileMatcher) GetValues() simple.Values {
+	return this.values
+}
+
+func (this BootProfileMatcher) Weight() int {
 	return this.weight
 }
 
-func (this Matcher) ProfileName() Name {
+func (this BootProfileMatcher) ProfileName() Name {
 	return this.profile
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 
-type MatcherSlice []*Matcher
+type BootProfileMatcherSlice []*BootProfileMatcher
 
-var _ sort.Interface = MatcherSlice{}
+var _ sort.Interface = BootProfileMatcherSlice{}
 
-func (s MatcherSlice) Len() int {
+func (s BootProfileMatcherSlice) Len() int {
 	return len(s)
 }
 
-func (s MatcherSlice) Less(i, j int) bool {
+func (s BootProfileMatcherSlice) Less(i, j int) bool {
 	return s[i].PreferOver(s[j])
 }
 
-func (s MatcherSlice) Swap(i, j int) {
+func (s BootProfileMatcherSlice) Swap(i, j int) {
 	s[i], s[j] = s[j], s[i]
 }
 
-func (this *Matchers) Match(labels labels.Labels) MatcherSlice {
+func (this *BootProfileMatchers) Match(labels labels.Labels) BootProfileMatcherSlice {
 	this.lock.RLock()
 	defer this.lock.RUnlock()
 
-	var found []*Matcher
+	var found []*BootProfileMatcher
 	for _, m := range this.elements {
 		if m.Matches(labels) {
 			found = append(found, m)
 		}
 	}
-	sort.Sort(MatcherSlice(found))
+	sort.Sort(BootProfileMatcherSlice(found))
 	return found
 }

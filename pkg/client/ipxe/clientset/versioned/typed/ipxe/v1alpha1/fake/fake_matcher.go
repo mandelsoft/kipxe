@@ -36,23 +36,23 @@ type FakeMatchers struct {
 
 var matchersResource = schema.GroupVersionResource{Group: "ipxe.mandelsoft.org", Version: "v1alpha1", Resource: "matchers"}
 
-var matchersKind = schema.GroupVersionKind{Group: "ipxe.mandelsoft.org", Version: "v1alpha1", Kind: "Matcher"}
+var matchersKind = schema.GroupVersionKind{Group: "ipxe.mandelsoft.org", Version: "v1alpha1", Kind: "BootProfileMatcher"}
 
 // Get takes name of the matcher, and returns the corresponding matcher object, and an error if there is any.
-func (c *FakeMatchers) Get(name string, options v1.GetOptions) (result *v1alpha1.Matcher, err error) {
+func (c *FakeMatchers) Get(name string, options v1.GetOptions) (result *v1alpha1.BootProfileMatcher, err error) {
 	obj, err := c.Fake.
-		Invokes(testing.NewGetAction(matchersResource, c.ns, name), &v1alpha1.Matcher{})
+		Invokes(testing.NewGetAction(matchersResource, c.ns, name), &v1alpha1.BootProfileMatcher{})
 
 	if obj == nil {
 		return nil, err
 	}
-	return obj.(*v1alpha1.Matcher), err
+	return obj.(*v1alpha1.BootProfileMatcher), err
 }
 
 // List takes label and field selectors, and returns the list of Matchers that match those selectors.
-func (c *FakeMatchers) List(opts v1.ListOptions) (result *v1alpha1.MatcherList, err error) {
+func (c *FakeMatchers) List(opts v1.ListOptions) (result *v1alpha1.BootProfileMatcherList, err error) {
 	obj, err := c.Fake.
-		Invokes(testing.NewListAction(matchersResource, matchersKind, c.ns, opts), &v1alpha1.MatcherList{})
+		Invokes(testing.NewListAction(matchersResource, matchersKind, c.ns, opts), &v1alpha1.BootProfileMatcherList{})
 
 	if obj == nil {
 		return nil, err
@@ -62,8 +62,8 @@ func (c *FakeMatchers) List(opts v1.ListOptions) (result *v1alpha1.MatcherList, 
 	if label == nil {
 		label = labels.Everything()
 	}
-	list := &v1alpha1.MatcherList{ListMeta: obj.(*v1alpha1.MatcherList).ListMeta}
-	for _, item := range obj.(*v1alpha1.MatcherList).Items {
+	list := &v1alpha1.BootProfileMatcherList{ListMeta: obj.(*v1alpha1.BootProfileMatcherList).ListMeta}
+	for _, item := range obj.(*v1alpha1.BootProfileMatcherList).Items {
 		if label.Matches(labels.Set(item.Labels)) {
 			list.Items = append(list.Items, item)
 		}
@@ -79,43 +79,43 @@ func (c *FakeMatchers) Watch(opts v1.ListOptions) (watch.Interface, error) {
 }
 
 // Create takes the representation of a matcher and creates it.  Returns the server's representation of the matcher, and an error, if there is any.
-func (c *FakeMatchers) Create(matcher *v1alpha1.Matcher) (result *v1alpha1.Matcher, err error) {
+func (c *FakeMatchers) Create(matcher *v1alpha1.BootProfileMatcher) (result *v1alpha1.BootProfileMatcher, err error) {
 	obj, err := c.Fake.
-		Invokes(testing.NewCreateAction(matchersResource, c.ns, matcher), &v1alpha1.Matcher{})
+		Invokes(testing.NewCreateAction(matchersResource, c.ns, matcher), &v1alpha1.BootProfileMatcher{})
 
 	if obj == nil {
 		return nil, err
 	}
-	return obj.(*v1alpha1.Matcher), err
+	return obj.(*v1alpha1.BootProfileMatcher), err
 }
 
 // Update takes the representation of a matcher and updates it. Returns the server's representation of the matcher, and an error, if there is any.
-func (c *FakeMatchers) Update(matcher *v1alpha1.Matcher) (result *v1alpha1.Matcher, err error) {
+func (c *FakeMatchers) Update(matcher *v1alpha1.BootProfileMatcher) (result *v1alpha1.BootProfileMatcher, err error) {
 	obj, err := c.Fake.
-		Invokes(testing.NewUpdateAction(matchersResource, c.ns, matcher), &v1alpha1.Matcher{})
+		Invokes(testing.NewUpdateAction(matchersResource, c.ns, matcher), &v1alpha1.BootProfileMatcher{})
 
 	if obj == nil {
 		return nil, err
 	}
-	return obj.(*v1alpha1.Matcher), err
+	return obj.(*v1alpha1.BootProfileMatcher), err
 }
 
 // UpdateStatus was generated because the type contains a Status member.
 // Add a +genclient:noStatus comment above the type to avoid generating UpdateStatus().
-func (c *FakeMatchers) UpdateStatus(matcher *v1alpha1.Matcher) (*v1alpha1.Matcher, error) {
+func (c *FakeMatchers) UpdateStatus(matcher *v1alpha1.BootProfileMatcher) (*v1alpha1.BootProfileMatcher, error) {
 	obj, err := c.Fake.
-		Invokes(testing.NewUpdateSubresourceAction(matchersResource, "status", c.ns, matcher), &v1alpha1.Matcher{})
+		Invokes(testing.NewUpdateSubresourceAction(matchersResource, "status", c.ns, matcher), &v1alpha1.BootProfileMatcher{})
 
 	if obj == nil {
 		return nil, err
 	}
-	return obj.(*v1alpha1.Matcher), err
+	return obj.(*v1alpha1.BootProfileMatcher), err
 }
 
 // Delete takes name of the matcher and deletes it. Returns an error if one occurs.
 func (c *FakeMatchers) Delete(name string, options *v1.DeleteOptions) error {
 	_, err := c.Fake.
-		Invokes(testing.NewDeleteAction(matchersResource, c.ns, name), &v1alpha1.Matcher{})
+		Invokes(testing.NewDeleteAction(matchersResource, c.ns, name), &v1alpha1.BootProfileMatcher{})
 
 	return err
 }
@@ -124,17 +124,17 @@ func (c *FakeMatchers) Delete(name string, options *v1.DeleteOptions) error {
 func (c *FakeMatchers) DeleteCollection(options *v1.DeleteOptions, listOptions v1.ListOptions) error {
 	action := testing.NewDeleteCollectionAction(matchersResource, c.ns, listOptions)
 
-	_, err := c.Fake.Invokes(action, &v1alpha1.MatcherList{})
+	_, err := c.Fake.Invokes(action, &v1alpha1.BootProfileMatcherList{})
 	return err
 }
 
 // Patch applies the patch and returns the patched matcher.
-func (c *FakeMatchers) Patch(name string, pt types.PatchType, data []byte, subresources ...string) (result *v1alpha1.Matcher, err error) {
+func (c *FakeMatchers) Patch(name string, pt types.PatchType, data []byte, subresources ...string) (result *v1alpha1.BootProfileMatcher, err error) {
 	obj, err := c.Fake.
-		Invokes(testing.NewPatchSubresourceAction(matchersResource, c.ns, name, pt, data, subresources...), &v1alpha1.Matcher{})
+		Invokes(testing.NewPatchSubresourceAction(matchersResource, c.ns, name, pt, data, subresources...), &v1alpha1.BootProfileMatcher{})
 
 	if obj == nil {
 		return nil, err
 	}
-	return obj.(*v1alpha1.Matcher), err
+	return obj.(*v1alpha1.BootProfileMatcher), err
 }

@@ -29,14 +29,14 @@ import (
 	rest "k8s.io/client-go/rest"
 )
 
-// MatchersGetter has a method to return a MatcherInterface.
+// BootProfileMatchersGetter has a method to return a BootProfileMatcherInterface.
 // A group's client should implement this interface.
-type MatchersGetter interface {
-	Matchers(namespace string) MatcherInterface
+type BootProfileMatchersGetter interface {
+	BootProfileMatchers(namespace string) BootProfileMatcherInterface
 }
 
-// MatcherInterface has methods to work with BootProfileMatcher resources.
-type MatcherInterface interface {
+// BootProfileMatcherInterface has methods to work with BootProfileMatcher resources.
+type BootProfileMatcherInterface interface {
 	Create(*v1alpha1.BootProfileMatcher) (*v1alpha1.BootProfileMatcher, error)
 	Update(*v1alpha1.BootProfileMatcher) (*v1alpha1.BootProfileMatcher, error)
 	UpdateStatus(*v1alpha1.BootProfileMatcher) (*v1alpha1.BootProfileMatcher, error)
@@ -46,29 +46,29 @@ type MatcherInterface interface {
 	List(opts v1.ListOptions) (*v1alpha1.BootProfileMatcherList, error)
 	Watch(opts v1.ListOptions) (watch.Interface, error)
 	Patch(name string, pt types.PatchType, data []byte, subresources ...string) (result *v1alpha1.BootProfileMatcher, err error)
-	MatcherExpansion
+	BootProfileMatcherExpansion
 }
 
-// matchers implements MatcherInterface
-type matchers struct {
+// bootProfileMatchers implements BootProfileMatcherInterface
+type bootProfileMatchers struct {
 	client rest.Interface
 	ns     string
 }
 
-// newMatchers returns a Matchers
-func newMatchers(c *IpxeV1alpha1Client, namespace string) *matchers {
-	return &matchers{
+// newBootProfileMatchers returns a BootProfileMatchers
+func newBootProfileMatchers(c *IpxeV1alpha1Client, namespace string) *bootProfileMatchers {
+	return &bootProfileMatchers{
 		client: c.RESTClient(),
 		ns:     namespace,
 	}
 }
 
-// Get takes name of the matcher, and returns the corresponding matcher object, and an error if there is any.
-func (c *matchers) Get(name string, options v1.GetOptions) (result *v1alpha1.BootProfileMatcher, err error) {
+// Get takes name of the bootProfileMatcher, and returns the corresponding bootProfileMatcher object, and an error if there is any.
+func (c *bootProfileMatchers) Get(name string, options v1.GetOptions) (result *v1alpha1.BootProfileMatcher, err error) {
 	result = &v1alpha1.BootProfileMatcher{}
 	err = c.client.Get().
 		Namespace(c.ns).
-		Resource("matchers").
+		Resource("bootprofilematchers").
 		Name(name).
 		VersionedParams(&options, scheme.ParameterCodec).
 		Do().
@@ -76,8 +76,8 @@ func (c *matchers) Get(name string, options v1.GetOptions) (result *v1alpha1.Boo
 	return
 }
 
-// List takes label and field selectors, and returns the list of Matchers that match those selectors.
-func (c *matchers) List(opts v1.ListOptions) (result *v1alpha1.BootProfileMatcherList, err error) {
+// List takes label and field selectors, and returns the list of BootProfileMatchers that match those selectors.
+func (c *bootProfileMatchers) List(opts v1.ListOptions) (result *v1alpha1.BootProfileMatcherList, err error) {
 	var timeout time.Duration
 	if opts.TimeoutSeconds != nil {
 		timeout = time.Duration(*opts.TimeoutSeconds) * time.Second
@@ -85,7 +85,7 @@ func (c *matchers) List(opts v1.ListOptions) (result *v1alpha1.BootProfileMatche
 	result = &v1alpha1.BootProfileMatcherList{}
 	err = c.client.Get().
 		Namespace(c.ns).
-		Resource("matchers").
+		Resource("bootprofilematchers").
 		VersionedParams(&opts, scheme.ParameterCodec).
 		Timeout(timeout).
 		Do().
@@ -93,8 +93,8 @@ func (c *matchers) List(opts v1.ListOptions) (result *v1alpha1.BootProfileMatche
 	return
 }
 
-// Watch returns a watch.Interface that watches the requested matchers.
-func (c *matchers) Watch(opts v1.ListOptions) (watch.Interface, error) {
+// Watch returns a watch.Interface that watches the requested bootProfileMatchers.
+func (c *bootProfileMatchers) Watch(opts v1.ListOptions) (watch.Interface, error) {
 	var timeout time.Duration
 	if opts.TimeoutSeconds != nil {
 		timeout = time.Duration(*opts.TimeoutSeconds) * time.Second
@@ -102,32 +102,32 @@ func (c *matchers) Watch(opts v1.ListOptions) (watch.Interface, error) {
 	opts.Watch = true
 	return c.client.Get().
 		Namespace(c.ns).
-		Resource("matchers").
+		Resource("bootprofilematchers").
 		VersionedParams(&opts, scheme.ParameterCodec).
 		Timeout(timeout).
 		Watch()
 }
 
-// Create takes the representation of a matcher and creates it.  Returns the server's representation of the matcher, and an error, if there is any.
-func (c *matchers) Create(matcher *v1alpha1.BootProfileMatcher) (result *v1alpha1.BootProfileMatcher, err error) {
+// Create takes the representation of a bootProfileMatcher and creates it.  Returns the server's representation of the bootProfileMatcher, and an error, if there is any.
+func (c *bootProfileMatchers) Create(bootProfileMatcher *v1alpha1.BootProfileMatcher) (result *v1alpha1.BootProfileMatcher, err error) {
 	result = &v1alpha1.BootProfileMatcher{}
 	err = c.client.Post().
 		Namespace(c.ns).
-		Resource("matchers").
-		Body(matcher).
+		Resource("bootprofilematchers").
+		Body(bootProfileMatcher).
 		Do().
 		Into(result)
 	return
 }
 
-// Update takes the representation of a matcher and updates it. Returns the server's representation of the matcher, and an error, if there is any.
-func (c *matchers) Update(matcher *v1alpha1.BootProfileMatcher) (result *v1alpha1.BootProfileMatcher, err error) {
+// Update takes the representation of a bootProfileMatcher and updates it. Returns the server's representation of the bootProfileMatcher, and an error, if there is any.
+func (c *bootProfileMatchers) Update(bootProfileMatcher *v1alpha1.BootProfileMatcher) (result *v1alpha1.BootProfileMatcher, err error) {
 	result = &v1alpha1.BootProfileMatcher{}
 	err = c.client.Put().
 		Namespace(c.ns).
-		Resource("matchers").
-		Name(matcher.Name).
-		Body(matcher).
+		Resource("bootprofilematchers").
+		Name(bootProfileMatcher.Name).
+		Body(bootProfileMatcher).
 		Do().
 		Into(result)
 	return
@@ -136,24 +136,24 @@ func (c *matchers) Update(matcher *v1alpha1.BootProfileMatcher) (result *v1alpha
 // UpdateStatus was generated because the type contains a Status member.
 // Add a +genclient:noStatus comment above the type to avoid generating UpdateStatus().
 
-func (c *matchers) UpdateStatus(matcher *v1alpha1.BootProfileMatcher) (result *v1alpha1.BootProfileMatcher, err error) {
+func (c *bootProfileMatchers) UpdateStatus(bootProfileMatcher *v1alpha1.BootProfileMatcher) (result *v1alpha1.BootProfileMatcher, err error) {
 	result = &v1alpha1.BootProfileMatcher{}
 	err = c.client.Put().
 		Namespace(c.ns).
-		Resource("matchers").
-		Name(matcher.Name).
+		Resource("bootprofilematchers").
+		Name(bootProfileMatcher.Name).
 		SubResource("status").
-		Body(matcher).
+		Body(bootProfileMatcher).
 		Do().
 		Into(result)
 	return
 }
 
-// Delete takes name of the matcher and deletes it. Returns an error if one occurs.
-func (c *matchers) Delete(name string, options *v1.DeleteOptions) error {
+// Delete takes name of the bootProfileMatcher and deletes it. Returns an error if one occurs.
+func (c *bootProfileMatchers) Delete(name string, options *v1.DeleteOptions) error {
 	return c.client.Delete().
 		Namespace(c.ns).
-		Resource("matchers").
+		Resource("bootprofilematchers").
 		Name(name).
 		Body(options).
 		Do().
@@ -161,14 +161,14 @@ func (c *matchers) Delete(name string, options *v1.DeleteOptions) error {
 }
 
 // DeleteCollection deletes a collection of objects.
-func (c *matchers) DeleteCollection(options *v1.DeleteOptions, listOptions v1.ListOptions) error {
+func (c *bootProfileMatchers) DeleteCollection(options *v1.DeleteOptions, listOptions v1.ListOptions) error {
 	var timeout time.Duration
 	if listOptions.TimeoutSeconds != nil {
 		timeout = time.Duration(*listOptions.TimeoutSeconds) * time.Second
 	}
 	return c.client.Delete().
 		Namespace(c.ns).
-		Resource("matchers").
+		Resource("bootprofilematchers").
 		VersionedParams(&listOptions, scheme.ParameterCodec).
 		Timeout(timeout).
 		Body(options).
@@ -176,12 +176,12 @@ func (c *matchers) DeleteCollection(options *v1.DeleteOptions, listOptions v1.Li
 		Error()
 }
 
-// Patch applies the patch and returns the patched matcher.
-func (c *matchers) Patch(name string, pt types.PatchType, data []byte, subresources ...string) (result *v1alpha1.BootProfileMatcher, err error) {
+// Patch applies the patch and returns the patched bootProfileMatcher.
+func (c *bootProfileMatchers) Patch(name string, pt types.PatchType, data []byte, subresources ...string) (result *v1alpha1.BootProfileMatcher, err error) {
 	result = &v1alpha1.BootProfileMatcher{}
 	err = c.client.Patch(pt).
 		Namespace(c.ns).
-		Resource("matchers").
+		Resource("bootprofilematchers").
 		SubResource(subresources...).
 		Name(name).
 		Body(data).

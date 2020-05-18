@@ -34,14 +34,239 @@ metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.2.4
   creationTimestamp: null
-  name: documents.ipxe.mandelsoft.org
+  name: bootprofilematchers.ipxe.mandelsoft.org
 spec:
   group: ipxe.mandelsoft.org
   names:
-    kind: Document
-    listKind: DocumentList
-    plural: documents
-    singular: document
+    kind: BootProfileMatcher
+    listKind: BootProfileMatcherList
+    plural: bootprofilematchers
+    shortNames:
+    - bmatch
+    singular: bootprofilematcher
+  scope: Namespaced
+  versions:
+  - additionalPrinterColumns:
+    - jsonPath: .spec.profileName
+      name: Profile
+      type: string
+    - jsonPath: .status.state
+      name: State
+      type: string
+    name: v1alpha1
+    schema:
+      openAPIV3Schema:
+        properties:
+          apiVersion:
+            description: 'APIVersion defines the versioned schema of this representation
+              of an object. Servers should convert recognized schemas to the latest
+              internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+            type: string
+          kind:
+            description: 'Kind is a string value representing the REST resource this
+              object represents. Servers may infer this from the endpoint the client
+              submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+            type: string
+          metadata:
+            type: object
+          spec:
+            properties:
+              mapping:
+                description: Values is a workarround for kubebuilder to be able to
+                  generate an API spec. The Values MUST be marked with "-" to avoud
+                  errors.
+                type: object
+                x-kubernetes-preserve-unknown-fields: true
+              profileName:
+                type: string
+              selector:
+                description: A label selector is a label query over a set of resources.
+                  The result of matchLabels and matchExpressions are ANDed. An empty
+                  label selector matches all objects. A null label selector matches
+                  no objects.
+                properties:
+                  matchExpressions:
+                    description: matchExpressions is a list of label selector requirements.
+                      The requirements are ANDed.
+                    items:
+                      description: A label selector requirement is a selector that
+                        contains values, a key, and an operator that relates the key
+                        and values.
+                      properties:
+                        key:
+                          description: key is the label key that the selector applies
+                            to.
+                          type: string
+                        operator:
+                          description: operator represents a key's relationship to
+                            a set of values. Valid operators are In, NotIn, Exists
+                            and DoesNotExist.
+                          type: string
+                        values:
+                          description: values is an array of string values. If the
+                            operator is In or NotIn, the values array must be non-empty.
+                            If the operator is Exists or DoesNotExist, the values
+                            array must be empty. This array is replaced during a strategic
+                            merge patch.
+                          items:
+                            type: string
+                          type: array
+                      required:
+                      - key
+                      - operator
+                      type: object
+                    type: array
+                  matchLabels:
+                    additionalProperties:
+                      type: string
+                    description: matchLabels is a map of {key,value} pairs. A single
+                      {key,value} in the matchLabels map is equivalent to an element
+                      of matchExpressions, whose key field is "key", the operator
+                      is "In", and the values array contains only "value". The requirements
+                      are ANDed.
+                    type: object
+                type: object
+              values:
+                description: Values is a workarround for kubebuilder to be able to
+                  generate an API spec. The Values MUST be marked with "-" to avoud
+                  errors.
+                type: object
+              weight:
+                type: integer
+            required:
+            - profileName
+            type: object
+          status:
+            properties:
+              message:
+                type: string
+              state:
+                type: string
+            type: object
+        required:
+        - spec
+        type: object
+    served: true
+    storage: true
+    subresources:
+      status: {}
+status:
+  acceptedNames:
+    kind: ""
+    plural: ""
+  conditions: []
+  storedVersions: []
+  `
+	utils.Must(registry.RegisterCRD(data))
+	data = `
+
+---
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  annotations:
+    controller-gen.kubebuilder.io/version: v0.2.4
+  creationTimestamp: null
+  name: bootprofiles.ipxe.mandelsoft.org
+spec:
+  group: ipxe.mandelsoft.org
+  names:
+    kind: BootProfile
+    listKind: BootProfileList
+    plural: bootprofiles
+    shortNames:
+    - bprof
+    singular: bootprofile
+  scope: Namespaced
+  versions:
+  - additionalPrinterColumns:
+    - jsonPath: .status.state
+      name: State
+      type: string
+    name: v1alpha1
+    schema:
+      openAPIV3Schema:
+        properties:
+          apiVersion:
+            description: 'APIVersion defines the versioned schema of this representation
+              of an object. Servers should convert recognized schemas to the latest
+              internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+            type: string
+          kind:
+            description: 'Kind is a string value representing the REST resource this
+              object represents. Servers may infer this from the endpoint the client
+              submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+            type: string
+          metadata:
+            type: object
+          spec:
+            properties:
+              mapping:
+                description: Values is a workarround for kubebuilder to be able to
+                  generate an API spec. The Values MUST be marked with "-" to avoud
+                  errors.
+                type: object
+                x-kubernetes-preserve-unknown-fields: true
+              resources:
+                items:
+                  properties:
+                    documentName:
+                      type: string
+                    path:
+                      type: string
+                  required:
+                  - documentName
+                  - path
+                  type: object
+                type: array
+              values:
+                description: Values is a workarround for kubebuilder to be able to
+                  generate an API spec. The Values MUST be marked with "-" to avoud
+                  errors.
+                type: object
+                x-kubernetes-preserve-unknown-fields: true
+            type: object
+          status:
+            properties:
+              message:
+                type: string
+              state:
+                type: string
+            type: object
+        required:
+        - spec
+        type: object
+    served: true
+    storage: true
+    subresources:
+      status: {}
+status:
+  acceptedNames:
+    kind: ""
+    plural: ""
+  conditions: []
+  storedVersions: []
+  `
+	utils.Must(registry.RegisterCRD(data))
+	data = `
+
+---
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  annotations:
+    controller-gen.kubebuilder.io/version: v0.2.4
+  creationTimestamp: null
+  name: bootresources.ipxe.mandelsoft.org
+spec:
+  group: ipxe.mandelsoft.org
+  names:
+    kind: BootResource
+    listKind: BootResourceList
+    plural: bootresources
+    shortNames:
+    - bresc
+    singular: bootresource
   scope: Namespaced
   versions:
   - additionalPrinterColumns:
@@ -119,17 +344,22 @@ metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.2.4
   creationTimestamp: null
-  name: matchers.ipxe.mandelsoft.org
+  name: machines.ipxe.mandelsoft.org
 spec:
   group: ipxe.mandelsoft.org
   names:
-    kind: Matcher
-    listKind: MatcherList
-    plural: matchers
-    singular: matcher
+    kind: Machine
+    listKind: MachineList
+    plural: machines
+    shortNames:
+    - mach
+    singular: machine
   scope: Namespaced
   versions:
   - additionalPrinterColumns:
+    - jsonPath: .spec.uuid
+      name: UUID
+      type: string
     - jsonPath: .status.state
       name: State
       type: string
@@ -151,139 +381,15 @@ spec:
             type: object
           spec:
             properties:
-              profileName:
-                type: string
-              selector:
-                description: A label selector is a label query over a set of resources.
-                  The result of matchLabels and matchExpressions are ANDed. An empty
-                  label selector matches all objects. A null label selector matches
-                  no objects.
-                properties:
-                  matchExpressions:
-                    description: matchExpressions is a list of label selector requirements.
-                      The requirements are ANDed.
-                    items:
-                      description: A label selector requirement is a selector that
-                        contains values, a key, and an operator that relates the key
-                        and values.
-                      properties:
-                        key:
-                          description: key is the label key that the selector applies
-                            to.
-                          type: string
-                        operator:
-                          description: operator represents a key's relationship to
-                            a set of values. Valid operators are In, NotIn, Exists
-                            and DoesNotExist.
-                          type: string
-                        values:
-                          description: values is an array of string values. If the
-                            operator is In or NotIn, the values array must be non-empty.
-                            If the operator is Exists or DoesNotExist, the values
-                            array must be empty. This array is replaced during a strategic
-                            merge patch.
-                          items:
-                            type: string
-                          type: array
-                      required:
-                      - key
-                      - operator
-                      type: object
-                    type: array
-                  matchLabels:
-                    additionalProperties:
-                      type: string
-                    description: matchLabels is a map of {key,value} pairs. A single
-                      {key,value} in the matchLabels map is equivalent to an element
-                      of matchExpressions, whose key field is "key", the operator
-                      is "In", and the values array contains only "value". The requirements
-                      are ANDed.
-                    type: object
-                type: object
-            required:
-            - profileName
-            type: object
-          status:
-            properties:
-              message:
-                type: string
-              state:
-                type: string
-            type: object
-        required:
-        - spec
-        type: object
-    served: true
-    storage: true
-    subresources:
-      status: {}
-status:
-  acceptedNames:
-    kind: ""
-    plural: ""
-  conditions: []
-  storedVersions: []
-  `
-	utils.Must(registry.RegisterCRD(data))
-	data = `
-
----
-apiVersion: apiextensions.k8s.io/v1
-kind: CustomResourceDefinition
-metadata:
-  annotations:
-    controller-gen.kubebuilder.io/version: v0.2.4
-  creationTimestamp: null
-  name: profiles.ipxe.mandelsoft.org
-spec:
-  group: ipxe.mandelsoft.org
-  names:
-    kind: Profile
-    listKind: ProfileList
-    plural: profiles
-    singular: profile
-  scope: Namespaced
-  versions:
-  - additionalPrinterColumns:
-    - jsonPath: .status.state
-      name: State
-      type: string
-    name: v1alpha1
-    schema:
-      openAPIV3Schema:
-        properties:
-          apiVersion:
-            description: 'APIVersion defines the versioned schema of this representation
-              of an object. Servers should convert recognized schemas to the latest
-              internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
-            type: string
-          kind:
-            description: 'Kind is a string value representing the REST resource this
-              object represents. Servers may infer this from the endpoint the client
-              submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
-            type: string
-          metadata:
-            type: object
-          spec:
-            properties:
-              mapping:
-                description: Values is a workarround for kubebuilder to be able to
-                  generate an API spec. The Values MUST be marked with "-" to avoud
-                  errors.
+              macs:
+                additionalProperties:
+                  items:
+                    type: string
+                  type: array
                 type: object
                 x-kubernetes-preserve-unknown-fields: true
-              resources:
-                items:
-                  properties:
-                    documentName:
-                      type: string
-                    path:
-                      type: string
-                  required:
-                  - documentName
-                  - path
-                  type: object
-                type: array
+              uuid:
+                type: string
               values:
                 description: Values is a workarround for kubebuilder to be able to
                   generate an API spec. The Values MUST be marked with "-" to avoud

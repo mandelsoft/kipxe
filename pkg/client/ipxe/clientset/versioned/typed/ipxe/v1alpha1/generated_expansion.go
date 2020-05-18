@@ -18,8 +18,10 @@ limitations under the License.
 
 package v1alpha1
 
-type DocumentExpansion interface{}
+type BootProfileExpansion interface{}
 
-type MatcherExpansion interface{}
+type BootProfileMatcherExpansion interface{}
 
-type ProfileExpansion interface{}
+type BootResourceExpansion interface{}
+
+type MachineExpansion interface{}

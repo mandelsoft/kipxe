@@ -30,19 +30,19 @@ import (
 	"github.com/mandelsoft/kipxe/pkg/kipxe"
 )
 
-type Profiles struct {
+type BootProfiles struct {
 	ResourceCache
-	elements *kipxe.Profiles
+	elements *kipxe.BootProfiles
 }
 
-func newProfiles(infobase *InfoBase) *Profiles {
-	return &Profiles{
-		ResourceCache: NewResourceCache(infobase, &v1alpha1.Profile{}),
-		elements:      kipxe.NewProfiles(infobase.documents.elements),
+func newProfiles(infobase *InfoBase) *BootProfiles {
+	return &BootProfiles{
+		ResourceCache: NewResourceCache(infobase, &v1alpha1.BootProfile{}),
+		elements:      kipxe.NewProfiles(infobase.resources.elements),
 	}
 }
 
-func (this *Profiles) Setup(logger logger.LogContext) {
+func (this *BootProfiles) Setup(logger logger.LogContext) {
 	if this.initialized {
 		return
 	}
@@ -63,18 +63,18 @@ func (this *Profiles) Setup(logger logger.LogContext) {
 	}
 }
 
-func (this *Profiles) recheckUsers(logger logger.LogContext, users kipxe.NameSet) {
+func (this *BootProfiles) recheckUsers(logger logger.LogContext, users kipxe.NameSet) {
 	logger.Infof("found users: %s", users)
 	this.matchers.Recheck(users)
 }
 
-func (this *Profiles) Recheck(users kipxe.NameSet) {
+func (this *BootProfiles) Recheck(users kipxe.NameSet) {
 	this.EnqueueAll(users, v1alpha1.PROFILE)
 	this.elements.Recheck(users)
 }
 
-func (this *Profiles) Update(logger logger.LogContext, obj resources.Object) (*kipxe.Profile, error) {
-	m, err := NewProfile(obj.Data().(*v1alpha1.Profile))
+func (this *BootProfiles) Update(logger logger.LogContext, obj resources.Object) (*kipxe.BootProfile, error) {
+	m, err := NewProfile(obj.Data().(*v1alpha1.BootProfile))
 	if err == nil {
 		var users kipxe.NameSet
 		users, err = this.elements.Set(m)
@@ -84,7 +84,7 @@ func (this *Profiles) Update(logger logger.LogContext, obj resources.Object) (*k
 		this.recheckUsers(logger, this.elements.Delete(obj.ObjectName()))
 		logger.Errorf("invalid profile: %s", err)
 		_, err2 := resources.ModifyStatus(obj, func(mod *resources.ModificationState) error {
-			m := mod.Data().(*v1alpha1.Profile)
+			m := mod.Data().(*v1alpha1.BootProfile)
 			mod.AssureStringValue(&m.Status.State, v1alpha1.STATE_INVALID)
 			mod.AssureStringValue(&m.Status.Message, err.Error())
 			return nil
@@ -92,7 +92,7 @@ func (this *Profiles) Update(logger logger.LogContext, obj resources.Object) (*k
 		return nil, err2
 	}
 	_, err = resources.ModifyStatus(obj, func(mod *resources.ModificationState) error {
-		m := mod.Data().(*v1alpha1.Profile)
+		m := mod.Data().(*v1alpha1.BootProfile)
 		mod.AssureStringValue(&m.Status.State, v1alpha1.STATE_READY)
 		mod.AssureStringValue(&m.Status.Message, "profile ok")
 		return nil
@@ -100,11 +100,11 @@ func (this *Profiles) Update(logger logger.LogContext, obj resources.Object) (*k
 	return m, err
 }
 
-func (this *Profiles) Delete(logger logger.LogContext, name resources.ObjectName) {
+func (this *BootProfiles) Delete(logger logger.LogContext, name resources.ObjectName) {
 	this.recheckUsers(logger, this.elements.Delete(name))
 }
 
-func NewProfile(m *v1alpha1.Profile) (*kipxe.Profile, error) {
+func NewProfile(m *v1alpha1.BootProfile) (*kipxe.BootProfile, error) {
 	name := resources.NewObjectName(m.Namespace, m.Name)
 	deliverables := []*kipxe.Deliverable{}
 	for i, r := range m.Spec.Resources {

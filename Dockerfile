@@ -12,7 +12,7 @@ RUN make $TARGETS
 FROM alpine:3.11.3 AS base
 
 #############      kipxe     #############
-FROM base AS kubelink
+FROM base AS kipxe
 
 WORKDIR /
 

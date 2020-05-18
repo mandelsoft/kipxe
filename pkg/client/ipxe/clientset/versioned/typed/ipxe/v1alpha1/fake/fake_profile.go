@@ -36,23 +36,23 @@ type FakeProfiles struct {
 
 var profilesResource = schema.GroupVersionResource{Group: "ipxe.mandelsoft.org", Version: "v1alpha1", Resource: "profiles"}
 
-var profilesKind = schema.GroupVersionKind{Group: "ipxe.mandelsoft.org", Version: "v1alpha1", Kind: "Profile"}
+var profilesKind = schema.GroupVersionKind{Group: "ipxe.mandelsoft.org", Version: "v1alpha1", Kind: "BootProfile"}
 
 // Get takes name of the profile, and returns the corresponding profile object, and an error if there is any.
-func (c *FakeProfiles) Get(name string, options v1.GetOptions) (result *v1alpha1.Profile, err error) {
+func (c *FakeProfiles) Get(name string, options v1.GetOptions) (result *v1alpha1.BootProfile, err error) {
 	obj, err := c.Fake.
-		Invokes(testing.NewGetAction(profilesResource, c.ns, name), &v1alpha1.Profile{})
+		Invokes(testing.NewGetAction(profilesResource, c.ns, name), &v1alpha1.BootProfile{})
 
 	if obj == nil {
 		return nil, err
 	}
-	return obj.(*v1alpha1.Profile), err
+	return obj.(*v1alpha1.BootProfile), err
 }
 
 // List takes label and field selectors, and returns the list of Profiles that match those selectors.
-func (c *FakeProfiles) List(opts v1.ListOptions) (result *v1alpha1.ProfileList, err error) {
+func (c *FakeProfiles) List(opts v1.ListOptions) (result *v1alpha1.BootProfileList, err error) {
 	obj, err := c.Fake.
-		Invokes(testing.NewListAction(profilesResource, profilesKind, c.ns, opts), &v1alpha1.ProfileList{})
+		Invokes(testing.NewListAction(profilesResource, profilesKind, c.ns, opts), &v1alpha1.BootProfileList{})
 
 	if obj == nil {
 		return nil, err
@@ -62,8 +62,8 @@ func (c *FakeProfiles) List(opts v1.ListOptions) (result *v1alpha1.ProfileList, 
 	if label == nil {
 		label = labels.Everything()
 	}
-	list := &v1alpha1.ProfileList{ListMeta: obj.(*v1alpha1.ProfileList).ListMeta}
-	for _, item := range obj.(*v1alpha1.ProfileList).Items {
+	list := &v1alpha1.BootProfileList{ListMeta: obj.(*v1alpha1.BootProfileList).ListMeta}
+	for _, item := range obj.(*v1alpha1.BootProfileList).Items {
 		if label.Matches(labels.Set(item.Labels)) {
 			list.Items = append(list.Items, item)
 		}
@@ -79,43 +79,43 @@ func (c *FakeProfiles) Watch(opts v1.ListOptions) (watch.Interface, error) {
 }
 
 // Create takes the representation of a profile and creates it.  Returns the server's representation of the profile, and an error, if there is any.
-func (c *FakeProfiles) Create(profile *v1alpha1.Profile) (result *v1alpha1.Profile, err error) {
+func (c *FakeProfiles) Create(profile *v1alpha1.BootProfile) (result *v1alpha1.BootProfile, err error) {
 	obj, err := c.Fake.
-		Invokes(testing.NewCreateAction(profilesResource, c.ns, profile), &v1alpha1.Profile{})
+		Invokes(testing.NewCreateAction(profilesResource, c.ns, profile), &v1alpha1.BootProfile{})
 
 	if obj == nil {
 		return nil, err
 	}
-	return obj.(*v1alpha1.Profile), err
+	return obj.(*v1alpha1.BootProfile), err
 }
 
 // Update takes the representation of a profile and updates it. Returns the server's representation of the profile, and an error, if there is any.
-func (c *FakeProfiles) Update(profile *v1alpha1.Profile) (result *v1alpha1.Profile, err error) {
+func (c *FakeProfiles) Update(profile *v1alpha1.BootProfile) (result *v1alpha1.BootProfile, err error) {
 	obj, err := c.Fake.
-		Invokes(testing.NewUpdateAction(profilesResource, c.ns, profile), &v1alpha1.Profile{})
+		Invokes(testing.NewUpdateAction(profilesResource, c.ns, profile), &v1alpha1.BootProfile{})
 
 	if obj == nil {
 		return nil, err
 	}
-	return obj.(*v1alpha1.Profile), err
+	return obj.(*v1alpha1.BootProfile), err
 }
 
 // UpdateStatus was generated because the type contains a Status member.
 // Add a +genclient:noStatus comment above the type to avoid generating UpdateStatus().
-func (c *FakeProfiles) UpdateStatus(profile *v1alpha1.Profile) (*v1alpha1.Profile, error) {
+func (c *FakeProfiles) UpdateStatus(profile *v1alpha1.BootProfile) (*v1alpha1.BootProfile, error) {
 	obj, err := c.Fake.
-		Invokes(testing.NewUpdateSubresourceAction(profilesResource, "status", c.ns, profile), &v1alpha1.Profile{})
+		Invokes(testing.NewUpdateSubresourceAction(profilesResource, "status", c.ns, profile), &v1alpha1.BootProfile{})
 
 	if obj == nil {
 		return nil, err
 	}
-	return obj.(*v1alpha1.Profile), err
+	return obj.(*v1alpha1.BootProfile), err
 }
 
 // Delete takes name of the profile and deletes it. Returns an error if one occurs.
 func (c *FakeProfiles) Delete(name string, options *v1.DeleteOptions) error {
 	_, err := c.Fake.
-		Invokes(testing.NewDeleteAction(profilesResource, c.ns, name), &v1alpha1.Profile{})
+		Invokes(testing.NewDeleteAction(profilesResource, c.ns, name), &v1alpha1.BootProfile{})
 
 	return err
 }
@@ -124,17 +124,17 @@ func (c *FakeProfiles) Delete(name string, options *v1.DeleteOptions) error {
 func (c *FakeProfiles) DeleteCollection(options *v1.DeleteOptions, listOptions v1.ListOptions) error {
 	action := testing.NewDeleteCollectionAction(profilesResource, c.ns, listOptions)
 
-	_, err := c.Fake.Invokes(action, &v1alpha1.ProfileList{})
+	_, err := c.Fake.Invokes(action, &v1alpha1.BootProfileList{})
 	return err
 }
 
 // Patch applies the patch and returns the patched profile.
-func (c *FakeProfiles) Patch(name string, pt types.PatchType, data []byte, subresources ...string) (result *v1alpha1.Profile, err error) {
+func (c *FakeProfiles) Patch(name string, pt types.PatchType, data []byte, subresources ...string) (result *v1alpha1.BootProfile, err error) {
 	obj, err := c.Fake.
-		Invokes(testing.NewPatchSubresourceAction(profilesResource, c.ns, name, pt, data, subresources...), &v1alpha1.Profile{})
+		Invokes(testing.NewPatchSubresourceAction(profilesResource, c.ns, name, pt, data, subresources...), &v1alpha1.BootProfile{})
 
 	if obj == nil {
 		return nil, err
 	}
-	return obj.(*v1alpha1.Profile), err
+	return obj.(*v1alpha1.BootProfile), err
 }

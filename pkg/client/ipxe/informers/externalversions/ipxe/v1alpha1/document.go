@@ -44,14 +44,14 @@ type documentInformer struct {
 	namespace        string
 }
 
-// NewDocumentInformer constructs a new informer for Document type.
+// NewDocumentInformer constructs a new informer for BootResource type.
 // Always prefer using an informer factory to get a shared informer instead of getting an independent
 // one. This reduces memory footprint and number of connections to the server.
 func NewDocumentInformer(client versioned.Interface, namespace string, resyncPeriod time.Duration, indexers cache.Indexers) cache.SharedIndexInformer {
 	return NewFilteredDocumentInformer(client, namespace, resyncPeriod, indexers, nil)
 }
 
-// NewFilteredDocumentInformer constructs a new informer for Document type.
+// NewFilteredDocumentInformer constructs a new informer for BootResource type.
 // Always prefer using an informer factory to get a shared informer instead of getting an independent
 // one. This reduces memory footprint and number of connections to the server.
 func NewFilteredDocumentInformer(client versioned.Interface, namespace string, resyncPeriod time.Duration, indexers cache.Indexers, tweakListOptions internalinterfaces.TweakListOptionsFunc) cache.SharedIndexInformer {
@@ -70,7 +70,7 @@ func NewFilteredDocumentInformer(client versioned.Interface, namespace string, r
 				return client.IpxeV1alpha1().Documents(namespace).Watch(options)
 			},
 		},
-		&ipxev1alpha1.Document{},
+		&ipxev1alpha1.BootResource{},
 		resyncPeriod,
 		indexers,
 	)
@@ -81,7 +81,7 @@ func (f *documentInformer) defaultInformer(client versioned.Interface, resyncPer
 }
 
 func (f *documentInformer) Informer() cache.SharedIndexInformer {
-	return f.factory.InformerFor(&ipxev1alpha1.Document{}, f.defaultInformer)
+	return f.factory.InformerFor(&ipxev1alpha1.BootResource{}, f.defaultInformer)
 }
 
 func (f *documentInformer) Lister() v1alpha1.DocumentLister {

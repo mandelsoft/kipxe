@@ -24,31 +24,31 @@ import (
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
-type DocumentList struct {
+type BootResourceList struct {
 	metav1.TypeMeta `json:",inline"`
 	// Standard list metadata
 	// More info: http://releases.k8s.io/HEAD/docs/devel/api-conventions.md#metadata
 	metav1.ListMeta `json:"metadata,omitempty"`
-	Items           []Document `json:"items"`
+	Items           []BootResource `json:"items"`
 }
 
 // +kubebuilder:storageversion
 // +kubebuilder:object:root=true
-// +kubebuilder:resource:scope=Namespaced,path=documents,singular=document
+// +kubebuilder:resource:scope=Namespaced,path=bootresources,shortName=bresc,singular=bootresource
 // +kubebuilder:subresource:status
 // +kubebuilder:printcolumn:name=State,JSONPath=".status.state",type=string
 // +genclient
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
-type Document struct {
+type BootResource struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
-	Spec              DocumentSpec `json:"spec"`
+	Spec              BootResourceSpec `json:"spec"`
 	// +optional
-	Status DocumentStatus `json:"status,omitempty"`
+	Status BootResourceStatus `json:"status,omitempty"`
 }
 
-type DocumentSpec struct {
+type BootResourceSpec struct {
 	MimeType string `json:"mimeType,omitempty"`
 	// +kubebuilder:validation:XPreserveUnknownFields
 	// +kubebuilder:pruning:PreserveUnknownFields
@@ -66,7 +66,7 @@ type DocumentSpec struct {
 	Binary string `json:"binary,omitempty"`
 }
 
-type DocumentStatus struct {
+type BootResourceStatus struct {
 	// +optional
 	State string `json:"state"`
 

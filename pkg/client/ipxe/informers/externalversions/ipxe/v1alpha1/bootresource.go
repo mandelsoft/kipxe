@@ -31,59 +31,59 @@ import (
 	cache "k8s.io/client-go/tools/cache"
 )
 
-// ProfileInformer provides access to a shared informer and lister for
-// Profiles.
-type ProfileInformer interface {
+// BootResourceInformer provides access to a shared informer and lister for
+// BootResources.
+type BootResourceInformer interface {
 	Informer() cache.SharedIndexInformer
-	Lister() v1alpha1.ProfileLister
+	Lister() v1alpha1.BootResourceLister
 }
 
-type profileInformer struct {
+type bootResourceInformer struct {
 	factory          internalinterfaces.SharedInformerFactory
 	tweakListOptions internalinterfaces.TweakListOptionsFunc
 	namespace        string
 }
 
-// NewProfileInformer constructs a new informer for BootProfile type.
+// NewBootResourceInformer constructs a new informer for BootResource type.
 // Always prefer using an informer factory to get a shared informer instead of getting an independent
 // one. This reduces memory footprint and number of connections to the server.
-func NewProfileInformer(client versioned.Interface, namespace string, resyncPeriod time.Duration, indexers cache.Indexers) cache.SharedIndexInformer {
-	return NewFilteredProfileInformer(client, namespace, resyncPeriod, indexers, nil)
+func NewBootResourceInformer(client versioned.Interface, namespace string, resyncPeriod time.Duration, indexers cache.Indexers) cache.SharedIndexInformer {
+	return NewFilteredBootResourceInformer(client, namespace, resyncPeriod, indexers, nil)
 }
 
-// NewFilteredProfileInformer constructs a new informer for BootProfile type.
+// NewFilteredBootResourceInformer constructs a new informer for BootResource type.
 // Always prefer using an informer factory to get a shared informer instead of getting an independent
 // one. This reduces memory footprint and number of connections to the server.
-func NewFilteredProfileInformer(client versioned.Interface, namespace string, resyncPeriod time.Duration, indexers cache.Indexers, tweakListOptions internalinterfaces.TweakListOptionsFunc) cache.SharedIndexInformer {
+func NewFilteredBootResourceInformer(client versioned.Interface, namespace string, resyncPeriod time.Duration, indexers cache.Indexers, tweakListOptions internalinterfaces.TweakListOptionsFunc) cache.SharedIndexInformer {
 	return cache.NewSharedIndexInformer(
 		&cache.ListWatch{
 			ListFunc: func(options v1.ListOptions) (runtime.Object, error) {
 				if tweakListOptions != nil {
 					tweakListOptions(&options)
 				}
-				return client.IpxeV1alpha1().Profiles(namespace).List(options)
+				return client.IpxeV1alpha1().BootResources(namespace).List(options)
 			},
 			WatchFunc: func(options v1.ListOptions) (watch.Interface, error) {
 				if tweakListOptions != nil {
 					tweakListOptions(&options)
 				}
-				return client.IpxeV1alpha1().Profiles(namespace).Watch(options)
+				return client.IpxeV1alpha1().BootResources(namespace).Watch(options)
 			},
 		},
-		&ipxev1alpha1.BootProfile{},
+		&ipxev1alpha1.BootResource{},
 		resyncPeriod,
 		indexers,
 	)
 }
 
-func (f *profileInformer) defaultInformer(client versioned.Interface, resyncPeriod time.Duration) cache.SharedIndexInformer {
-	return NewFilteredProfileInformer(client, f.namespace, resyncPeriod, cache.Indexers{cache.NamespaceIndex: cache.MetaNamespaceIndexFunc}, f.tweakListOptions)
+func (f *bootResourceInformer) defaultInformer(client versioned.Interface, resyncPeriod time.Duration) cache.SharedIndexInformer {
+	return NewFilteredBootResourceInformer(client, f.namespace, resyncPeriod, cache.Indexers{cache.NamespaceIndex: cache.MetaNamespaceIndexFunc}, f.tweakListOptions)
 }
 
-func (f *profileInformer) Informer() cache.SharedIndexInformer {
-	return f.factory.InformerFor(&ipxev1alpha1.BootProfile{}, f.defaultInformer)
+func (f *bootResourceInformer) Informer() cache.SharedIndexInformer {
+	return f.factory.InformerFor(&ipxev1alpha1.BootResource{}, f.defaultInformer)
 }
 
-func (f *profileInformer) Lister() v1alpha1.ProfileLister {
-	return v1alpha1.NewProfileLister(f.Informer().GetIndexer())
+func (f *bootResourceInformer) Lister() v1alpha1.BootResourceLister {
+	return v1alpha1.NewBootResourceLister(f.Informer().GetIndexer())
 }

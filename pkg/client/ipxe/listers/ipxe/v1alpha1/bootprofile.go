@@ -25,56 +25,56 @@ import (
 	"k8s.io/client-go/tools/cache"
 )
 
-// ProfileLister helps list Profiles.
-type ProfileLister interface {
-	// List lists all Profiles in the indexer.
+// BootProfileLister helps list BootProfiles.
+type BootProfileLister interface {
+	// List lists all BootProfiles in the indexer.
 	List(selector labels.Selector) (ret []*v1alpha1.BootProfile, err error)
-	// Profiles returns an object that can list and get Profiles.
-	Profiles(namespace string) ProfileNamespaceLister
-	ProfileListerExpansion
+	// BootProfiles returns an object that can list and get BootProfiles.
+	BootProfiles(namespace string) BootProfileNamespaceLister
+	BootProfileListerExpansion
 }
 
-// profileLister implements the ProfileLister interface.
-type profileLister struct {
+// bootProfileLister implements the BootProfileLister interface.
+type bootProfileLister struct {
 	indexer cache.Indexer
 }
 
-// NewProfileLister returns a new ProfileLister.
-func NewProfileLister(indexer cache.Indexer) ProfileLister {
-	return &profileLister{indexer: indexer}
+// NewBootProfileLister returns a new BootProfileLister.
+func NewBootProfileLister(indexer cache.Indexer) BootProfileLister {
+	return &bootProfileLister{indexer: indexer}
 }
 
-// List lists all Profiles in the indexer.
-func (s *profileLister) List(selector labels.Selector) (ret []*v1alpha1.BootProfile, err error) {
+// List lists all BootProfiles in the indexer.
+func (s *bootProfileLister) List(selector labels.Selector) (ret []*v1alpha1.BootProfile, err error) {
 	err = cache.ListAll(s.indexer, selector, func(m interface{}) {
 		ret = append(ret, m.(*v1alpha1.BootProfile))
 	})
 	return ret, err
 }
 
-// Profiles returns an object that can list and get Profiles.
-func (s *profileLister) Profiles(namespace string) ProfileNamespaceLister {
-	return profileNamespaceLister{indexer: s.indexer, namespace: namespace}
+// BootProfiles returns an object that can list and get BootProfiles.
+func (s *bootProfileLister) BootProfiles(namespace string) BootProfileNamespaceLister {
+	return bootProfileNamespaceLister{indexer: s.indexer, namespace: namespace}
 }
 
-// ProfileNamespaceLister helps list and get Profiles.
-type ProfileNamespaceLister interface {
-	// List lists all Profiles in the indexer for a given namespace.
+// BootProfileNamespaceLister helps list and get BootProfiles.
+type BootProfileNamespaceLister interface {
+	// List lists all BootProfiles in the indexer for a given namespace.
 	List(selector labels.Selector) (ret []*v1alpha1.BootProfile, err error)
 	// Get retrieves the BootProfile from the indexer for a given namespace and name.
 	Get(name string) (*v1alpha1.BootProfile, error)
-	ProfileNamespaceListerExpansion
+	BootProfileNamespaceListerExpansion
 }
 
-// profileNamespaceLister implements the ProfileNamespaceLister
+// bootProfileNamespaceLister implements the BootProfileNamespaceLister
 // interface.
-type profileNamespaceLister struct {
+type bootProfileNamespaceLister struct {
 	indexer   cache.Indexer
 	namespace string
 }
 
-// List lists all Profiles in the indexer for a given namespace.
-func (s profileNamespaceLister) List(selector labels.Selector) (ret []*v1alpha1.BootProfile, err error) {
+// List lists all BootProfiles in the indexer for a given namespace.
+func (s bootProfileNamespaceLister) List(selector labels.Selector) (ret []*v1alpha1.BootProfile, err error) {
 	err = cache.ListAllByNamespace(s.indexer, s.namespace, selector, func(m interface{}) {
 		ret = append(ret, m.(*v1alpha1.BootProfile))
 	})
@@ -82,13 +82,13 @@ func (s profileNamespaceLister) List(selector labels.Selector) (ret []*v1alpha1.
 }
 
 // Get retrieves the BootProfile from the indexer for a given namespace and name.
-func (s profileNamespaceLister) Get(name string) (*v1alpha1.BootProfile, error) {
+func (s bootProfileNamespaceLister) Get(name string) (*v1alpha1.BootProfile, error) {
 	obj, exists, err := s.indexer.GetByKey(s.namespace + "/" + name)
 	if err != nil {
 		return nil, err
 	}
 	if !exists {
-		return nil, errors.NewNotFound(v1alpha1.Resource("profile"), name)
+		return nil, errors.NewNotFound(v1alpha1.Resource("bootprofile"), name)
 	}
 	return obj.(*v1alpha1.BootProfile), nil
 }

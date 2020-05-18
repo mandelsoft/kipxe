@@ -31,19 +31,19 @@ import (
 	"github.com/mandelsoft/kipxe/pkg/kipxe"
 )
 
-type Matchers struct {
+type BootMatchers struct {
 	ResourceCache
-	elements *kipxe.Matchers
+	elements *kipxe.BootProfileMatchers
 }
 
-func newMatchers(infobase *InfoBase) *Matchers {
-	return &Matchers{
-		ResourceCache: NewResourceCache(infobase, &v1alpha1.Matcher{}),
+func newMatchers(infobase *InfoBase) *BootMatchers {
+	return &BootMatchers{
+		ResourceCache: NewResourceCache(infobase, &v1alpha1.BootProfileMatcher{}),
 		elements:      kipxe.NewMatchers(infobase.profiles.elements),
 	}
 }
 
-func (this *Matchers) Setup(logger logger.LogContext) {
+func (this *BootMatchers) Setup(logger logger.LogContext) {
 	if this.initialized {
 		return
 	}
@@ -64,23 +64,23 @@ func (this *Matchers) Setup(logger logger.LogContext) {
 	}
 }
 
-func (this *Matchers) recheckUsers(users kipxe.NameSet) {
+func (this *BootMatchers) recheckUsers(users kipxe.NameSet) {
 }
 
-func (this *Matchers) Recheck(users kipxe.NameSet) {
+func (this *BootMatchers) Recheck(users kipxe.NameSet) {
 	this.EnqueueAll(users, v1alpha1.MATCHER)
 	this.elements.Recheck(users)
 }
 
-func (this *Matchers) Update(logger logger.LogContext, obj resources.Object) (*kipxe.Matcher, error) {
-	m, err := NewMatcher(obj.Data().(*v1alpha1.Matcher))
+func (this *BootMatchers) Update(logger logger.LogContext, obj resources.Object) (*kipxe.BootProfileMatcher, error) {
+	m, err := NewMatcher(obj.Data().(*v1alpha1.BootProfileMatcher))
 	if err == nil {
 		err = this.elements.Set(m)
 	}
 	if err != nil {
 		logger.Errorf("invalid matcher: %s", err)
 		_, err2 := resources.ModifyStatus(obj, func(mod *resources.ModificationState) error {
-			m := mod.Data().(*v1alpha1.Matcher)
+			m := mod.Data().(*v1alpha1.BootProfileMatcher)
 			mod.AssureStringValue(&m.Status.State, v1alpha1.STATE_INVALID)
 			mod.AssureStringValue(&m.Status.Message, err.Error())
 			return nil
@@ -88,7 +88,7 @@ func (this *Matchers) Update(logger logger.LogContext, obj resources.Object) (*k
 		return nil, err2
 	}
 	_, err = resources.ModifyStatus(obj, func(mod *resources.ModificationState) error {
-		m := mod.Data().(*v1alpha1.Matcher)
+		m := mod.Data().(*v1alpha1.BootProfileMatcher)
 		mod.AssureStringValue(&m.Status.State, v1alpha1.STATE_READY)
 		mod.AssureStringValue(&m.Status.Message, "matcher ok")
 		return nil
@@ -96,12 +96,16 @@ func (this *Matchers) Update(logger logger.LogContext, obj resources.Object) (*k
 	return m, err
 }
 
-func (this *Matchers) Delete(logger logger.LogContext, name resources.ObjectName) {
+func (this *BootMatchers) Delete(logger logger.LogContext, name resources.ObjectName) {
 	this.elements.Delete(name)
 }
 
-func NewMatcher(m *v1alpha1.Matcher) (*kipxe.Matcher, error) {
-	sel, err := metav1.LabelSelectorAsSelector(m.Spec.Selector)
+func NewMatcher(m *v1alpha1.BootProfileMatcher) (*kipxe.BootProfileMatcher, error) {
+	var err error
+	sel := labels.Everything()
+	if m.Spec.Selector != nil {
+		sel, err = metav1.LabelSelectorAsSelector(m.Spec.Selector)
+	}
 	if err != nil {
 		err = fmt.Errorf("%s", strings.Replace(err.Error(), " pod ", " profile ", -1))
 		return nil, err
@@ -110,12 +114,20 @@ func NewMatcher(m *v1alpha1.Matcher) (*kipxe.Matcher, error) {
 		return nil, fmt.Errorf("no profile specified")
 	}
 	weight := 0
-	if m.Spec.Selector != nil {
-		weight = len(m.Spec.Selector.MatchExpressions) + len(m.Spec.Selector.MatchLabels)
+	if m.Spec.Weight != nil {
+		weight = *m.Spec.Weight
+	} else {
+		if m.Spec.Selector != nil {
+			weight = len(m.Spec.Selector.MatchExpressions) + len(m.Spec.Selector.MatchLabels)
+		}
+	}
+	mapping, err := Compile("mapping", m.Spec.Mapping)
+	if err != nil {
+		return nil, err
 	}
 	return kipxe.NewMatcher(
 		resources.NewObjectName(m.Namespace, m.Name),
-		sel,
+		sel, mapping, m.Spec.Values.Values,
 		resources.NewObjectName(m.Namespace, m.Spec.Profile),
 		weight,
 	), nil

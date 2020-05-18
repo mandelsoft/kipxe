@@ -6,17 +6,22 @@ metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.2.4
   creationTimestamp: null
-  name: matchers.ipxe.mandelsoft.org
+  name: bootprofilematchers.ipxe.mandelsoft.org
 spec:
   group: ipxe.mandelsoft.org
   names:
-    kind: Matcher
-    listKind: MatcherList
-    plural: matchers
-    singular: matcher
+    kind: BootProfileMatcher
+    listKind: BootProfileMatcherList
+    plural: bootprofilematchers
+    shortNames:
+    - bmatch
+    singular: bootprofilematcher
   scope: Namespaced
   versions:
   - additionalPrinterColumns:
+    - jsonPath: .spec.profileName
+      name: Profile
+      type: string
     - jsonPath: .status.state
       name: State
       type: string
@@ -38,6 +43,12 @@ spec:
             type: object
           spec:
             properties:
+              mapping:
+                description: Values is a workarround for kubebuilder to be able to
+                  generate an API spec. The Values MUST be marked with "-" to avoud
+                  errors.
+                type: object
+                x-kubernetes-preserve-unknown-fields: true
               profileName:
                 type: string
               selector:
@@ -87,6 +98,13 @@ spec:
                       are ANDed.
                     type: object
                 type: object
+              values:
+                description: Values is a workarround for kubebuilder to be able to
+                  generate an API spec. The Values MUST be marked with "-" to avoud
+                  errors.
+                type: object
+              weight:
+                type: integer
             required:
             - profileName
             type: object

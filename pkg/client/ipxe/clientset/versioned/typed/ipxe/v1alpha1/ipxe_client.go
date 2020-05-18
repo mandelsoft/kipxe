@@ -26,9 +26,10 @@ import (
 
 type IpxeV1alpha1Interface interface {
 	RESTClient() rest.Interface
-	DocumentsGetter
-	MatchersGetter
-	ProfilesGetter
+	BootProfilesGetter
+	BootProfileMatchersGetter
+	BootResourcesGetter
+	MachinesGetter
 }
 
 // IpxeV1alpha1Client is used to interact with features provided by the ipxe.mandelsoft.org group.
@@ -36,16 +37,20 @@ type IpxeV1alpha1Client struct {
 	restClient rest.Interface
 }
 
-func (c *IpxeV1alpha1Client) Documents(namespace string) DocumentInterface {
-	return newDocuments(c, namespace)
+func (c *IpxeV1alpha1Client) BootProfiles(namespace string) BootProfileInterface {
+	return newBootProfiles(c, namespace)
 }
 
-func (c *IpxeV1alpha1Client) Matchers(namespace string) MatcherInterface {
-	return newMatchers(c, namespace)
+func (c *IpxeV1alpha1Client) BootProfileMatchers(namespace string) BootProfileMatcherInterface {
+	return newBootProfileMatchers(c, namespace)
 }
 
-func (c *IpxeV1alpha1Client) Profiles(namespace string) ProfileInterface {
-	return newProfiles(c, namespace)
+func (c *IpxeV1alpha1Client) BootResources(namespace string) BootResourceInterface {
+	return newBootResources(c, namespace)
+}
+
+func (c *IpxeV1alpha1Client) Machines(namespace string) MachineInterface {
+	return newMachines(c, namespace)
 }
 
 // NewForConfig creates a new IpxeV1alpha1Client for the given config.

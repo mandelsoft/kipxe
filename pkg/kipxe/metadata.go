@@ -29,6 +29,10 @@ type MetaData simple.Values
 
 var _ labels.Labels = MetaData{}
 
+func (this MetaData) DeepCopy() MetaData {
+	return MetaData(simple.Values(this).DeepCopy())
+}
+
 func (this MetaData) Has(key string) bool {
 	if v, ok := this[key]; ok {
 		if _, ok := v.(string); ok {

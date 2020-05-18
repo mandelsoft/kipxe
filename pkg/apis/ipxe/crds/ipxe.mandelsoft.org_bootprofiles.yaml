@@ -6,14 +6,16 @@ metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.2.4
   creationTimestamp: null
-  name: profiles.ipxe.mandelsoft.org
+  name: bootprofiles.ipxe.mandelsoft.org
 spec:
   group: ipxe.mandelsoft.org
   names:
-    kind: Profile
-    listKind: ProfileList
-    plural: profiles
-    singular: profile
+    kind: BootProfile
+    listKind: BootProfileList
+    plural: bootprofiles
+    shortNames:
+    - bprof
+    singular: bootprofile
   scope: Namespaced
   versions:
   - additionalPrinterColumns:

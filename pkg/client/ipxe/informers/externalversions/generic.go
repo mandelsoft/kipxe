@@ -53,12 +53,14 @@ func (f *genericInformer) Lister() cache.GenericLister {
 func (f *sharedInformerFactory) ForResource(resource schema.GroupVersionResource) (GenericInformer, error) {
 	switch resource {
 	// Group=ipxe.mandelsoft.org, Version=v1alpha1
-	case v1alpha1.SchemeGroupVersion.WithResource("documents"):
-		return &genericInformer{resource: resource.GroupResource(), informer: f.Ipxe().V1alpha1().Documents().Informer()}, nil
-	case v1alpha1.SchemeGroupVersion.WithResource("matchers"):
-		return &genericInformer{resource: resource.GroupResource(), informer: f.Ipxe().V1alpha1().Matchers().Informer()}, nil
-	case v1alpha1.SchemeGroupVersion.WithResource("profiles"):
-		return &genericInformer{resource: resource.GroupResource(), informer: f.Ipxe().V1alpha1().Profiles().Informer()}, nil
+	case v1alpha1.SchemeGroupVersion.WithResource("bootprofiles"):
+		return &genericInformer{resource: resource.GroupResource(), informer: f.Ipxe().V1alpha1().BootProfiles().Informer()}, nil
+	case v1alpha1.SchemeGroupVersion.WithResource("bootprofilematchers"):
+		return &genericInformer{resource: resource.GroupResource(), informer: f.Ipxe().V1alpha1().BootProfileMatchers().Informer()}, nil
+	case v1alpha1.SchemeGroupVersion.WithResource("bootresources"):
+		return &genericInformer{resource: resource.GroupResource(), informer: f.Ipxe().V1alpha1().BootResources().Informer()}, nil
+	case v1alpha1.SchemeGroupVersion.WithResource("machines"):
+		return &genericInformer{resource: resource.GroupResource(), informer: f.Ipxe().V1alpha1().Machines().Informer()}, nil
 
 	}
 

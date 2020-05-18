@@ -29,14 +29,14 @@ import (
 	rest "k8s.io/client-go/rest"
 )
 
-// ProfilesGetter has a method to return a ProfileInterface.
+// BootProfilesGetter has a method to return a BootProfileInterface.
 // A group's client should implement this interface.
-type ProfilesGetter interface {
-	Profiles(namespace string) ProfileInterface
+type BootProfilesGetter interface {
+	BootProfiles(namespace string) BootProfileInterface
 }
 
-// ProfileInterface has methods to work with BootProfile resources.
-type ProfileInterface interface {
+// BootProfileInterface has methods to work with BootProfile resources.
+type BootProfileInterface interface {
 	Create(*v1alpha1.BootProfile) (*v1alpha1.BootProfile, error)
 	Update(*v1alpha1.BootProfile) (*v1alpha1.BootProfile, error)
 	UpdateStatus(*v1alpha1.BootProfile) (*v1alpha1.BootProfile, error)
@@ -46,29 +46,29 @@ type ProfileInterface interface {
 	List(opts v1.ListOptions) (*v1alpha1.BootProfileList, error)
 	Watch(opts v1.ListOptions) (watch.Interface, error)
 	Patch(name string, pt types.PatchType, data []byte, subresources ...string) (result *v1alpha1.BootProfile, err error)
-	ProfileExpansion
+	BootProfileExpansion
 }
 
-// profiles implements ProfileInterface
-type profiles struct {
+// bootProfiles implements BootProfileInterface
+type bootProfiles struct {
 	client rest.Interface
 	ns     string
 }
 
-// newProfiles returns a Profiles
-func newProfiles(c *IpxeV1alpha1Client, namespace string) *profiles {
-	return &profiles{
+// newBootProfiles returns a BootProfiles
+func newBootProfiles(c *IpxeV1alpha1Client, namespace string) *bootProfiles {
+	return &bootProfiles{
 		client: c.RESTClient(),
 		ns:     namespace,
 	}
 }
 
-// Get takes name of the profile, and returns the corresponding profile object, and an error if there is any.
-func (c *profiles) Get(name string, options v1.GetOptions) (result *v1alpha1.BootProfile, err error) {
+// Get takes name of the bootProfile, and returns the corresponding bootProfile object, and an error if there is any.
+func (c *bootProfiles) Get(name string, options v1.GetOptions) (result *v1alpha1.BootProfile, err error) {
 	result = &v1alpha1.BootProfile{}
 	err = c.client.Get().
 		Namespace(c.ns).
-		Resource("profiles").
+		Resource("bootprofiles").
 		Name(name).
 		VersionedParams(&options, scheme.ParameterCodec).
 		Do().
@@ -76,8 +76,8 @@ func (c *profiles) Get(name string, options v1.GetOptions) (result *v1alpha1.Boo
 	return
 }
 
-// List takes label and field selectors, and returns the list of Profiles that match those selectors.
-func (c *profiles) List(opts v1.ListOptions) (result *v1alpha1.BootProfileList, err error) {
+// List takes label and field selectors, and returns the list of BootProfiles that match those selectors.
+func (c *bootProfiles) List(opts v1.ListOptions) (result *v1alpha1.BootProfileList, err error) {
 	var timeout time.Duration
 	if opts.TimeoutSeconds != nil {
 		timeout = time.Duration(*opts.TimeoutSeconds) * time.Second
@@ -85,7 +85,7 @@ func (c *profiles) List(opts v1.ListOptions) (result *v1alpha1.BootProfileList, 
 	result = &v1alpha1.BootProfileList{}
 	err = c.client.Get().
 		Namespace(c.ns).
-		Resource("profiles").
+		Resource("bootprofiles").
 		VersionedParams(&opts, scheme.ParameterCodec).
 		Timeout(timeout).
 		Do().
@@ -93,8 +93,8 @@ func (c *profiles) List(opts v1.ListOptions) (result *v1alpha1.BootProfileList, 
 	return
 }
 
-// Watch returns a watch.Interface that watches the requested profiles.
-func (c *profiles) Watch(opts v1.ListOptions) (watch.Interface, error) {
+// Watch returns a watch.Interface that watches the requested bootProfiles.
+func (c *bootProfiles) Watch(opts v1.ListOptions) (watch.Interface, error) {
 	var timeout time.Duration
 	if opts.TimeoutSeconds != nil {
 		timeout = time.Duration(*opts.TimeoutSeconds) * time.Second
@@ -102,32 +102,32 @@ func (c *profiles) Watch(opts v1.ListOptions) (watch.Interface, error) {
 	opts.Watch = true
 	return c.client.Get().
 		Namespace(c.ns).
-		Resource("profiles").
+		Resource("bootprofiles").
 		VersionedParams(&opts, scheme.ParameterCodec).
 		Timeout(timeout).
 		Watch()
 }
 
-// Create takes the representation of a profile and creates it.  Returns the server's representation of the profile, and an error, if there is any.
-func (c *profiles) Create(profile *v1alpha1.BootProfile) (result *v1alpha1.BootProfile, err error) {
+// Create takes the representation of a bootProfile and creates it.  Returns the server's representation of the bootProfile, and an error, if there is any.
+func (c *bootProfiles) Create(bootProfile *v1alpha1.BootProfile) (result *v1alpha1.BootProfile, err error) {
 	result = &v1alpha1.BootProfile{}
 	err = c.client.Post().
 		Namespace(c.ns).
-		Resource("profiles").
-		Body(profile).
+		Resource("bootprofiles").
+		Body(bootProfile).
 		Do().
 		Into(result)
 	return
 }
 
-// Update takes the representation of a profile and updates it. Returns the server's representation of the profile, and an error, if there is any.
-func (c *profiles) Update(profile *v1alpha1.BootProfile) (result *v1alpha1.BootProfile, err error) {
+// Update takes the representation of a bootProfile and updates it. Returns the server's representation of the bootProfile, and an error, if there is any.
+func (c *bootProfiles) Update(bootProfile *v1alpha1.BootProfile) (result *v1alpha1.BootProfile, err error) {
 	result = &v1alpha1.BootProfile{}
 	err = c.client.Put().
 		Namespace(c.ns).
-		Resource("profiles").
-		Name(profile.Name).
-		Body(profile).
+		Resource("bootprofiles").
+		Name(bootProfile.Name).
+		Body(bootProfile).
 		Do().
 		Into(result)
 	return
@@ -136,24 +136,24 @@ func (c *profiles) Update(profile *v1alpha1.BootProfile) (result *v1alpha1.BootP
 // UpdateStatus was generated because the type contains a Status member.
 // Add a +genclient:noStatus comment above the type to avoid generating UpdateStatus().
 
-func (c *profiles) UpdateStatus(profile *v1alpha1.BootProfile) (result *v1alpha1.BootProfile, err error) {
+func (c *bootProfiles) UpdateStatus(bootProfile *v1alpha1.BootProfile) (result *v1alpha1.BootProfile, err error) {
 	result = &v1alpha1.BootProfile{}
 	err = c.client.Put().
 		Namespace(c.ns).
-		Resource("profiles").
-		Name(profile.Name).
+		Resource("bootprofiles").
+		Name(bootProfile.Name).
 		SubResource("status").
-		Body(profile).
+		Body(bootProfile).
 		Do().
 		Into(result)
 	return
 }
 
-// Delete takes name of the profile and deletes it. Returns an error if one occurs.
-func (c *profiles) Delete(name string, options *v1.DeleteOptions) error {
+// Delete takes name of the bootProfile and deletes it. Returns an error if one occurs.
+func (c *bootProfiles) Delete(name string, options *v1.DeleteOptions) error {
 	return c.client.Delete().
 		Namespace(c.ns).
-		Resource("profiles").
+		Resource("bootprofiles").
 		Name(name).
 		Body(options).
 		Do().
@@ -161,14 +161,14 @@ func (c *profiles) Delete(name string, options *v1.DeleteOptions) error {
 }
 
 // DeleteCollection deletes a collection of objects.
-func (c *profiles) DeleteCollection(options *v1.DeleteOptions, listOptions v1.ListOptions) error {
+func (c *bootProfiles) DeleteCollection(options *v1.DeleteOptions, listOptions v1.ListOptions) error {
 	var timeout time.Duration
 	if listOptions.TimeoutSeconds != nil {
 		timeout = time.Duration(*listOptions.TimeoutSeconds) * time.Second
 	}
 	return c.client.Delete().
 		Namespace(c.ns).
-		Resource("profiles").
+		Resource("bootprofiles").
 		VersionedParams(&listOptions, scheme.ParameterCodec).
 		Timeout(timeout).
 		Body(options).
@@ -176,12 +176,12 @@ func (c *profiles) DeleteCollection(options *v1.DeleteOptions, listOptions v1.Li
 		Error()
 }
 
-// Patch applies the patch and returns the patched profile.
-func (c *profiles) Patch(name string, pt types.PatchType, data []byte, subresources ...string) (result *v1alpha1.BootProfile, err error) {
+// Patch applies the patch and returns the patched bootProfile.
+func (c *bootProfiles) Patch(name string, pt types.PatchType, data []byte, subresources ...string) (result *v1alpha1.BootProfile, err error) {
 	result = &v1alpha1.BootProfile{}
 	err = c.client.Patch(pt).
 		Namespace(c.ns).
-		Resource("profiles").
+		Resource("bootprofiles").
 		SubResource(subresources...).
 		Name(name).
 		Body(data).

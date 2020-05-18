@@ -24,12 +24,14 @@ import (
 
 // Interface provides access to all the informers in this group version.
 type Interface interface {
-	// Documents returns a DocumentInformer.
-	Documents() DocumentInformer
-	// Matchers returns a MatcherInformer.
-	Matchers() MatcherInformer
-	// Profiles returns a ProfileInformer.
-	Profiles() ProfileInformer
+	// BootProfiles returns a BootProfileInformer.
+	BootProfiles() BootProfileInformer
+	// BootProfileMatchers returns a BootProfileMatcherInformer.
+	BootProfileMatchers() BootProfileMatcherInformer
+	// BootResources returns a BootResourceInformer.
+	BootResources() BootResourceInformer
+	// Machines returns a MachineInformer.
+	Machines() MachineInformer
 }
 
 type version struct {
@@ -43,17 +45,22 @@ func New(f internalinterfaces.SharedInformerFactory, namespace string, tweakList
 	return &version{factory: f, namespace: namespace, tweakListOptions: tweakListOptions}
 }
 
-// Documents returns a DocumentInformer.
-func (v *version) Documents() DocumentInformer {
-	return &documentInformer{factory: v.factory, namespace: v.namespace, tweakListOptions: v.tweakListOptions}
+// BootProfiles returns a BootProfileInformer.
+func (v *version) BootProfiles() BootProfileInformer {
+	return &bootProfileInformer{factory: v.factory, namespace: v.namespace, tweakListOptions: v.tweakListOptions}
 }
 
-// Matchers returns a MatcherInformer.
-func (v *version) Matchers() MatcherInformer {
-	return &matcherInformer{factory: v.factory, namespace: v.namespace, tweakListOptions: v.tweakListOptions}
+// BootProfileMatchers returns a BootProfileMatcherInformer.
+func (v *version) BootProfileMatchers() BootProfileMatcherInformer {
+	return &bootProfileMatcherInformer{factory: v.factory, namespace: v.namespace, tweakListOptions: v.tweakListOptions}
 }
 
-// Profiles returns a ProfileInformer.
-func (v *version) Profiles() ProfileInformer {
-	return &profileInformer{factory: v.factory, namespace: v.namespace, tweakListOptions: v.tweakListOptions}
+// BootResources returns a BootResourceInformer.
+func (v *version) BootResources() BootResourceInformer {
+	return &bootResourceInformer{factory: v.factory, namespace: v.namespace, tweakListOptions: v.tweakListOptions}
+}
+
+// Machines returns a MachineInformer.
+func (v *version) Machines() MachineInformer {
+	return &machineInformer{factory: v.factory, namespace: v.namespace, tweakListOptions: v.tweakListOptions}
 }

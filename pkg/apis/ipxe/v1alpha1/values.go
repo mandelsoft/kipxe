@@ -70,6 +70,12 @@ func CopyAndNormalize(in interface{}) interface{} {
 		return in
 	}
 	switch e := in.(type) {
+	case map[string]string:
+		r := map[string]interface{}{}
+		for k, v := range e {
+			r[k] = CopyAndNormalize(v)
+		}
+		return r
 	case map[string]interface{}:
 		r := map[string]interface{}{}
 		for k, v := range e {
@@ -94,6 +100,12 @@ func CopyAndNormalize(in interface{}) interface{} {
 			r = append(r, v)
 		}
 		return r
+	case []string:
+		r := []interface{}{}
+		for _, v := range e {
+			r = append(r, v)
+		}
+		return r
 	case string:
 		return e
 	case int:
@@ -107,11 +119,30 @@ func CopyAndNormalize(in interface{}) interface{} {
 		return e
 	default:
 		value := reflect.ValueOf(e)
-		if value.Type().ConvertibleTo(mapType) {
-			return CopyAndNormalize(value.Convert(mapType).Interface())
+		if value.Kind() == reflect.Map {
+			if value.Type().ConvertibleTo(mapType) {
+				return CopyAndNormalize(value.Convert(mapType).Interface())
+			}
+			if value.Type().Key().Kind() == reflect.String {
+				r := map[string]interface{}{}
+				iter := value.MapRange()
+				for iter.Next() {
+					k := iter.Key()
+					v := iter.Value()
+					r[k.Interface().(string)] = CopyAndNormalize(v.Interface())
+				}
+				return r
+			}
 		}
-		if value.Type().ConvertibleTo(arrayType) {
-			return CopyAndNormalize(value.Convert(arrayType).Interface())
+		if value.Kind() == reflect.Array || value.Kind() == reflect.Slice {
+			if value.Type().ConvertibleTo(arrayType) {
+				return CopyAndNormalize(value.Convert(arrayType).Interface())
+			}
+			r := make([]interface{}, value.Len(), value.Len())
+			for i := 0; i < value.Len(); i++ {
+				r[i] = CopyAndNormalize(value.Index(i))
+			}
+			return r
 		}
 		panic(fmt.Errorf("invalid type %T", e))
 	}

@@ -22,51 +22,48 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-const STATE_READY = "Ready"
-const STATE_INVALID = "Invalid"
-
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
-type BootProfileList struct {
+type MachineList struct {
 	metav1.TypeMeta `json:",inline"`
 	// Standard list metadata
 	// More info: http://releases.k8s.io/HEAD/docs/devel/api-conventions.md#metadata
 	metav1.ListMeta `json:"metadata,omitempty"`
-	Items           []BootProfile `json:"items"`
+	Items           []Machine `json:"items"`
 }
 
 // +kubebuilder:storageversion
 // +kubebuilder:object:root=true
-// +kubebuilder:resource:scope=Namespaced,shortName=bprof,path=bootprofiles,singular=bootprofile
+// +kubebuilder:resource:scope=Namespaced,shortName=mach,path=machines,singular=machine
 // +kubebuilder:subresource:status
+// +kubebuilder:printcolumn:name=UUID,JSONPath=".spec.uuid",type=string
 // +kubebuilder:printcolumn:name=State,JSONPath=".status.state",type=string
 // +genclient
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
-type BootProfile struct {
+type Machine struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
-	Spec              BootProfileSpec `json:"spec"`
+	Spec              MachineSpec `json:"spec"`
 	// +optional
-	Status BootProfileStatus `json:"status,omitempty"`
+	Status MachineStatus `json:"status,omitempty"`
 }
 
-type BootProfileSpec struct {
+type MachineSpec struct {
+	// +optional
+	UUID string `json:"uuid,omitempty"`
+	// +kubebuilder:validation:XPreserveUnknownFields
+	// +kubebuilder:pruning:PreserveUnknownFields
+	MACs MachineMACs `json:"macs,omitempty"`
+
 	// +kubebuilder:validation:XPreserveUnknownFields
 	// +kubebuilder:pruning:PreserveUnknownFields
 	Values Values `json:"values,omitempty"`
-	// +kubebuilder:validation:XPreserveUnknownFields
-	// +kubebuilder:pruning:PreserveUnknownFields
-	Mapping   Values           `json:"mapping,omitempty"`
-	Resources []ServedResource `json:"resources,omitempty"`
 }
 
-type ServedResource struct {
-	Path         string `json:"path"`
-	DocumentName string `json:"documentName"`
-}
+type MachineMACs map[string][]string
 
-type BootProfileStatus struct {
+type MachineStatus struct {
 	// +optional
 	State string `json:"state"`
 

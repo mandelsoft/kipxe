@@ -16,26 +16,20 @@
  *  limitations under the License.
  */
 
-package kipxe
+package machines
 
-type InfoBase struct {
-	Registry  *Registry
-	Resources *BootResources
-	Profiles  *BootProfiles
-	Matchers  *BootProfileMatchers
+import (
+	"github.com/gardener/controller-manager-library/pkg/config"
+)
+
+type Config struct {
+	LocalNamespaceOnly bool
 }
 
-func (this *InfoBase) SetDocument(e *BootResource) NameSet {
-	users := this.Resources.Set(e)
-	users = this.Profiles.Recheck(users)
-	return this.Matchers.Recheck(users)
+func (this *Config) AddOptionsToSet(set config.OptionSet) {
+	set.AddBoolOption(&this.LocalNamespaceOnly, "local-namespace-only", "", false, "server only resources in local namespace")
 }
 
-func (this *InfoBase) SetProfile(e *BootProfile) (NameSet, error) {
-	users, err := this.Profiles.Set(e)
-	return this.Matchers.Recheck(users), err
-}
-
-func (this *InfoBase) SetMatcher(e *BootProfileMatcher) error {
-	return this.Matchers.Set(e)
+func (this *Config) Prepare() error {
+	return nil
 }

@@ -16,7 +16,7 @@
  *  limitations under the License.
  */
 
-package ipxe
+package controllers
 
 import (
 	"github.com/gardener/controller-manager-library/pkg/controllermanager/controller"
@@ -25,35 +25,10 @@ import (
 	"github.com/mandelsoft/kipxe/pkg/kipxe"
 )
 
-var infobaseKey = ctxutil.SimpleKey("infobase")
+var registryKey = ctxutil.SimpleKey("registry")
 
-func GetSharedInfoBase(controller controller.Interface) *InfoBase {
-	return controller.GetOrCreateSharedValue(infobaseKey, func() interface{} {
-		return NewInfoBase(controller)
-	}).(*InfoBase)
-}
-
-type InfoBase struct {
-	controller controller.Interface
-	cache      *kipxe.DirCache
-	matchers   *BootMatchers
-	profiles   *BootProfiles
-	resources  *BootResources
-}
-
-func NewInfoBase(controller controller.Interface) *InfoBase {
-	b := &InfoBase{
-		controller: controller,
-	}
-
-	b.resources = newResources(b)
-	b.profiles = newProfiles(b)
-	b.matchers = newMatchers(b)
-	return b
-}
-
-func (this *InfoBase) Setup() {
-	this.resources.Setup(this.controller)
-	this.profiles.Setup(this.controller)
-	this.matchers.Setup(this.controller)
+func GetSharedRegistry(controller controller.Interface) *kipxe.Registry {
+	return controller.GetEnvironment().GetOrCreateSharedValue(registryKey, func() interface{} {
+		return kipxe.NewRegistry()
+	}).(*kipxe.Registry)
 }

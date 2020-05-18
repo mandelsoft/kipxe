@@ -27,22 +27,22 @@ import (
 	"github.com/gardener/controller-manager-library/pkg/types/infodata/simple"
 )
 
-type Profiles struct {
+type BootProfiles struct {
 	lock     sync.RWMutex
-	elements map[string]*Profile
-	nested   *Documents
+	elements map[string]*BootProfile
+	nested   *BootResources
 	users    map[string]NameSet
 }
 
-func NewProfiles(nested *Documents) *Profiles {
-	return &Profiles{
-		elements: map[string]*Profile{},
+func NewProfiles(nested *BootResources) *BootProfiles {
+	return &BootProfiles{
+		elements: map[string]*BootProfile{},
 		users:    map[string]NameSet{},
 		nested:   nested,
 	}
 }
 
-func (this *Profiles) Recheck(set NameSet) NameSet {
+func (this *BootProfiles) Recheck(set NameSet) NameSet {
 	this.lock.Lock()
 	this.lock.Unlock()
 	recheck := NameSet{}
@@ -55,7 +55,7 @@ func (this *Profiles) Recheck(set NameSet) NameSet {
 	return recheck
 }
 
-func (this *Profiles) check(m *Profile) error {
+func (this *BootProfiles) check(m *BootProfile) error {
 	for _, d := range m.deliverables {
 		if e := this.nested.Get(d.Name()); e != nil {
 			if e.Error() != nil {
@@ -68,13 +68,13 @@ func (this *Profiles) check(m *Profile) error {
 	return nil
 }
 
-func (this *Profiles) Get(name Name) *Profile {
+func (this *BootProfiles) Get(name Name) *BootProfile {
 	this.lock.Lock()
 	this.lock.Unlock()
 	return this.elements[name.String()]
 }
 
-func (this *Profiles) Set(m *Profile) (NameSet, error) {
+func (this *BootProfiles) Set(m *BootProfile) (NameSet, error) {
 	this.lock.Lock()
 	defer this.lock.Unlock()
 
@@ -100,7 +100,7 @@ func (this *Profiles) Set(m *Profile) (NameSet, error) {
 	return users.Copy(), m.error
 }
 
-func (this *Profiles) Delete(name Name) NameSet {
+func (this *BootProfiles) Delete(name Name) NameSet {
 	this.lock.Lock()
 	defer this.lock.Unlock()
 
@@ -116,7 +116,7 @@ func (this *Profiles) Delete(name Name) NameSet {
 	return users.Copy()
 }
 
-func (this *Profiles) AddUser(name Name, user Name) {
+func (this *BootProfiles) AddUser(name Name, user Name) {
 	this.lock.Lock()
 	defer this.lock.Unlock()
 
@@ -129,7 +129,7 @@ func (this *Profiles) AddUser(name Name, user Name) {
 	set.Add(user)
 }
 
-func (this *Profiles) DeleteUser(name Name, user Name) {
+func (this *BootProfiles) DeleteUser(name Name, user Name) {
 	this.lock.Lock()
 	defer this.lock.Unlock()
 
@@ -168,7 +168,7 @@ func (this *Deliverable) Path() string {
 
 ////////////////////////////////////////////////////////////////////////////////
 
-type Profile struct {
+type BootProfile struct {
 	Element
 	error        error
 	mapping      *Mapping
@@ -177,7 +177,7 @@ type Profile struct {
 	paths        map[string]*Deliverable
 }
 
-func NewProfile(name Name, mapping *Mapping, values simple.Values, deliverables ...*Deliverable) (*Profile, error) {
+func NewProfile(name Name, mapping *Mapping, values simple.Values, deliverables ...*Deliverable) (*BootProfile, error) {
 	m := map[string]*Deliverable{}
 	p := map[string]*Deliverable{}
 	for i, d := range deliverables {
@@ -193,7 +193,7 @@ func NewProfile(name Name, mapping *Mapping, values simple.Values, deliverables 
 		p[d.path] = d
 		m[d.name.String()] = d
 	}
-	return &Profile{
+	return &BootProfile{
 		Element:      NewElement(name),
 		mapping:      mapping,
 		values:       values,
@@ -202,11 +202,11 @@ func NewProfile(name Name, mapping *Mapping, values simple.Values, deliverables 
 	}, nil
 }
 
-func (this *Profile) Error() error {
+func (this *BootProfile) Error() error {
 	return this.error
 }
 
-func (this *Profile) Documents() NameSet {
+func (this *BootProfile) Documents() NameSet {
 	set := NameSet{}
 	for _, d := range this.deliverables {
 		set.Add(d.Name())
@@ -214,15 +214,15 @@ func (this *Profile) Documents() NameSet {
 	return set
 }
 
-func (this *Profile) GetMapping() *Mapping {
+func (this *BootProfile) GetMapping() *Mapping {
 	return this.mapping
 }
 
-func (this *Profile) GetValues() simple.Values {
+func (this *BootProfile) GetValues() simple.Values {
 	return this.values
 }
 
-func (this *Profile) GetDeliverableForPath(path string) *Deliverable {
+func (this *BootProfile) GetDeliverableForPath(path string) *Deliverable {
 	return this.paths[path]
 }
 
