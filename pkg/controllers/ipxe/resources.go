@@ -136,7 +136,11 @@ func NewResource(m *v1alpha1.BootResource, cache kipxe.Cache) (*kipxe.BootResour
 				if m.Spec.Volatile {
 					cache = nil
 				}
-				source = kipxe.NewURLSource(mime, u, cache)
+				if m.Spec.Redirect != nil && *m.Spec.Redirect {
+					source = kipxe.NewURLRedirectSource(mime, u, cache)
+				} else {
+					source = kipxe.NewURLSource(mime, u, cache)
+				}
 			} else {
 				source = kipxe.NewDataSource(mime, nil)
 			}

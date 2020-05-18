@@ -49,6 +49,7 @@ type BootResource struct {
 }
 
 type BootResourceSpec struct {
+	// +optional
 	MimeType string `json:"mimeType,omitempty"`
 	// +kubebuilder:validation:XPreserveUnknownFields
 	// +kubebuilder:pruning:PreserveUnknownFields
@@ -59,7 +60,9 @@ type BootResourceSpec struct {
 	// +optional
 	URL string `json:"URL,omitempty"`
 	// +optional
-	Volatile bool `json:"volatile"`
+	Volatile bool `json:"volatile,omitempty"`
+	// +optional
+	Redirect *bool `json:"redirect,omitempty"`
 	// +optional
 	Text string `json:"text,omitempty"`
 	// +optional

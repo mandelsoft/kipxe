@@ -56,7 +56,7 @@ func Process(name string, values simple.Values, src Source) (Source, error) {
 		} else {
 			return src, nil
 		}
-	case MIME_TEXT, MIME_GTEXT:
+	case MIME_TEXT, MIME_GTEXT, MIME_SHELL, MIME_XML:
 		b, err := src.Bytes()
 		if err != nil {
 			return nil, err

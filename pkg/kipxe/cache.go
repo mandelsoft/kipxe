@@ -19,6 +19,7 @@
 package kipxe
 
 import (
+	"bufio"
 	"bytes"
 	"crypto/md5"
 	"encoding/base64"
@@ -29,6 +30,7 @@ import (
 	"net/url"
 	"os"
 	"path/filepath"
+	"strings"
 	"sync"
 	"syscall"
 	"time"
@@ -141,7 +143,7 @@ func write(w io.Writer, data []byte) error {
 func (this *cacheAction) fill(writer io.Writer) error {
 	err := this._fill(writer)
 	if err != nil {
-		os.Remove(this.base)
+		this.cache.remove(this.base)
 	}
 	return err
 }
@@ -160,6 +162,13 @@ func (this *cacheAction) _fill(writer io.Writer) error {
 	}
 
 	defer resp.Body.Close()
+	meta := ResourceMeta{}
+	meta[CONTENT_URL] = this.url.String()
+	if t := resp.Header.Get(CONTENT_TYPE); t != "" {
+		meta[CONTENT_TYPE] = t
+	}
+	meta.Write(this.base)
+
 	var tmp [8196]byte
 	var fail error
 	var wfail error
@@ -194,7 +203,7 @@ func (this *cacheAction) _bytes() ([]byte, error) {
 		buf := &bytes.Buffer{}
 		file, err := os.OpenFile(this.base, os.O_RDONLY, 0660)
 		if err != nil {
-			os.Remove(this.base)
+			this.cache.remove(this.base)
 			return nil, err
 		}
 		defer file.Close()
@@ -249,6 +258,11 @@ func (this *cacheAction) Bytes() ([]byte, error) {
 
 func (this *cacheAction) _serve(w http.ResponseWriter, r *http.Request) bool {
 	if fileExists(this.base) {
+		meta := ResourceMeta{}
+		meta.Read(this.base)
+		if meta[CONTENT_TYPE] != "" {
+			w.Header().Set(CONTENT_TYPE, meta[CONTENT_TYPE])
+		}
 		http.ServeFile(w, r, this.base)
 		return true
 	}
@@ -278,6 +292,47 @@ func (this *cacheAction) Serve(w http.ResponseWriter, r *http.Request) {
 
 ////////////////////////////////////////////////////////////////////////////////
 
+type ResourceMeta map[string]string
+
+func (this ResourceMeta) Write(base string) {
+	file, err := os.OpenFile(cachemeta(base), os.O_WRONLY|os.O_CREATE, 0660)
+	if err == nil {
+		defer file.Close()
+		for k, v := range this {
+			file.WriteString(fmt.Sprintf("%s: %s\n", k, v))
+		}
+	}
+}
+
+func (this ResourceMeta) Read(base string) {
+	file, err := os.OpenFile(cachemeta(base), os.O_RDONLY, 0660)
+	if err == nil {
+		defer file.Close()
+		r := bufio.NewReader(file)
+		for {
+			line, err := r.ReadString('\n')
+			if !strings.HasPrefix(line, "#") {
+				i := strings.Index(line, ": ")
+				if i > 0 {
+					this[line[:i]] = line[i+2:]
+				}
+			}
+			if err != nil {
+				break
+			}
+		}
+	}
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+func cachemeta(base string) string {
+	return base + ".meta"
+}
+func iscachemeta(base string) bool {
+	return strings.HasPrefix(base, ".meta")
+}
+
 func NewDirectoryCache(logger logger.LogContext, path string) (*DirCache, error) {
 	err := os.MkdirAll(path, 0770)
 	if err != nil {
@@ -288,6 +343,10 @@ func NewDirectoryCache(logger logger.LogContext, path string) (*DirCache, error)
 		path:       path,
 		actions:    map[string]*cacheAction{},
 	}, nil
+}
+func (this *DirCache) remove(base string) {
+	os.Remove(base)
+	os.Remove(cachemeta(base))
 }
 
 func (this *DirCache) release(key string) {
@@ -353,16 +412,18 @@ func (this *DirCache) Cleanup(logger logger.LogContext, duration time.Duration) 
 	for _, f := range files {
 		action := this.GetActionForKey(f.Name())
 		action.Execute(func() {
-			fpath := filepath.Join(this.path, f.Name())
-			finfo, err := os.Stat(fpath)
-			if err == nil {
-				ts := finfo.Sys().(*syscall.Stat_t).Atim
-				t := time.Unix(int64(ts.Sec), int64(ts.Nsec))
+			if !iscachemeta(f.Name()) {
+				fpath := filepath.Join(this.path, f.Name())
+				finfo, err := os.Stat(fpath)
+				if err == nil {
+					ts := finfo.Sys().(*syscall.Stat_t).Atim
+					t := time.Unix(int64(ts.Sec), int64(ts.Nsec))
 
-				now.Sub(t)
-				if now.Sub(t) > duration {
-					logger.Infof("cleanup %s [%s]", f.Name(), now.Sub(t))
-					os.Remove(fpath)
+					now.Sub(t)
+					if now.Sub(t) > duration {
+						logger.Infof("cleanup %s [%s]", f.Name(), now.Sub(t))
+						this.remove(fpath)
+					}
 				}
 			}
 		})

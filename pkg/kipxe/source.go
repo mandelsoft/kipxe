@@ -34,8 +34,12 @@ const MIME_OCTET = restful.MIME_OCTET
 const MIME_XML = restful.MIME_XML
 const MIME_JSON = restful.MIME_JSON
 const MIME_YAML = "application/x-yaml"
+const MIME_SHELL = "application/x-sh"
 const MIME_TEXT = "text/plain"
 const MIME_GTEXT = "text/"
+
+const CONTENT_TYPE = "Content-Type"
+const CONTENT_URL = "URL"
 
 type Source interface {
 	MimeType() string
@@ -61,7 +65,7 @@ func (this *DataSource) Bytes() ([]byte, error) {
 func (this *DataSource) Serve(w http.ResponseWriter, r *http.Request) {
 	mime := this.MimeType()
 	if mime != "" {
-		w.Header().Add("Content-Type", mime)
+		w.Header().Add(CONTENT_TYPE, mime)
 	}
 	w.Write(this.data)
 }
@@ -94,13 +98,29 @@ func NewBinarySource(mime, b64 string) (Source, error) {
 
 ////////////////////////////////////////////////////////////////////////////////
 
+type URLRedirectSource struct {
+	*URLSource
+}
+
+func NewURLRedirectSource(mime string, url *url.URL, cache Cache) Source {
+	return &URLRedirectSource{
+		URLSource: NewURLSource(mime, url, cache),
+	}
+}
+
+func (this *URLRedirectSource) Serve(w http.ResponseWriter, r *http.Request) {
+	http.Redirect(w, r, this.url.String(), 301)
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
 type URLSource struct {
 	mime  string
 	url   *url.URL
 	cache Cache
 }
 
-func NewURLSource(mime string, url *url.URL, cache Cache) Source {
+func NewURLSource(mime string, url *url.URL, cache Cache) *URLSource {
 	return &URLSource{
 		mime:  mime,
 		url:   url,
@@ -148,14 +168,18 @@ func (this *URLSource) Serve(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	mime := this.MimeType()
-	if mime != "" {
-		w.Header().Add("Content-Type", mime)
-	}
 	resp, err := http.Get(this.url.String())
 	if err != nil {
 		w.WriteHeader(http.StatusUnprocessableEntity)
 		w.Write([]byte(err.Error()))
 		return
+	}
+	t := resp.Header.Get(CONTENT_TYPE)
+	if t != "" {
+		mime = t
+	}
+	if mime != "" {
+		w.Header().Add(CONTENT_TYPE, mime)
 	}
 	defer resp.Body.Close()
 	var tmp [8196]byte

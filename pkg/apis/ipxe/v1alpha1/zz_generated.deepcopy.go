@@ -296,6 +296,11 @@ func (in *BootResourceSpec) DeepCopyInto(out *BootResourceSpec) {
 	*out = *in
 	in.Mapping.DeepCopyInto(&out.Mapping)
 	in.Values.DeepCopyInto(&out.Values)
+	if in.Redirect != nil {
+		in, out := &in.Redirect, &out.Redirect
+		*out = new(bool)
+		**out = **in
+	}
 	return
 }
 

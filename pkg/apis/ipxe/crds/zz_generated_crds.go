@@ -303,6 +303,8 @@ spec:
                 x-kubernetes-preserve-unknown-fields: true
               mimeType:
                 type: string
+              redirect:
+                type: boolean
               text:
                 type: string
               values:
