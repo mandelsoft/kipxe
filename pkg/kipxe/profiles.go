@@ -48,7 +48,7 @@ func (this *BootProfiles) Recheck(set NameSet) NameSet {
 	recheck := NameSet{}
 	for _, name := range set {
 		e := this.elements[name.String()]
-		if e.recheck(func() error { return this.check(e) }) {
+		if e != nil && e.recheck(func() error { return this.check(e) }) {
 			recheck.Add(name)
 		}
 	}
