@@ -18,7 +18,7 @@ as a general matching engine to match requests to configurable resources.
 
 ## The Discovery API
 
-The matching engive use a registration based api to map a request
+The matching engine uses a registration based API to map a request
 to request metadata used for the further matching process.
 
 By default the query parameters of the request are extracted and used
@@ -40,13 +40,13 @@ path and query parameters and determines content to be sent.
 The mapping of requests to served resources is controlled by three kinds of
 elements:
 
-- *Matcher* elements describe matches based on requset metadata. Every matcher
+- *Matcher* elements describe matches based on request metadata. Every matcher
    refers to a *Profile* for describing available resources
 - *Profile* elements provide a list of supported resource paths and maps
    those paths to *Resource* elements
 - *Resource* elements describe content, either as inline content or based on
    URLs. Resources may be futhermore processed incorporating the metadata before
-   seving their content.
+   sevring their content.
 
 This resolving of requests is a five step approach:
 1) Map the request to some metadata by an optional [*Discovery API*](#the-discovery-api)
@@ -67,13 +67,23 @@ For processing the metadata every element may provide own *values* or *mappings*
 - Values are used to enrich the metadata.
 - Mappings use a [*spiff template*](https://github.com/mandelsoft/spiff/blob/master/README.md) to
   map the metadata.
+  
+This way the information bubbling down to the resource can be modified along the 
+matching path. The matcher may provide info evaluated and/or mapped by the profile
+settings and finally reaches the resource that might again adapt the values.
+A common profile might be used by different matchers providing different inbound
+values to control the processing of the finally matched resource(s) according
+to the rules established by the profile.
 
 Finally the resource is used as template:
-- if it is yaml or json, it is used again as *spiff template* by using the metadata as stub for the merge process.
+- if it is yaml or json, it is used again as *spiff template* by using the
+  metadata as stub for the merge process.
 - if it is a text document, the go templating engine is used for processing
 
-As a special case for yaml or json documents, the processed metadata is directly used as response,
-if no further content is defined for the resource
+As a special case for yaml or json documents, the processed metadata is directly
+used as response, if no further content is defined for the resource.
+This way a resource object might directly provide a yaml template for
+the final content.
 
 ## The HTTP Server
 
