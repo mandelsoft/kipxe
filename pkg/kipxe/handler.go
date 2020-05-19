@@ -121,23 +121,12 @@ func merge(a, b simple.Values, set utils.StringSet) simple.Values {
 	return a
 }
 
-func (this *Handler) mapit(desc string, mapping *Mapping, metavalues, values, intermediate simple.Values) (simple.Values, error) {
+func (this *Handler) mapit(desc string, mapping Mapping, metavalues, values, intermediate simple.Values) (simple.Values, error) {
 	var err error
 	if mapping != nil {
-		stubs := []simple.Values{}
-		if values != nil {
-			stubs = append(stubs, values)
-		}
-		stubs = append(stubs, metavalues, intermediate)
-		intermediate, err = mapping.Map(desc, stubs...)
+		intermediate, err = mapping.Map(desc, values, metavalues, intermediate)
 		if err != nil {
 			return nil, err
-		}
-		if out, ok := intermediate["output"]; ok {
-			if v, ok := out.(map[string]interface{}); ok {
-				return simple.Values(v), nil
-			}
-			return nil, fmt.Errorf("unexpected type for mapping output")
 		}
 	} else {
 		if values != nil {
@@ -165,10 +154,13 @@ func (this *Handler) serve(w http.ResponseWriter, req *http.Request) error {
 	}
 
 	path := req.URL.Path[len(this.path):]
+	metadata["RESOURCE_PATH"] = path
 	for k, l := range raw {
 		all := []interface{}{}
 		for _, v := range l {
-			metadata[k] = v
+			if _, ok := metadata[v]; !ok {
+				metadata[k] = v
+			}
 			all = append(all, v)
 		}
 		metadata["__"+k+"__"] = all

@@ -171,13 +171,13 @@ func (this *Deliverable) Path() string {
 type BootProfile struct {
 	Element
 	error        error
-	mapping      *Mapping
+	mapping      Mapping
 	values       simple.Values
 	deliverables map[string]*Deliverable
 	paths        map[string]*Deliverable
 }
 
-func NewProfile(name Name, mapping *Mapping, values simple.Values, deliverables ...*Deliverable) (*BootProfile, error) {
+func NewProfile(name Name, mapping Mapping, values simple.Values, deliverables ...*Deliverable) (*BootProfile, error) {
 	m := map[string]*Deliverable{}
 	p := map[string]*Deliverable{}
 	for i, d := range deliverables {
@@ -214,7 +214,7 @@ func (this *BootProfile) Documents() NameSet {
 	return set
 }
 
-func (this *BootProfile) GetMapping() *Mapping {
+func (this *BootProfile) GetMapping() Mapping {
 	return this.mapping
 }
 

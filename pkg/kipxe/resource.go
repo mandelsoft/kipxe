@@ -155,12 +155,12 @@ type BootResource struct {
 	Element
 	error          error
 	values         simple.Values
-	mapping        *Mapping
+	mapping        Mapping
 	source         Source
 	skipProcessing bool
 }
 
-func NewResource(name Name, mapping *Mapping, values simple.Values, src Source, skipProcessing bool) *BootResource {
+func NewResource(name Name, mapping Mapping, values simple.Values, src Source, skipProcessing bool) *BootResource {
 	return &BootResource{
 		Element:        NewElement(name),
 		source:         src,
@@ -178,7 +178,7 @@ func (this *BootResource) GetValues() simple.Values {
 	return this.values
 }
 
-func (this *BootResource) GetMapping() *Mapping {
+func (this *BootResource) GetMapping() Mapping {
 	return this.mapping
 }
 

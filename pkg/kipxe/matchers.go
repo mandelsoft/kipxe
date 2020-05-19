@@ -99,13 +99,13 @@ func (this *BootProfileMatchers) Delete(name Name) {
 type BootProfileMatcher struct {
 	Element
 	selector labels.Selector
-	mapping  *Mapping
+	mapping  Mapping
 	values   simple.Values
 	profile  Name
 	weight   int
 }
 
-func NewMatcher(name Name, sel labels.Selector, mapping *Mapping, values simple.Values, profile Name, weight int) *BootProfileMatcher {
+func NewMatcher(name Name, sel labels.Selector, mapping Mapping, values simple.Values, profile Name, weight int) *BootProfileMatcher {
 	return &BootProfileMatcher{
 		Element:  NewElement(name),
 		selector: sel,
@@ -125,7 +125,7 @@ func (this BootProfileMatcher) Matches(labels labels.Labels) bool {
 	return this.selector.Matches(labels)
 }
 
-func (this *BootProfileMatcher) GetMapping() *Mapping {
+func (this *BootProfileMatcher) GetMapping() Mapping {
 	return this.mapping
 }
 

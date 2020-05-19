@@ -230,6 +230,81 @@ spec:
 
 </details>
 
+#### Mappings
+
+The initial metadata of a request is derived from the query parameters
+of the request. If a parameter is given more than once, the first value
+is used as direct value. An additional list property with the name `__<name>__`
+is added for every found parameter. It provides the complete list of values for
+this parameter.
+
+The requested resource name (path of the URL below the handlers root path) is
+also added with the property `RESOURCE_PATH` .
+
+This set of metadata if then mapped through the registrations for the 
+[*Discovery API*](#the-discovery-api). The outcome of this mapping
+is the final metadata used for the following matching process.
+
+But it is also avaiable for the processing step of the identified resource content
+at the end of the process just before delivering the content.
+
+These *Processing Values* are passed through the matching chain and can be
+modified and/or enriched in-between. The value structure for these 
+*Processing Values* available for the processing initially is a map with
+a single field `metadata`, which contains the request metadata.
+ 
+Every matching element (matchers, profiles and resources) may define
+a mapping for these processing values before they are finally used by the
+resource content processing.
+
+There are several possible ways for this mapping
+
+- A set of *Values* are specified for the mapping element (In the Kubernetes
+  objects this is the field `values`).
+  Those values are used as defaults for enriching the processing values.
+  It is not a deep merge, only the first level is merged. There is only one
+  exception: The initial field `metadata`, is not replaced, if the values
+  contain such a field, but again merged (again flat).
+  
+- A *Mapping* is given. In the API this is an implementation of the `Mapping`
+  interface. It gets access to merging stubs containing the values, the initial
+  processing values with the `metadat`field and the processing values resulting
+  from the previous matching step.
+  
+  The Kubernetes objects support a field `mapping`, whose
+  content is used as a *spiff* template for processing the processing data.
+  It uses the values, the initial processing data (with the metadata field) and
+  the previous processing data as merge stub (in this order)
+  (see [the spiff doc](https://github.com/mandelsoft/spiff#structural-auto-merge)
+  for merging)
+  
+  If a mapping is given, there is no additional value merging, the merging task
+  is completely left to the mapping implementation.
+  
+  The default spiff based mapper (used by the Kubernetes adaption) checks after
+  the merging for a top-level field `output` if this field is present, its
+  content is used as mapping result. Otherwise the merged template is used
+  as a whole.(This is offered to simplify the composition of completely new
+  processing values as result of a mapping process, which would be difficult in
+  spiff otherwise)
+  
+#### The Resource Processing
+
+After executing all mappings of the matching chain the final processing values
+are used as values for processing of the resource data described by the resource
+element.
+
+Hereby the content is used as template:
+- if it is yaml or json, it is used again as *spiff template* by using the
+  processing values as stub for the merge process.
+- if it is a text document, the go templating engine is used for processing
+  with the processing values as data input
+
+All other content types are not processed.
+
+The task of the mappings in summary is to provide the necessary processing
+context for using the described resource as template.
+
 ### The Machine Manager
 
 The machine manager uses a Kubernetes *Machine* resource to configure

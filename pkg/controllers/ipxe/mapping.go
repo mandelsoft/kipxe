@@ -28,7 +28,7 @@ import (
 	"github.com/mandelsoft/kipxe/pkg/kipxe"
 )
 
-func Compile(field string, values v1alpha1.Values) (*kipxe.Mapping, error) {
+func Compile(field string, values v1alpha1.Values) (kipxe.Mapping, error) {
 	if values.Values == nil {
 		return nil, nil
 	}
@@ -37,5 +37,5 @@ func Compile(field string, values v1alpha1.Values) (*kipxe.Mapping, error) {
 		sort.Sort(errs)
 		return nil, fmt.Errorf("error in %s: %s", field, errs)
 	}
-	return kipxe.NewMapping(mapping), nil
+	return kipxe.NewDefaultMapping(mapping), nil
 }
