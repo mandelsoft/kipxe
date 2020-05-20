@@ -102,6 +102,7 @@ func (this *BootMatchers) Delete(logger logger.LogContext, name resources.Object
 
 func NewMatcher(m *v1alpha1.BootProfileMatcher) (*kipxe.BootProfileMatcher, error) {
 	var err error
+	name := resources.NewObjectName(m.Namespace, m.Name)
 	sel := labels.Everything()
 	if m.Spec.Selector != nil {
 		sel, err = metav1.LabelSelectorAsSelector(m.Spec.Selector)
@@ -121,12 +122,12 @@ func NewMatcher(m *v1alpha1.BootProfileMatcher) (*kipxe.BootProfileMatcher, erro
 			weight = len(m.Spec.Selector.MatchExpressions) + len(m.Spec.Selector.MatchLabels)
 		}
 	}
-	mapping, err := Compile("mapping", m.Spec.Mapping)
+	mapping, err := Mapping(fmt.Sprintf("matcher %s(mapping)", name), m.Spec.Mapping)
 	if err != nil {
 		return nil, err
 	}
 	return kipxe.NewMatcher(
-		resources.NewObjectName(m.Namespace, m.Name),
+		name,
 		sel, mapping, m.Spec.Values.Values,
 		resources.NewObjectName(m.Namespace, m.Spec.Profile),
 		weight,

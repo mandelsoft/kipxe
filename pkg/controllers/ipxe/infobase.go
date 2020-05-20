@@ -22,6 +22,7 @@ import (
 	"github.com/gardener/controller-manager-library/pkg/controllermanager/controller"
 	"github.com/gardener/controller-manager-library/pkg/ctxutil"
 
+	"github.com/mandelsoft/kipxe/pkg/controllers"
 	"github.com/mandelsoft/kipxe/pkg/kipxe"
 )
 
@@ -35,7 +36,9 @@ func GetSharedInfoBase(controller controller.Interface) *InfoBase {
 
 type InfoBase struct {
 	controller controller.Interface
+	registry   *kipxe.Registry
 	cache      *kipxe.DirCache
+	mappers    *MetaDataMappers
 	matchers   *BootMatchers
 	profiles   *BootProfiles
 	resources  *BootResources
@@ -44,11 +47,13 @@ type InfoBase struct {
 func NewInfoBase(controller controller.Interface) *InfoBase {
 	b := &InfoBase{
 		controller: controller,
+		registry:   controllers.GetSharedRegistry(controller),
 	}
 
 	b.resources = newResources(b)
 	b.profiles = newProfiles(b)
 	b.matchers = newMatchers(b)
+	b.mappers = newMappers(b)
 	return b
 }
 
@@ -56,4 +61,5 @@ func (this *InfoBase) Setup() {
 	this.resources.Setup(this.controller)
 	this.profiles.Setup(this.controller)
 	this.matchers.Setup(this.controller)
+	this.mappers.Setup(this.controller)
 }

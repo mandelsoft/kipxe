@@ -171,8 +171,15 @@ func (this *Machines) Update(logger logger.LogContext, obj resources.Object) (*M
 	return m, err
 }
 
+func (this *Machines) Weight() int {
+	return 100
+}
+
+func (this *Machines) String() string {
+	return "machine controller"
+}
+
 func (this *Machines) Map(logger logger.LogContext, values kipxe.MetaData, req *http.Request) (kipxe.MetaData, error) {
-	logger.Infof("matching %s", values)
 	values = values.DeepCopy()
 	m := this.Lookup(values)
 	if m != nil {

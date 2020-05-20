@@ -61,6 +61,8 @@ func (f *sharedInformerFactory) ForResource(resource schema.GroupVersionResource
 		return &genericInformer{resource: resource.GroupResource(), informer: f.Ipxe().V1alpha1().BootResources().Informer()}, nil
 	case v1alpha1.SchemeGroupVersion.WithResource("machines"):
 		return &genericInformer{resource: resource.GroupResource(), informer: f.Ipxe().V1alpha1().Machines().Informer()}, nil
+	case v1alpha1.SchemeGroupVersion.WithResource("metadatamappers"):
+		return &genericInformer{resource: resource.GroupResource(), informer: f.Ipxe().V1alpha1().MetaDataMappers().Informer()}, nil
 
 	}
 

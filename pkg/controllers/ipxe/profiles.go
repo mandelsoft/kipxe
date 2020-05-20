@@ -114,7 +114,7 @@ func NewProfile(m *v1alpha1.BootProfile) (*kipxe.BootProfile, error) {
 		deliverables = append(deliverables, kipxe.NewDeliverable(resources.NewObjectName(m.Namespace, r.DocumentName), r.Path))
 	}
 
-	mapping, err := Compile("mapping", m.Spec.Mapping)
+	mapping, err := Mapping(fmt.Sprintf("profile %s(mapping)", name), m.Spec.Mapping)
 	if err != nil {
 		return nil, err
 	}

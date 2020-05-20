@@ -423,6 +423,89 @@ status:
   storedVersions: []
   `
 	utils.Must(registry.RegisterCRD(data))
+	data = `
+
+---
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  annotations:
+    controller-gen.kubebuilder.io/version: v0.2.4
+  creationTimestamp: null
+  name: metadatamappers.ipxe.mandelsoft.org
+spec:
+  group: ipxe.mandelsoft.org
+  names:
+    kind: MetaDataMapper
+    listKind: MetaDataMapperList
+    plural: metadatamappers
+    shortNames:
+    - mdmap
+    singular: metadatamapper
+  scope: Namespaced
+  versions:
+  - additionalPrinterColumns:
+    - jsonPath: .spec.weight
+      name: Weight
+      type: integer
+    - jsonPath: .spec.URL
+      name: URL
+      type: string
+    - jsonPath: .status.state
+      name: State
+      type: string
+    name: v1alpha1
+    schema:
+      openAPIV3Schema:
+        properties:
+          apiVersion:
+            description: 'APIVersion defines the versioned schema of this representation
+              of an object. Servers should convert recognized schemas to the latest
+              internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+            type: string
+          kind:
+            description: 'Kind is a string value representing the REST resource this
+              object represents. Servers may infer this from the endpoint the client
+              submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+            type: string
+          metadata:
+            type: object
+          spec:
+            properties:
+              URL:
+                type: string
+              mapping:
+                description: Values is a workarround for kubebuilder to be able to
+                  generate an API spec. The Values MUST be marked with "-" to avoud
+                  errors.
+                type: object
+              weight:
+                type: integer
+            required:
+            - weight
+            type: object
+          status:
+            properties:
+              message:
+                type: string
+              state:
+                type: string
+            type: object
+        required:
+        - spec
+        type: object
+    served: true
+    storage: true
+    subresources:
+      status: {}
+status:
+  acceptedNames:
+    kind: ""
+    plural: ""
+  conditions: []
+  storedVersions: []
+  `
+	utils.Must(registry.RegisterCRD(data))
 }
 
 func AddToRegistry(r apiextensions.Registry) {

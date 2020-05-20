@@ -36,6 +36,7 @@ var MATCHER = resources.NewGroupKind(GroupName, "BootProfileMatcher")
 var PROFILE = resources.NewGroupKind(GroupName, "BootProfile")
 var RESOURCE = resources.NewGroupKind(GroupName, "BootResource")
 var MACHINE = resources.NewGroupKind(GroupName, "Machine")
+var METADATAMAPPER = resources.NewGroupKind(GroupName, "MetaDataMapper")
 
 // SchemeGroupVersion is group version used to register these objects
 var SchemeGroupVersion = schema.GroupVersion{Group: GroupName, Version: Version}
@@ -66,6 +67,9 @@ func addKnownTypes(scheme *runtime.Scheme) error {
 
 		&BootResource{},
 		&BootResourceList{},
+
+		&MetaDataMapper{},
+		&MetaDataMapperList{},
 
 		&Machine{},
 		&MachineList{},

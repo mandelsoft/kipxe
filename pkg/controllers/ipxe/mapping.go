@@ -23,12 +23,13 @@ import (
 	"sort"
 
 	"github.com/mandelsoft/spiff/compile"
+	"github.com/mandelsoft/spiff/yaml"
 
 	"github.com/mandelsoft/kipxe/pkg/apis/ipxe/v1alpha1"
 	"github.com/mandelsoft/kipxe/pkg/kipxe"
 )
 
-func Compile(field string, values v1alpha1.Values) (kipxe.Mapping, error) {
+func Compile(field string, values v1alpha1.Values) (yaml.Node, error) {
 	if values.Values == nil {
 		return nil, nil
 	}
@@ -37,5 +38,16 @@ func Compile(field string, values v1alpha1.Values) (kipxe.Mapping, error) {
 		sort.Sort(errs)
 		return nil, fmt.Errorf("error in %s: %s", field, errs)
 	}
-	return kipxe.NewDefaultMapping(mapping), nil
+	return mapping, nil
+}
+
+func Mapping(field string, values v1alpha1.Values) (kipxe.Mapping, error) {
+	if values.Values == nil {
+		return nil, nil
+	}
+	node, err := Compile(field, values)
+	if err != nil {
+		return nil, err
+	}
+	return kipxe.NewDefaultMapping(node), nil
 }

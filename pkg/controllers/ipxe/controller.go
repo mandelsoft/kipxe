@@ -52,8 +52,8 @@ func init() {
 		DefaultWorkerPool(5, 0).
 		OptionsByExample("options", &Config{}).
 		MainResourceByGK(api.MATCHER).
-		CustomResourceDefinitions(api.MATCHER, api.PROFILE, api.RESOURCE).
-		WatchesByGK(api.PROFILE, api.RESOURCE).
+		CustomResourceDefinitions(api.MATCHER, api.PROFILE, api.RESOURCE, api.METADATAMAPPER).
+		WatchesByGK(api.PROFILE, api.RESOURCE, api.METADATAMAPPER).
 		WorkerPool(CMD_CLEANUP, 1, time.Minute).
 		Commands(CMD_CLEANUP).
 		MustRegister()

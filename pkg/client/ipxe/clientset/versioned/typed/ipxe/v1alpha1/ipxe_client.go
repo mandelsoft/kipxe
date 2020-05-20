@@ -30,6 +30,7 @@ type IpxeV1alpha1Interface interface {
 	BootProfileMatchersGetter
 	BootResourcesGetter
 	MachinesGetter
+	MetaDataMappersGetter
 }
 
 // IpxeV1alpha1Client is used to interact with features provided by the ipxe.mandelsoft.org group.
@@ -51,6 +52,10 @@ func (c *IpxeV1alpha1Client) BootResources(namespace string) BootResourceInterfa
 
 func (c *IpxeV1alpha1Client) Machines(namespace string) MachineInterface {
 	return newMachines(c, namespace)
+}
+
+func (c *IpxeV1alpha1Client) MetaDataMappers(namespace string) MetaDataMapperInterface {
+	return newMetaDataMappers(c, namespace)
 }
 
 // NewForConfig creates a new IpxeV1alpha1Client for the given config.

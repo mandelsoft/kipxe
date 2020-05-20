@@ -32,6 +32,16 @@ it gets the default metadata and the request to provide final metadata.
         }
 ```
 
+There are two predefined implementations for a MetaDataMapper:
+- `NewDefaultMetaDataMapper` uses a spiff template to map the metadata.
+  The actual metadata is available as stub with the single field
+  `metadata` containing the metadata fields.
+  The mapping result is taken from a field `output`, if present, otherwise the
+  root values is used.
+- `NewURLMetaDataMapper` send the metadata as json document with a POST request
+  and expects the mapped data again as json content. The mime type 
+  `application/json` is used.
+  
 ## The Matching Engine
 
 The matching engine matches http requests according to their resource
@@ -226,6 +236,37 @@ spec:
       uuid:       (( metadata.uuid || "" ))
       attributes: (( metadata.attributes || {} ))
       macsbypurpose: (( metadata.macsbypurpose || ~~ ))
+```
+
+</details>
+
+#### Metadata Mappers
+
+The resource `MetaDataMapper` can be used to declare metadadata mappers executed
+before the matching process as Kunernetes objects.
+
+Two variants are supported:
+- `spec.URL` if an URL is given a URL mapper is created 
+- `spec.Mppping` if a mapping field is specified a Spiff mapper is created.
+
+Additionally a weight can be set to control the processing order.
+The built-in machine manager (if used) uses the weight `100`.
+
+
+<details><summary>A simple spiff based Metadata Mapper</summary>
+
+```yaml
+apiVersion: ipxe.mandelsoft.org/v1alpha1
+kind: MetaDataMapper
+metadata:
+  name: mapper
+  namespace: default
+spec:
+  weight: 10
+  mapping:
+     output:
+       <<<: (( .metadata ))
+       mapped: (( defined(.metadata.uuid) ? "yes" :"no" ))
 ```
 
 </details>

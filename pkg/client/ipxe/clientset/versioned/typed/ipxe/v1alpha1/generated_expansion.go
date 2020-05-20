@@ -25,3 +25,5 @@ type BootProfileMatcherExpansion interface{}
 type BootResourceExpansion interface{}
 
 type MachineExpansion interface{}
+
+type MetaDataMapperExpansion interface{}

@@ -146,10 +146,11 @@ func NewResource(m *v1alpha1.BootResource, cache kipxe.Cache) (*kipxe.BootResour
 			}
 		}
 	}
-	mapping, err := Compile("mapping", m.Spec.Mapping)
+	name := resources.NewObjectName(m.Namespace, m.Name)
+	mapping, err := Mapping(fmt.Sprintf("resource %s(mapping)", name), m.Spec.Mapping)
 	if err != nil {
 		return nil, err
 	}
-	return kipxe.NewResource(resources.NewObjectName(m.Namespace, m.Name),
-		mapping, m.Spec.Values.Values, source, m.Spec.Plain != nil && *m.Spec.Plain), nil
+	return kipxe.NewResource(name, mapping, m.Spec.Values.Values, source,
+		m.Spec.Plain != nil && *m.Spec.Plain), nil
 }

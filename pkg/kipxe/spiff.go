@@ -22,39 +22,47 @@ import (
 	"fmt"
 
 	"github.com/gardener/controller-manager-library/pkg/types/infodata/simple"
+	"github.com/mandelsoft/spiff/flow"
 	"github.com/mandelsoft/spiff/yaml"
 )
 
-type Mapping interface {
-	Map(name string, values, metavalues, intermediate simple.Values) (simple.Values, error)
+type SpiffTemplate struct {
+	mapping yaml.Node
 }
 
-type defaultMapping struct {
-	SpiffTemplate
-}
-
-func NewDefaultMapping(m yaml.Node) Mapping {
-	return &defaultMapping{
-		SpiffTemplate{m},
+func (this *SpiffTemplate) AddStub(inp *[]yaml.Node, name string, v simple.Values) error {
+	if v == nil {
+		return nil
 	}
+
+	i, err := yaml.Sanitize(name, v)
+	if err != nil {
+		return fmt.Errorf("%s: invalid values: %s", name, err)
+	}
+	*inp = append(*inp, i)
+	return nil
 }
 
-func (this *defaultMapping) Map(name string, values, metavalues, intermediate simple.Values) (simple.Values, error) {
-	var err error
-
-	inputs := []yaml.Node{}
-	err = this.AddStub(&inputs, fmt.Sprintf("%s:%s", name, "values"), values)
+func (this *SpiffTemplate) MergeWith(inputs ...yaml.Node) (simple.Values, error) {
+	stubs, err := flow.PrepareStubs(nil, false, inputs...)
 	if err != nil {
 		return nil, err
 	}
-	err = this.AddStub(&inputs, fmt.Sprintf("%s:%s", name, "metadata"), metavalues)
+	result, err := flow.Apply(nil, this.mapping, stubs)
 	if err != nil {
 		return nil, err
 	}
-	err = this.AddStub(&inputs, fmt.Sprintf("%s:%s", name, "intermediate"), intermediate)
+	v, err := yaml.Normalize(result)
 	if err != nil {
 		return nil, err
 	}
 
-	return this.MergeWith(inputs...)
+	m := v.(map[string]interface{})
+	if out, ok := m["output"]; ok {
+		if x, ok := out.(map[string]interface{}); ok {
+			return simple.Values(x), nil
+		}
+		return nil, fmt.Errorf("unexpected type for mapping output")
+	}
+	return m, nil
 }

@@ -91,6 +91,8 @@ func (this *reconciler) Reconcile(logger logger.LogContext, obj resources.Object
 		_, err = this.infobase.matchers.Update(logger, obj)
 	case *v1alpha1.BootResource:
 		_, err = this.infobase.resources.Update(logger, obj)
+	case *v1alpha1.MetaDataMapper:
+		_, err = this.infobase.mappers.Update(logger, obj)
 	}
 	return reconcile.DelayOnError(logger, err)
 }
@@ -104,6 +106,8 @@ func (this *reconciler) Deleted(logger logger.LogContext, key resources.ClusterO
 		this.infobase.matchers.Delete(logger, key.ObjectName())
 	case v1alpha1.RESOURCE:
 		this.infobase.resources.Delete(logger, key.ObjectName())
+	case v1alpha1.METADATAMAPPER:
+		this.infobase.mappers.Delete(logger, key.ObjectName())
 	}
 	return reconcile.Succeeded(logger)
 }

@@ -49,3 +49,11 @@ type MachineListerExpansion interface{}
 // MachineNamespaceListerExpansion allows custom methods to be added to
 // MachineNamespaceLister.
 type MachineNamespaceListerExpansion interface{}
+
+// MetaDataMapperListerExpansion allows custom methods to be added to
+// MetaDataMapperLister.
+type MetaDataMapperListerExpansion interface{}
+
+// MetaDataMapperNamespaceListerExpansion allows custom methods to be added to
+// MetaDataMapperNamespaceLister.
+type MetaDataMapperNamespaceListerExpansion interface{}

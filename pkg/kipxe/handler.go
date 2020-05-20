@@ -22,55 +22,11 @@ import (
 	"fmt"
 	"net/http"
 	"strings"
-	"sync"
 
 	"github.com/gardener/controller-manager-library/pkg/logger"
 	"github.com/gardener/controller-manager-library/pkg/types/infodata/simple"
 	"github.com/gardener/controller-manager-library/pkg/utils"
 )
-
-type MetaDataMapper interface {
-	Map(logger logger.LogContext, values MetaData, req *http.Request) (MetaData, error)
-}
-
-type Registry struct {
-	lock     sync.RWMutex
-	registry []MetaDataMapper
-}
-
-var _ MetaDataMapper = &Registry{}
-
-func NewRegistry() *Registry {
-	return &Registry{}
-}
-
-func (this *Registry) Register(m MetaDataMapper) {
-	if m != nil {
-		this.lock.Lock()
-		defer this.lock.Unlock()
-		this.registry = append(this.registry, m)
-	}
-}
-
-func (this *Registry) Map(logger logger.LogContext, values MetaData, req *http.Request) (MetaData, error) {
-	this.lock.RLock()
-	defer this.lock.RUnlock()
-	var err error
-
-	for _, m := range this.registry {
-		values, err = m.Map(logger, values, req)
-		if err != nil {
-			break
-		}
-	}
-	return values, err
-}
-
-var registry = NewRegistry()
-
-func RegisterMetaDataMapper(m MetaDataMapper) {
-	registry.Register(m)
-}
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -139,7 +95,7 @@ func (this *Handler) mapit(desc string, mapping Mapping, metavalues, values, int
 func (this *Handler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	err := this.serve(w, req)
 	if err != nil {
-		logger.Error(err)
+		this.Error(err)
 	}
 }
 
@@ -173,20 +129,21 @@ func (this *Handler) serve(w http.ResponseWriter, req *http.Request) error {
 			return this.error(w, http.StatusBadRequest, "cannot map metadata: %s", err)
 		}
 	}
+	this.Infof("matching %s", metadata)
 	list := this.infobase.Matchers.Match(metadata)
 	if len(list) == 0 {
-		logger.Infof("no matcher found")
+		this.Infof("no matcher found")
 		return this.error(w, http.StatusNotFound, "no matching matcher")
 	}
 
-	logger.Infof("found %d matchers", len(list))
+	this.Infof("found %d matchers", len(list))
 	metavalues := simple.Values{}
 	metadata["<<<"] = "(( merge ))"
 	metavalues["metadata"] = simple.Values(metadata)
 
 	for _, m := range list {
 		pname := m.ProfileName()
-		logger.Infof("looking in matcher %s, profile %s", m.Key(), pname)
+		this.Infof("looking in matcher %s, profile %s", m.Key(), pname)
 		profile := this.infobase.Profiles.Get(pname)
 		if profile == nil {
 			return this.error(w, http.StatusNotFound, "profile %q not found", pname)
@@ -202,7 +159,7 @@ func (this *Handler) serve(w http.ResponseWriter, req *http.Request) error {
 			return this.error(w, http.StatusNotFound, "document %q for profile %q resource %q not found", d.Name(), pname, path)
 		}
 
-		logger.Infof("found document %s in profile %s", d.Name(), pname)
+		this.Infof("found document %s in profile %s", d.Name(), pname)
 
 		source := doc.GetSource()
 		if !doc.skipProcessing {

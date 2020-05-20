@@ -32,6 +32,8 @@ type Interface interface {
 	BootResources() BootResourceInformer
 	// Machines returns a MachineInformer.
 	Machines() MachineInformer
+	// MetaDataMappers returns a MetaDataMapperInformer.
+	MetaDataMappers() MetaDataMapperInformer
 }
 
 type version struct {
@@ -63,4 +65,9 @@ func (v *version) BootResources() BootResourceInformer {
 // Machines returns a MachineInformer.
 func (v *version) Machines() MachineInformer {
 	return &machineInformer{factory: v.factory, namespace: v.namespace, tweakListOptions: v.tweakListOptions}
+}
+
+// MetaDataMappers returns a MetaDataMapperInformer.
+func (v *version) MetaDataMappers() MetaDataMapperInformer {
+	return &metaDataMapperInformer{factory: v.factory, namespace: v.namespace, tweakListOptions: v.tweakListOptions}
 }
