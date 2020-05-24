@@ -29,6 +29,10 @@ type MetaData simple.Values
 
 var _ labels.Labels = MetaData{}
 
+func (this MetaData) String() string {
+	return simple.Values(this).String()
+}
+
 func (this MetaData) DeepCopy() MetaData {
 	return MetaData(simple.Values(this).DeepCopy())
 }

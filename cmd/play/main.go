@@ -22,6 +22,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"reflect"
+	"strings"
+	"text/template"
 
 	values "github.com/gardener/controller-manager-library/pkg/types/infodata/simple"
 
@@ -64,4 +66,17 @@ func main() {
 	default:
 		fmt.Printf("found something else\n")
 	}
+
+	t, err := template.New("{.url}").Parse("{{.url}}")
+	if err != nil {
+		panic(err)
+	}
+	buf := &strings.Builder{}
+	err = t.Execute(buf, map[string]interface{}{
+		"url": "https://google.de",
+	})
+	if err != nil {
+		panic(err)
+	}
+	fmt.Printf("URL: %q\n", buf.String())
 }

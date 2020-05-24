@@ -218,6 +218,26 @@ spec:
 
 </details>
 
+The URL may contain go template substitutions based on the
+final processing values. The URL as well as potentially the content
+of the generated URL are eventually processed with the processing values.
+
+<details><summary>URL with substitution</summary>
+
+```yaml
+apiVersion: ipxe.mandelsoft.org/v1alpha1
+kind: BootResource
+metadata:
+  name: kipxe-tar
+  namespace: default
+spec:
+  mimeType: application/octet-stream
+  mapping:
+    org: mandelsoft
+  URL: http://github.com/{{.org}}/kipxe/tarball/master
+```
+
+</details>
 
 <details><summary>Or just a processed json document</summary>
 

@@ -20,9 +20,9 @@ package ipxe
 
 import (
 	"fmt"
-	"html/template"
 	"net/url"
 	"strings"
+	"text/template"
 
 	"github.com/gardener/controller-manager-library/pkg/logger"
 	"github.com/gardener/controller-manager-library/pkg/resources"
@@ -129,18 +129,27 @@ func NewResource(m *v1alpha1.BootResource, cache kipxe.Cache) (*kipxe.BootResour
 			source = s
 		} else {
 			if m.Spec.URL != "" {
-				u, err := url.Parse(m.Spec.URL)
-				if err != nil {
-					return nil, fmt.Errorf("invalid URL (%s): %s", m.Spec.URL, err)
-				}
+				var src kipxe.URLSource
+				var err error
 				if m.Spec.Volatile {
 					cache = nil
 				}
-				if m.Spec.Redirect != nil && *m.Spec.Redirect {
-					source = kipxe.NewURLRedirectSource(mime, u, cache)
+				if strings.Index(m.Spec.URL, "{{") < 0 {
+					u, err := url.Parse(m.Spec.URL)
+					if err != nil {
+						return nil, fmt.Errorf("invalid URL (%s): %s", m.Spec.URL, err)
+					}
+					src = kipxe.NewURLSource(mime, u, cache)
 				} else {
-					source = kipxe.NewURLSource(mime, u, cache)
+					src, err = kipxe.NewMappedURLSource(mime, m.Spec.URL, cache)
+					if err != nil {
+						return nil, err
+					}
 				}
+				if m.Spec.Redirect != nil && *m.Spec.Redirect {
+					src = kipxe.NewURLRedirectSource(src)
+				}
+				source = src
 			} else {
 				source = kipxe.NewDataSource(mime, nil)
 			}

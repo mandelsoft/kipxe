@@ -25,9 +25,12 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+	"strings"
+	"text/template"
 
 	"github.com/emicklei/go-restful"
 	"github.com/gardener/controller-manager-library/pkg/logger"
+	"github.com/gardener/controller-manager-library/pkg/types/infodata/simple"
 )
 
 const MIME_OCTET = restful.MIME_OCTET
@@ -45,6 +48,10 @@ type Source interface {
 	MimeType() string
 	Serve(w http.ResponseWriter, r *http.Request)
 	Bytes() ([]byte, error)
+}
+
+type SourceMapper interface {
+	Map(values simple.Values) (Source, error)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -99,40 +106,65 @@ func NewBinarySource(mime, b64 string) (Source, error) {
 ////////////////////////////////////////////////////////////////////////////////
 
 type URLRedirectSource struct {
-	*URLSource
+	URLSource
 }
 
-func NewURLRedirectSource(mime string, url *url.URL, cache Cache) Source {
+var _ SourceMapper = &URLRedirectSource{}
+
+func NewURLRedirectSource(src URLSource) URLSource {
 	return &URLRedirectSource{
-		URLSource: NewURLSource(mime, url, cache),
+		URLSource: src,
 	}
 }
 
 func (this *URLRedirectSource) Serve(w http.ResponseWriter, r *http.Request) {
-	http.Redirect(w, r, this.url.String(), 301)
+	http.Redirect(w, r, this.URL(), 301)
+}
+
+func (this *URLRedirectSource) Map(values simple.Values) (Source, error) {
+	if m, ok := this.URLSource.(SourceMapper); ok {
+		mapped, err := m.Map(values)
+		if err != nil {
+			return nil, err
+		}
+		if m, ok := mapped.(URLSource); ok {
+			return NewURLRedirectSource(m), nil
+		}
+		return mapped, nil
+	}
+	return this, nil
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 
-type URLSource struct {
+type URLSource interface {
+	Source
+	URL() string
+}
+
+type uRLSource struct {
 	mime  string
 	url   *url.URL
 	cache Cache
 }
 
-func NewURLSource(mime string, url *url.URL, cache Cache) *URLSource {
-	return &URLSource{
+func NewURLSource(mime string, url *url.URL, cache Cache) URLSource {
+	return &uRLSource{
 		mime:  mime,
 		url:   url,
 		cache: cache,
 	}
 }
 
-func (this *URLSource) MimeType() string {
+func (this *uRLSource) URL() string {
+	return this.url.String()
+}
+
+func (this *uRLSource) MimeType() string {
 	return this.mime
 }
 
-func (this *URLSource) Bytes() ([]byte, error) {
+func (this *uRLSource) Bytes() ([]byte, error) {
 	if this.cache != nil {
 		return this.cache.Bytes(this.url)
 	}
@@ -162,7 +194,7 @@ func (this *URLSource) Bytes() ([]byte, error) {
 	return buf.Bytes(), nil
 }
 
-func (this *URLSource) Serve(w http.ResponseWriter, r *http.Request) {
+func (this *uRLSource) Serve(w http.ResponseWriter, r *http.Request) {
 	if this.cache != nil {
 		this.cache.Serve(this.url, w, r)
 		return
@@ -204,6 +236,62 @@ func (this *URLSource) Serve(w http.ResponseWriter, r *http.Request) {
 
 ////////////////////////////////////////////////////////////////////////////////
 
+type MappedURLSource struct {
+	mime  string
+	url   string
+	templ *template.Template
+	cache Cache
+}
+
+var _ SourceMapper = &MappedURLSource{}
+var _ URLSource = &MappedURLSource{}
+
+func NewMappedURLSource(mime string, url string, cache Cache) (*MappedURLSource, error) {
+	templ := template.New(url)
+	templ, err := templ.Parse(url)
+	if err != nil {
+		return nil, err
+	}
+	return &MappedURLSource{
+		url:   url,
+		templ: templ,
+		cache: cache,
+		mime:  mime,
+	}, nil
+}
+
+func (this *MappedURLSource) URL() string {
+	return this.url
+}
+
+func (this *MappedURLSource) MimeType() string {
+	return this.mime
+}
+
+func (this *MappedURLSource) Bytes() ([]byte, error) {
+	return nil, fmt.Errorf("cannot server url template")
+}
+
+func (this *MappedURLSource) Serve(w http.ResponseWriter, r *http.Request) {
+	w.WriteHeader(http.StatusUnprocessableEntity)
+	w.Write([]byte("cannot server url template\n"))
+}
+
+func (this *MappedURLSource) Map(values simple.Values) (Source, error) {
+	buf := &strings.Builder{}
+	err := this.templ.Execute(buf, values)
+	if err != nil {
+		return nil, err
+	}
+	url, err := url.Parse(buf.String())
+	if err != nil {
+		return nil, fmt.Errorf("mapping result %q is no valid URL: %s", buf.String(), err)
+	}
+	return NewURLSource(this.mime, url, this.cache), nil
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
 type FilteredSource struct {
 	DataSource
 	source Source
@@ -215,6 +303,6 @@ func NewFilteredSource(src Source, data []byte) Source {
 			mime: src.MimeType(),
 			data: data,
 		},
-		source: nil,
+		source: src,
 	}
 }

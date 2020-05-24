@@ -162,8 +162,8 @@ func (this *Handler) serve(w http.ResponseWriter, req *http.Request) error {
 		this.Infof("found document %s in profile %s", d.Name(), pname)
 
 		source := doc.GetSource()
+		intermediate := metavalues
 		if !doc.skipProcessing {
-			intermediate := metavalues
 			intermediate, err = this.mapit(fmt.Sprintf("matcher %s", m.Name()), m.GetMapping(), metavalues, m.GetValues(), intermediate)
 			if err != nil {
 				return this.error(w, http.StatusUnprocessableEntity, err.Error())
@@ -177,12 +177,25 @@ func (this *Handler) serve(w http.ResponseWriter, req *http.Request) error {
 				return this.error(w, http.StatusUnprocessableEntity, err.Error())
 			}
 
+			if m, ok := source.(SourceMapper); ok {
+				source, err = m.Map(intermediate)
+				if err != nil {
+					return err
+				}
+			}
+
 			source, err = Process("document", intermediate, source)
 			if err != nil {
 				return this.error(w, http.StatusUnprocessableEntity, err.Error())
 			}
 		}
 
+		if m, ok := source.(SourceMapper); ok {
+			source, err = m.Map(intermediate)
+			if err != nil {
+				return err
+			}
+		}
 		source.Serve(w, req)
 		return nil
 	}

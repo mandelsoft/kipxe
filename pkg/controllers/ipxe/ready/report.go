@@ -42,7 +42,7 @@ func ReadyInfo() (bool, string) {
 	defer lock.Unlock()
 
 	if len(reporters) == 0 {
-		return false, "no ready reported configured"
+		return false, "no ready reporter configured"
 	}
 	ready_cnt := 0
 	notready_cnt := 0
