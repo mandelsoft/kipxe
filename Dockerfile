@@ -15,5 +15,6 @@ FROM alpine:3.11.3 AS base
 FROM base AS kipxe
 
 WORKDIR /
+COPY --from=builder /go/bin/kipxe /kipxe
 
 ENTRYPOINT ["/kipxe"]
