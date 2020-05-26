@@ -122,14 +122,18 @@ func NewMatcher(m *v1alpha1.BootProfileMatcher) (*kipxe.BootProfileMatcher, erro
 			weight = len(m.Spec.Selector.MatchExpressions) + len(m.Spec.Selector.MatchLabels)
 		}
 	}
+	matcher, err := Mapping(fmt.Sprintf("matcher %s(matcher)", name), m.Spec.Matcher, "match")
+	if err != nil {
+		return nil, err
+	}
 	mapping, err := Mapping(fmt.Sprintf("matcher %s(mapping)", name), m.Spec.Mapping)
 	if err != nil {
 		return nil, err
 	}
 	return kipxe.NewMatcher(
 		name,
-		sel, mapping, m.Spec.Values.Values,
+		sel, matcher, mapping, m.Spec.Values.Values,
 		resources.NewObjectName(m.Namespace, m.Spec.Profile),
 		weight,
-	), nil
+	)
 }

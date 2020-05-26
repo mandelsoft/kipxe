@@ -139,6 +139,10 @@ spec:
 
 </details>
 
+If neither a selector nor a matcher field is configured a profile matcher matches
+always. This can be used to add common resource or, with a very low weight, to
+add default resource (content) for resource requests.
+
 <details><summary>Or matching a dedicated type of requester by enriched metadata</summary>
 
 ```yaml
@@ -157,6 +161,34 @@ spec:
 
 </details>
 
+The easiest was to do this, is to use the selector field. It supports the
+basic ligic of a kubernetes label selector to match metada fields.
+
+For more complex matching rules a profile matcher might additionally provide
+those rules in form of a *spiff* template in the spec field `matcher`. It must
+provide a field `match` (basically of type bool) for the match result. The rest of
+the matcher may be any `spiff` logic. It automatically offers the field `metadata`
+to acces the actual metadata in the rules. As processing stubs it gets the
+`values` field plus the request metadata in the field `metadata`.
+
+<details><summary>Or matching a dedicated type of requester by enriched metadata</summary>
+
+```yaml
+apiVersion: ipxe.mandelsoft.org/v1alpha1
+kind: BootProfileMatcher
+metadata:
+  name: matcher1
+  namespace: default
+spec:
+  matcher:
+    match: (( .metadata.task == "node" ))
+  profileName: node-profile
+```
+
+The results of the `selector` and the `matcher` (if present) must both indicate
+a match to let the boot profile matcher match the metadata.
+
+</details>
 
 #### Profiles
 

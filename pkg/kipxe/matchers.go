@@ -24,6 +24,7 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/gardener/controller-manager-library/pkg/logger"
 	"github.com/gardener/controller-manager-library/pkg/types/infodata/simple"
 	"k8s.io/apimachinery/pkg/labels"
 )
@@ -99,21 +100,23 @@ func (this *BootProfileMatchers) Delete(name Name) {
 type BootProfileMatcher struct {
 	Element
 	selector labels.Selector
+	matcher  Mapping
 	mapping  Mapping
 	values   simple.Values
 	profile  Name
 	weight   int
 }
 
-func NewMatcher(name Name, sel labels.Selector, mapping Mapping, values simple.Values, profile Name, weight int) *BootProfileMatcher {
+func NewMatcher(name Name, sel labels.Selector, matcher, mapping Mapping, values simple.Values, profile Name, weight int) (*BootProfileMatcher, error) {
 	return &BootProfileMatcher{
 		Element:  NewElement(name),
 		selector: sel,
+		matcher:  matcher,
 		mapping:  mapping,
 		values:   values,
 		profile:  profile,
 		weight:   weight,
-	}
+	}, nil
 }
 
 func (this BootProfileMatcher) PreferOver(m *BootProfileMatcher) bool {
@@ -121,8 +124,23 @@ func (this BootProfileMatcher) PreferOver(m *BootProfileMatcher) bool {
 		(this.Weight() == m.Weight() && strings.Compare(this.Key(), m.Key()) < 0)
 }
 
-func (this BootProfileMatcher) Matches(labels labels.Labels) bool {
-	return this.selector.Matches(labels)
+func (this BootProfileMatcher) Matches(logger logger.LogContext, meta MetaData) bool {
+	if !this.selector.Matches(meta) {
+		return false
+	}
+	if this.matcher != nil {
+		metavalues := simple.Values{"metadata": simple.Values(meta)}
+		r, err := this.matcher.Map("matcher", this.values, metavalues, nil)
+		if err != nil {
+			logger.Errorf("matcher %s failed: %s", this.Name(), err)
+			return false
+		}
+		if m, ok := r["match"]; ok {
+			return toBool(m)
+		}
+		return false
+	}
+	return true
 }
 
 func (this *BootProfileMatcher) GetMapping() Mapping {
@@ -159,13 +177,13 @@ func (s BootProfileMatcherSlice) Swap(i, j int) {
 	s[i], s[j] = s[j], s[i]
 }
 
-func (this *BootProfileMatchers) Match(labels labels.Labels) BootProfileMatcherSlice {
+func (this *BootProfileMatchers) Match(logger logger.LogContext, meta MetaData) BootProfileMatcherSlice {
 	this.lock.RLock()
 	defer this.lock.RUnlock()
 
 	var found []*BootProfileMatcher
 	for _, m := range this.elements {
-		if m.Matches(labels) {
+		if m.Matches(logger, meta) {
 			found = append(found, m)
 		}
 	}

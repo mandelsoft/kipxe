@@ -155,6 +155,7 @@ func (in *BootProfileMatcherSpec) DeepCopyInto(out *BootProfileMatcherSpec) {
 		*out = new(v1.LabelSelector)
 		(*in).DeepCopyInto(*out)
 	}
+	in.Matcher.DeepCopyInto(&out.Matcher)
 	in.Mapping.DeepCopyInto(&out.Mapping)
 	in.Values.DeepCopyInto(&out.Values)
 	if in.Weight != nil {

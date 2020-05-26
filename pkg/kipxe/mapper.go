@@ -166,16 +166,13 @@ type defaultMapper struct {
 var _ MetaDataMapper = &defaultMapper{}
 
 func NewDefaultMetaDataMapper(m yaml.Node, weight int) MetaDataMapper {
-	if vm, ok := m.Value().(map[string]yaml.Node); ok {
-		if vm["metadata"] == nil {
-			vm["metadata"] = yaml.NewNode("(( &temporary ))", "meta")
-		}
-	}
+	addMetadataAccess(m)
 	return &defaultMapper{
 		SpiffTemplate{m},
 		weight,
 	}
 }
+
 func (this *defaultMapper) Weight() int {
 	return this.weight
 }

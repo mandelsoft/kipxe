@@ -41,13 +41,18 @@ func Compile(field string, values v1alpha1.Values) (yaml.Node, error) {
 	return mapping, nil
 }
 
-func Mapping(field string, values v1alpha1.Values) (kipxe.Mapping, error) {
+func Mapping(field string, values v1alpha1.Values, required ...string) (kipxe.Mapping, error) {
 	if values.Values == nil {
 		return nil, nil
 	}
 	node, err := Compile(field, values)
 	if err != nil {
 		return nil, err
+	}
+	for _, r := range required {
+		if _, ok := values.Values[r]; !ok {
+			return nil, fmt.Errorf("error in %s: field %s required, but missing", field, r)
+		}
 	}
 	return kipxe.NewDefaultMapping(node), nil
 }

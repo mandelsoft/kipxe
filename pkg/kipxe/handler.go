@@ -130,7 +130,7 @@ func (this *Handler) serve(w http.ResponseWriter, req *http.Request) error {
 		}
 	}
 	this.Infof("matching %s", metadata)
-	list := this.infobase.Matchers.Match(metadata)
+	list := this.infobase.Matchers.Match(this, metadata)
 	if len(list) == 0 {
 		this.Infof("no matcher found")
 		return this.error(w, http.StatusNotFound, "no matching matcher")

@@ -34,6 +34,7 @@ type defaultMapping struct {
 }
 
 func NewDefaultMapping(m yaml.Node) Mapping {
+	addMetadataAccess(m)
 	return &defaultMapping{
 		SpiffTemplate{m},
 	}
@@ -57,4 +58,12 @@ func (this *defaultMapping) Map(name string, values, metavalues, intermediate si
 	}
 
 	return this.MergeWith(inputs...)
+}
+
+func addMetadataAccess(m yaml.Node) {
+	if vm, ok := m.Value().(map[string]yaml.Node); ok {
+		if vm["metadata"] == nil {
+			vm["metadata"] = yaml.NewNode("(( &temporary ))", "meta")
+		}
+	}
 }

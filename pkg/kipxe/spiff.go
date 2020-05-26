@@ -66,3 +66,23 @@ func (this *SpiffTemplate) MergeWith(inputs ...yaml.Node) (simple.Values, error)
 	}
 	return m, nil
 }
+
+func toBool(i interface{}) bool {
+	if i == nil {
+		return false
+	}
+	switch v := i.(type) {
+	case bool:
+		return v
+	case string:
+		return len(v) > 0
+	case int64:
+		return v != 0
+	case map[string]interface{}:
+		return len(v) > 0
+	case []interface{}:
+		return len(v) > 0
+	default:
+		return false
+	}
+}

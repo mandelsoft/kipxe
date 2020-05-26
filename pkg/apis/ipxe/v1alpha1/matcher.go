@@ -55,6 +55,8 @@ type BootProfileMatcherSpec struct {
 	// +kubebuilder:validation:XPreserveUnknownFields
 	// +kubebuilder:pruning:PreserveUnknownFields
 	// +optional
+	Matcher Values `json:"matcher,omitempty"`
+	// +optional
 	Mapping Values `json:"mapping,omitempty"`
 	// +optional
 	Values Values `json:"values,omitempty"`

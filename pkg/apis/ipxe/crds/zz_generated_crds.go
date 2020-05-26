@@ -76,6 +76,11 @@ spec:
                   generate an API spec. The Values MUST be marked with "-" to avoud
                   errors.
                 type: object
+              matcher:
+                description: Values is a workarround for kubebuilder to be able to
+                  generate an API spec. The Values MUST be marked with "-" to avoud
+                  errors.
+                type: object
                 x-kubernetes-preserve-unknown-fields: true
               profileName:
                 type: string
