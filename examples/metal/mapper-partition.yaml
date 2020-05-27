@@ -4,7 +4,7 @@ metadata:
   name: partition
   namespace: metal
 spec:
-  weight: 11
+  weight: 110
 
   mapping:
     partitions:

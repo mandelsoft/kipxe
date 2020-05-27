@@ -59,6 +59,10 @@ type MachineSpec struct {
 	// +kubebuilder:validation:XPreserveUnknownFields
 	// +kubebuilder:pruning:PreserveUnknownFields
 	Values Values `json:"values,omitempty"`
+
+	// +kubebuilder:validation:XPreserveUnknownFields
+	// +kubebuilder:pruning:PreserveUnknownFields
+	Additional Values `json:"additional,omitempty"`
 }
 
 type MachineMACs map[string][]string

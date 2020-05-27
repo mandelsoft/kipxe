@@ -34,10 +34,11 @@ import (
 )
 
 type Machine struct {
-	name   resources.ObjectName
-	uuid   string
-	macs   v1alpha1.MachineMACs
-	values simple.Values
+	name       resources.ObjectName
+	uuid       string
+	macs       v1alpha1.MachineMACs
+	values     simple.Values
+	additional simple.Values
 }
 
 type Machines struct {
@@ -187,29 +188,41 @@ func (this *Machines) Map(logger logger.LogContext, values kipxe.MetaData, req *
 		if m.uuid != "" {
 			values["uuid"] = m.uuid
 		}
-		values["attributes"] = v1alpha1.CopyAndNormalize(m.values)
-		values["macsbypurpose"] = v1alpha1.CopyAndNormalize(m.macs)
+		attrs := v1alpha1.CopyAndNormalize(m.values).(map[string]interface{})
+		attrs["macs"] = v1alpha1.CopyAndNormalize(m.macs)
+		values["attributes"] = attrs
+
+		for k, v := range m.additional {
+			if _, ok := values[k]; !ok {
+				values[k] = v
+			}
+		}
+		logger.Infof("found values: %s", values)
 	} else {
-		logger.Infof("no machine found -> trigger registration")
-		values["task"] = "register"
+		logger.Infof("no machine found")
 	}
 	return values, nil
 }
 
 func NewMachine(m *v1alpha1.Machine) (*Machine, error) {
 	values := m.Spec.Values.Values
+	additional := m.Spec.Additional.Values
 	macs := m.Spec.MACs
 
 	if values == nil {
 		values = simple.Values{}
 	}
+	if additional == nil {
+		additional = simple.Values{}
+	}
 	if macs == nil {
 		macs = v1alpha1.MachineMACs{}
 	}
 	return &Machine{
-		name:   resources.NewObjectName(m.Namespace, m.Name),
-		uuid:   m.Spec.UUID,
-		macs:   macs,
-		values: values,
+		name:       resources.NewObjectName(m.Namespace, m.Name),
+		uuid:       m.Spec.UUID,
+		macs:       macs,
+		values:     values,
+		additional: additional,
 	}, nil
 }

@@ -446,6 +446,7 @@ func (in *MachineSpec) DeepCopyInto(out *MachineSpec) {
 		}
 	}
 	in.Values.DeepCopyInto(&out.Values)
+	in.Additional.DeepCopyInto(&out.Additional)
 	return
 }
 

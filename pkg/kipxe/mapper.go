@@ -146,6 +146,7 @@ func (this *Registry) Map(logger logger.LogContext, values MetaData, req *http.R
 		if err != nil {
 			break
 		}
+		logger.Infof("-> %s", values)
 	}
 	return values, err
 }
@@ -182,7 +183,10 @@ func (this *defaultMapper) Map(logger logger.LogContext, values MetaData, req *h
 	inp := simple.Values{}
 	inp["metadata"] = values
 
-	this.AddStub(&inputs, "metadata", inp)
+	err := this.AddStub(&inputs, "metadata", inp)
+	if err != nil {
+		return nil, err
+	}
 	r, err := this.MergeWith(inputs...)
 	if err != nil {
 		return nil, err
