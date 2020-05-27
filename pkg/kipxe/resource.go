@@ -38,8 +38,8 @@ func NewResources() *BootResources {
 }
 
 func (this *BootResources) Recheck(set NameSet) NameSet {
-	this.lock.Lock()
-	this.lock.Unlock()
+	this.lock.RLock()
+	defer this.lock.RUnlock()
 	recheck := NameSet{}
 	for _, name := range set {
 		e := this.elements[name.String()]
@@ -55,8 +55,8 @@ func (this *BootResources) check(m *BootResource) error {
 }
 
 func (this *BootResources) Get(name Name) *BootResource {
-	this.lock.Lock()
-	this.lock.Unlock()
+	this.lock.RLock()
+	defer this.lock.RUnlock()
 	return this.elements[name.String()]
 }
 

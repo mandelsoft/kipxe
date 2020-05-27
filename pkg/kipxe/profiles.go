@@ -43,8 +43,8 @@ func NewProfiles(nested *BootResources) *BootProfiles {
 }
 
 func (this *BootProfiles) Recheck(set NameSet) NameSet {
-	this.lock.Lock()
-	this.lock.Unlock()
+	this.lock.RLock()
+	defer this.lock.RUnlock()
 	recheck := NameSet{}
 	for _, name := range set {
 		e := this.elements[name.String()]
@@ -69,8 +69,8 @@ func (this *BootProfiles) check(m *BootProfile) error {
 }
 
 func (this *BootProfiles) Get(name Name) *BootProfile {
-	this.lock.Lock()
-	this.lock.Unlock()
+	this.lock.RLock()
+	defer this.lock.RUnlock()
 	return this.elements[name.String()]
 }
 

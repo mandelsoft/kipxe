@@ -111,16 +111,12 @@ func (this *Handler) serve(w http.ResponseWriter, req *http.Request) error {
 
 	path := req.URL.Path[len(this.path):]
 	metadata["RESOURCE_PATH"] = path
-	for k, l := range raw {
-		all := []interface{}{}
-		for _, v := range l {
-			if _, ok := metadata[v]; !ok {
-				metadata[k] = v
-			}
-			all = append(all, v)
-		}
-		metadata["__"+k+"__"] = all
-	}
+
+	host := strings.Split(req.RemoteAddr, ":")[0]
+	metadata["ORIGIN"] = host
+	fill(metadata, raw)
+	fill(metadata, req.Header)
+
 	this.Infof("request %s: %s", path, metadata)
 
 	if this.infobase.Registry != nil {
@@ -200,4 +196,17 @@ func (this *Handler) serve(w http.ResponseWriter, req *http.Request) error {
 		return nil
 	}
 	return this.error(w, http.StatusNotFound, "no resource %q found in matches", path)
+}
+
+func fill(dst map[string]interface{}, src map[string][]string) {
+	for k, l := range src {
+		all := []interface{}{}
+		for _, v := range l {
+			if _, ok := dst[v]; !ok {
+				dst[k] = v
+			}
+			all = append(all, v)
+		}
+		dst["__"+k+"__"] = all
+	}
 }

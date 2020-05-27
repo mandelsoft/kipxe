@@ -44,7 +44,8 @@ func (this *SpiffTemplate) AddStub(inp *[]yaml.Node, name string, v simple.Value
 }
 
 func (this *SpiffTemplate) MergeWith(inputs ...yaml.Node) (simple.Values, error) {
-	stubs, err := flow.PrepareStubs(nil, false, inputs...)
+	outer := flow.NewProcessLocalEnvironment(nil, "mapper")
+	stubs, err := flow.PrepareStubs(outer, false, inputs...)
 	if err != nil {
 		return nil, err
 	}
@@ -63,6 +64,12 @@ func (this *SpiffTemplate) MergeWith(inputs ...yaml.Node) (simple.Values, error)
 			return simple.Values(x), nil
 		}
 		return nil, fmt.Errorf("unexpected type for mapping output")
+	}
+	if out, ok := m["metadata"]; ok {
+		if x, ok := out.(map[string]interface{}); ok {
+			return simple.Values(x), nil
+		}
+		return nil, fmt.Errorf("unexpected type for mapping metadata")
 	}
 	return m, nil
 }

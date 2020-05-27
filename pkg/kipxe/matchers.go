@@ -43,8 +43,8 @@ func NewMatchers(nested *BootProfiles) *BootProfileMatchers {
 }
 
 func (this *BootProfileMatchers) Recheck(set NameSet) NameSet {
-	this.lock.Lock()
-	this.lock.Unlock()
+	this.lock.RLock()
+	defer this.lock.RUnlock()
 	recheck := NameSet{}
 	for _, name := range set {
 		e := this.elements[name.String()]
@@ -64,6 +64,12 @@ func (this *BootProfileMatchers) check(m *BootProfileMatcher) error {
 		return fmt.Errorf("profile %s not found", m.profile)
 	}
 	return nil
+}
+
+func (this *BootProfileMatchers) Get(name Name) *BootProfileMatcher {
+	this.lock.RLock()
+	defer this.lock.RUnlock()
+	return this.elements[name.String()]
 }
 
 func (this *BootProfileMatchers) Set(m *BootProfileMatcher) error {
@@ -136,6 +142,7 @@ func (this BootProfileMatcher) Matches(logger logger.LogContext, meta MetaData) 
 			return false
 		}
 		if m, ok := r["match"]; ok {
+			//logger.Infof("matcher %s: %v", this.name, m)
 			return toBool(m)
 		}
 		return false

@@ -17,7 +17,7 @@ github.com/emicklei/go-restful/log
 github.com/evanphx/json-patch
 # github.com/fatih/color v1.7.0
 github.com/fatih/color
-# github.com/gardener/controller-manager-library v0.1.1-0.20200515130547-d01454e4c5c4
+# github.com/gardener/controller-manager-library v0.1.1-0.20200517152919-640aaea59d94
 github.com/gardener/controller-manager-library/hack
 github.com/gardener/controller-manager-library/pkg/certmgmt
 github.com/gardener/controller-manager-library/pkg/certs
@@ -111,7 +111,7 @@ github.com/konsorten/go-windows-terminal-sequences
 github.com/mailru/easyjson/buffer
 github.com/mailru/easyjson/jlexer
 github.com/mailru/easyjson/jwriter
-# github.com/mandelsoft/spiff v1.3.0-beta-7.0.20200517124258-872a3a49a15d
+# github.com/mandelsoft/spiff v1.3.0-beta-7.0.20200527095706-5806931d24d7
 github.com/mandelsoft/spiff/compile
 github.com/mandelsoft/spiff/debug
 github.com/mandelsoft/spiff/dynaml
