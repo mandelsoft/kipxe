@@ -1,0 +1,22 @@
+apiVersion: ipxe.mandelsoft.org/v1alpha1
+kind: BootProfile
+metadata:
+  name: ipxe
+  namespace: metal
+spec:
+  mapping:
+    isURL: (( |v|->length(match("^https?:/",v)) > 0 ))
+    basename: (( |v|->split("/",match("([^?]*)(\\?.*)?", v)[1])[-1] ))
+    ipxe: (( |spec|->*_.template ))
+    template:
+      <<<: (( &template ))
+      kernel: (( spec.kernel ))
+      initrd: (( spec.initrd ))
+      boot: (( .basename(kernel) " " spec.commandLine ))
+    dynamic: (( .isURL(metadata.attributes.kernel) || false ))
+
+    output: (( .ipxe(dynamic ? metadata.attributes :metadata.partition_info) ))
+
+  resources:
+    - path: ipxe
+      documentName: ipxe

@@ -1,0 +1,11 @@
+apiVersion: ipxe.mandelsoft.org/v1alpha1
+kind: BootProfileMatcher
+metadata:
+  name: ipxe
+  namespace: metal
+spec:
+  weight: 100
+  matcher:
+    isURL: (( |v|->length(match("^https?:/",v)) > 0 ))
+    match: (( defined(metadata.attributes.kernel) ? .isURL(metadata.attributes.kernel) :defined(metadata.partition_info) ))
+  profileName: ipxe

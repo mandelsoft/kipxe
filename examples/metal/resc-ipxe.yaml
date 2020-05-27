@@ -1,0 +1,14 @@
+apiVersion: ipxe.mandelsoft.org/v1alpha1
+kind: BootResource
+metadata:
+  name: ipxe
+  namespace: metal
+spec:
+  mimeType: text/plain
+  text: |+
+    #!ipxe
+
+    kernel: {{ .kernel }}
+    initrd: {{ .initrd }}
+    boot:   {{ .boot }}
+

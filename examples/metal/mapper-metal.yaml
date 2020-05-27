@@ -1,0 +1,9 @@
+apiVersion: ipxe.mandelsoft.org/v1alpha1
+kind: MetaDataMapper
+metadata:
+  name: metal
+  namespace: metal
+spec:
+  weight: 10
+
+  URL: http://localhost:8082/lookup

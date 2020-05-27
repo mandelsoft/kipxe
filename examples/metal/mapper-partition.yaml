@@ -1,0 +1,15 @@
+apiVersion: ipxe.mandelsoft.org/v1alpha1
+kind: MetaDataMapper
+metadata:
+  name: partition
+  namespace: metal
+spec:
+  weight: 11
+
+  mapping:
+    partitions:
+       127.0.0.1: frankfurt
+       8.8.8.8: dummy
+    metadata:
+      <<<: (( merge ))
+      partition: (( require(sum[reverse(__X-Forwarded-For__ [ ORIGIN ])|~|s,v|-> .partitions[v] || s]) || ~~ ))
