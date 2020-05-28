@@ -490,6 +490,11 @@ spec:
                   generate an API spec. The Values MUST be marked with "-" to avoud
                   errors.
                 type: object
+              values:
+                description: Values is a workarround for kubebuilder to be able to
+                  generate an API spec. The Values MUST be marked with "-" to avoud
+                  errors.
+                type: object
               weight:
                 type: integer
             required:

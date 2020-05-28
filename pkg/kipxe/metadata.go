@@ -19,6 +19,9 @@
 package kipxe
 
 import (
+	"fmt"
+	"strings"
+
 	"github.com/gardener/controller-manager-library/pkg/types/infodata/simple"
 	"k8s.io/apimachinery/pkg/labels"
 )
@@ -43,6 +46,22 @@ func (this MetaData) Has(key string) bool {
 			return ok
 		}
 	}
+	comps := strings.Split(key, "/")
+	if len(comps) > 1 {
+		var data interface{}
+		data = map[string]interface{}(this)
+		for _, c := range comps {
+			if m, ok := data.(map[string]interface{}); ok {
+				data, ok = m[c]
+				if !ok {
+					return false
+				}
+			} else {
+				return false
+			}
+		}
+		return true
+	}
 	return false
 }
 
@@ -51,6 +70,22 @@ func (this MetaData) Get(key string) string {
 		if s, ok := v.(string); ok {
 			return s
 		}
+	}
+	comps := strings.Split(key, "/")
+	if len(comps) > 1 {
+		var data interface{}
+		data = map[string]interface{}(this)
+		for _, c := range comps {
+			if m, ok := data.(map[string]interface{}); ok {
+				data, ok = m[c]
+				if !ok {
+					return ""
+				}
+			} else {
+				return ""
+			}
+		}
+		return fmt.Sprintf("%v", data)
 	}
 	return ""
 }

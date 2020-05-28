@@ -142,7 +142,7 @@ func NewMapper(m *v1alpha1.MetaDataMapper) (*MetaDataMapper, error) {
 		if err != nil {
 			return nil, fmt.Errorf("invalid mapping: %s", err)
 		}
-		mapper = kipxe.NewDefaultMetaDataMapper(mapping, m.Spec.Weight)
+		mapper = kipxe.NewDefaultMetaDataMapper(mapping, m.Spec.Values.Values, m.Spec.Weight)
 	} else {
 		if m.Spec.URL != nil {
 			u, err := url.Parse(*m.Spec.URL)

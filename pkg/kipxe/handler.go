@@ -25,7 +25,6 @@ import (
 
 	"github.com/gardener/controller-manager-library/pkg/logger"
 	"github.com/gardener/controller-manager-library/pkg/types/infodata/simple"
-	"github.com/gardener/controller-manager-library/pkg/utils"
 )
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -62,22 +61,17 @@ func (this *Handler) error(w http.ResponseWriter, status int, msg string, args .
 	return ErrorString(msg)
 }
 
-func merge(a, b simple.Values, set utils.StringSet) simple.Values {
+func merge(a, b simple.Values) simple.Values {
 	for k, v := range b {
-		if mb, ok := v.(map[string]interface{}); ok && set != nil && a[k] != nil && set.Contains(k) {
-			if ma, ok := a[k].(map[string]interface{}); ok {
-				a[k] = map[string]interface{}(merge(ma, mb, nil))
-				continue
-			}
-		}
 		if a[k] == nil {
 			a[k] = v
 		}
 	}
+	delete(a, "metadata")
 	return a
 }
 
-func (this *Handler) mapit(desc string, mapping Mapping, metavalues, values, intermediate simple.Values) (simple.Values, error) {
+func mapit(desc string, mapping Mapping, metavalues, values, intermediate simple.Values) (simple.Values, error) {
 	var err error
 	if mapping != nil {
 		intermediate, err = mapping.Map(desc, values, metavalues, intermediate)
@@ -86,7 +80,7 @@ func (this *Handler) mapit(desc string, mapping Mapping, metavalues, values, int
 		}
 	} else {
 		if values != nil {
-			return merge(intermediate, values, utils.NewStringSet("metadata")), nil
+			return merge(intermediate, values), nil
 		}
 	}
 	return intermediate, nil
@@ -160,15 +154,15 @@ func (this *Handler) serve(w http.ResponseWriter, req *http.Request) error {
 		source := doc.GetSource()
 		intermediate := metavalues
 		if !doc.skipProcessing {
-			intermediate, err = this.mapit(fmt.Sprintf("matcher %s", m.Name()), m.GetMapping(), metavalues, m.GetValues(), intermediate)
+			intermediate, err = mapit(fmt.Sprintf("matcher %s", m.Name()), m.GetMapping(), metavalues, m.GetValues(), intermediate)
 			if err != nil {
 				return this.error(w, http.StatusUnprocessableEntity, err.Error())
 			}
-			intermediate, err = this.mapit(fmt.Sprintf("profile %s", pname), profile.GetMapping(), metavalues, profile.GetValues(), intermediate)
+			intermediate, err = mapit(fmt.Sprintf("profile %s", pname), profile.GetMapping(), metavalues, profile.GetValues(), intermediate)
 			if err != nil {
 				return this.error(w, http.StatusUnprocessableEntity, err.Error())
 			}
-			intermediate, err = this.mapit(fmt.Sprintf("profile %s, document %s", pname, d.Name()), doc.GetMapping(), metavalues, doc.GetValues(), intermediate)
+			intermediate, err = mapit(fmt.Sprintf("profile %s, document %s", pname, d.Name()), doc.GetMapping(), metavalues, doc.GetValues(), intermediate)
 			if err != nil {
 				return this.error(w, http.StatusUnprocessableEntity, err.Error())
 			}

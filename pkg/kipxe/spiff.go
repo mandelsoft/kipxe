@@ -21,10 +21,13 @@ package kipxe
 import (
 	"fmt"
 
+	"github.com/gardener/controller-manager-library/pkg/logger"
 	"github.com/gardener/controller-manager-library/pkg/types/infodata/simple"
 	"github.com/mandelsoft/spiff/flow"
 	"github.com/mandelsoft/spiff/yaml"
 )
+
+var log bool
 
 type SpiffTemplate struct {
 	mapping yaml.Node
@@ -49,6 +52,13 @@ func (this *SpiffTemplate) MergeWith(inputs ...yaml.Node) (simple.Values, error)
 	if err != nil {
 		return nil, err
 	}
+	if log {
+		logger.Infof("=================================")
+		for i, v := range append([]yaml.Node{this.mapping}, stubs...) {
+			r, _ := yaml.Normalize(v)
+			logger.Infof("<- %d: %s", i, simple.Values(r.(map[string]interface{})))
+		}
+	}
 	result, err := flow.Apply(nil, this.mapping, stubs)
 	if err != nil {
 		return nil, err
@@ -57,19 +67,30 @@ func (this *SpiffTemplate) MergeWith(inputs ...yaml.Node) (simple.Values, error)
 	if err != nil {
 		return nil, err
 	}
-
+	if log {
+		logger.Infof("->: %s", simple.Values(v.(map[string]interface{})))
+	}
 	m := v.(map[string]interface{})
 	if out, ok := m["output"]; ok {
 		if x, ok := out.(map[string]interface{}); ok {
+			if log {
+				logger.Infof("output ->: %s", simple.Values(x))
+			}
 			return simple.Values(x), nil
 		}
 		return nil, fmt.Errorf("unexpected type for mapping output")
 	}
 	if out, ok := m["metadata"]; ok {
 		if x, ok := out.(map[string]interface{}); ok {
+			if log {
+				logger.Infof("meta ->: %s", simple.Values(x))
+			}
 			return simple.Values(x), nil
 		}
 		return nil, fmt.Errorf("unexpected type for mapping metadata")
+	}
+	if log {
+		logger.Infof("all ->: %s", m)
 	}
 	return m, nil
 }

@@ -54,6 +54,8 @@ type MetaDataMapperSpec struct {
 	// +optional
 	Mapping Values `json:"mapping,omitempty"`
 	// +optional
+	Values Values `json:"values,omitempty"`
+	// +optional
 	URL    *string `json:"URL,omitempty"`
 	Weight int     `json:"weight"`
 }

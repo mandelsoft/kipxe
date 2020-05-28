@@ -146,7 +146,6 @@ func (this *Registry) Map(logger logger.LogContext, values MetaData, req *http.R
 		if err != nil {
 			break
 		}
-		logger.Infof("-> %s", values)
 	}
 	return values, err
 }
@@ -160,16 +159,18 @@ func RegisterMetaDataMapper(m MetaDataMapper) {
 ////////////////////////////////////////////////////////////////////////////////
 
 type defaultMapper struct {
-	SpiffTemplate
-	weight int
+	mapping Mapping
+	values  simple.Values
+	weight  int
 }
 
 var _ MetaDataMapper = &defaultMapper{}
 
-func NewDefaultMetaDataMapper(m yaml.Node, weight int) MetaDataMapper {
+func NewDefaultMetaDataMapper(m yaml.Node, values simple.Values, weight int) MetaDataMapper {
 	addMetadataAccess(m)
 	return &defaultMapper{
-		SpiffTemplate{m},
+		NewDefaultMapping(m),
+		values,
 		weight,
 	}
 }
@@ -179,15 +180,10 @@ func (this *defaultMapper) Weight() int {
 }
 
 func (this *defaultMapper) Map(logger logger.LogContext, values MetaData, req *http.Request) (MetaData, error) {
-	inputs := []yaml.Node{}
 	inp := simple.Values{}
 	inp["metadata"] = values
 
-	err := this.AddStub(&inputs, "metadata", inp)
-	if err != nil {
-		return nil, err
-	}
-	r, err := this.MergeWith(inputs...)
+	r, err := mapit("metadata", this.mapping, inp, this.values, simple.Values(values).DeepCopy())
 	if err != nil {
 		return nil, err
 	}

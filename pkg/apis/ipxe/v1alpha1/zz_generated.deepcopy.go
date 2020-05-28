@@ -541,6 +541,7 @@ func (in *MetaDataMapperList) DeepCopyObject() runtime.Object {
 func (in *MetaDataMapperSpec) DeepCopyInto(out *MetaDataMapperSpec) {
 	*out = *in
 	in.Mapping.DeepCopyInto(&out.Mapping)
+	in.Values.DeepCopyInto(&out.Values)
 	if in.URL != nil {
 		in, out := &in.URL, &out.URL
 		*out = new(string)

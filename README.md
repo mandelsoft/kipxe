@@ -122,7 +122,9 @@ of the provided http server.
 
 #### Matchers
 
-Here are some examples for profile definitions.
+Here are some examples for boot profile matcher definitions.
+
+##### Generic Matcher
 
 <details><summary>A matcher may look like this when matching always</summary>
 
@@ -143,6 +145,8 @@ If neither a selector nor a matcher field is configured a profile matcher matche
 always. This can be used to add common resource or, with a very low weight, to
 add default resource (content) for resource requests.
 
+##### Selector based Matcher
+
 <details><summary>Or matching a dedicated type of requester by enriched metadata</summary>
 
 ```yaml
@@ -162,14 +166,24 @@ spec:
 </details>
 
 The easiest was to do this, is to use the selector field. It supports the
-basic ligic of a kubernetes label selector to match metada fields.
+basic logic of a kubernetes label selector to match metadata fields.
+
+The reuest metadata might be enriched by mappers and may contain more complex
+deep structures. The metadata is basically a deep JSON document.
+
+This data structure has been adapted to allow selectors to match nested fields,
+also. The name of a nested fiels might be a string composed by a sequence
+of field names seperated by a slash (`/`), for example `foo/bar`.
+
+##### Complex Matchers
 
 For more complex matching rules a profile matcher might additionally provide
 those rules in form of a *spiff* template in the spec field `matcher`. It must
-provide a field `match` (basically of type bool) for the match result. The rest of
-the matcher may be any `spiff` logic. It automatically offers the field `metadata`
-to acces the actual metadata in the rules. As processing stubs it gets the
-`values` field plus the request metadata in the field `metadata`.
+provide a field `match` (basically of type bool) for the match result. The rest
+of the matcher may be any `spiff` logic. The spiff template automatically offers
+the field `metadata` to access the actual metadata in the rules. As processing
+stubs it gets the `values` field plus the request metadata in the
+field `metadata`.
 
 <details><summary>Or matching a dedicated type of requester by enriched metadata</summary>
 
@@ -181,7 +195,7 @@ metadata:
   namespace: default
 spec:
   matcher:
-    match: (( .metadata.task == "node" ))
+    match: (( .metadata.task == "node" -and contains(.metadata.__mac__, "00:00:00:00:00:00))
   profileName: node-profile
 ```
 
@@ -334,12 +348,16 @@ this parameter.
 The requested resource name (path of the URL below the handlers root path) is
 also added with the property `RESOURCE_PATH` .
 
-This set of metadata if then mapped through the registrations for the 
+This set of metadata is then mapped through the registrations for the 
 [*Discovery API*](#the-discovery-api). The outcome of this mapping
 is the final metadata used for the following matching process.
+The Kubernetes flavor also support metadata mappers by a dedicate resource.
+The may describe a `mapping` field which is translated to a *spiff* based
+mapping.
 
 But it is also avaiable for the processing step of the identified resource content
-at the end of the process just before delivering the content.
+at the end of the process just before delivering the content to map
+metadata.
 
 These *Processing Values* are passed through the matching chain and can be
 modified and/or enriched in-between. The value structure for these 
@@ -350,14 +368,14 @@ Every matching element (matchers, profiles and resources) may define
 a mapping for these processing values before they are finally used by the
 resource content processing.
 
-There are several possible ways for this mapping
+There are several possible ways for those *mappings* usable both mapping
+scenarios described above:
 
 - A set of *Values* are specified for the mapping element (In the Kubernetes
   objects this is the field `values`).
   Those values are used as defaults for enriching the processing values.
-  It is not a deep merge, only the first level is merged. There is only one
-  exception: The initial field `metadata`, is not replaced, if the values
-  contain such a field, but again merged (again flat).
+  It is not a deep merge, only the first level is merged. This can be used
+  to enrich the processing values by defaults.
   
 - A *Mapping* is given. In the API this is an implementation of the `Mapping`
   interface. It gets access to merging stubs containing the values, the initial
@@ -374,12 +392,25 @@ There are several possible ways for this mapping
   If a mapping is given, there is no additional value merging, the merging task
   is completely left to the mapping implementation.
   
-  The default spiff based mapper (used by the Kubernetes adaption) checks after
-  the merging for a top-level field `output` if this field is present, its
-  content is used as mapping result. Otherwise the merged template is used
-  as a whole.(This is offered to simplify the composition of completely new
-  processing values as result of a mapping process, which would be difficult in
-  spiff otherwise)
+  The default spiff based mapper (used by the Kubernetes adaption)
+  supports several usage modes, all of them have implicit access to the request
+  metadata via the field `metadata`:
+  
+  - *pure metadata modification*  
+    if the template specifies the `metadata` field as non-temporary field,
+    the result of the mapping is its content. This can be used, for example for
+    mapping fields in metadata mappers.
+  - *dedicated output field*  
+    if the template specifies a field with the name `output`, the mapping result
+    is the content of this field. This can be used to compose a completely new
+    structure of the processing values.
+  - *plain template*  
+    if neither the metadata field is given, nor the output field, the content of
+    the complete processing result of the template (non-temporary fields) is
+    used. The implicit `metadata` field is a temporary field. This mode can be
+    used to create an initial or modify a given set of processing values by
+    accessing the original request metadata.
+
   
 #### The Resource Processing
 

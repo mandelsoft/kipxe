@@ -184,7 +184,6 @@ func (this *Machines) Map(logger logger.LogContext, values kipxe.MetaData, req *
 	values = values.DeepCopy()
 	m := this.Lookup(values)
 	if m != nil {
-		logger.Infof("found machine %s", m.name)
 		if m.uuid != "" {
 			values["uuid"] = m.uuid
 		}
@@ -197,7 +196,7 @@ func (this *Machines) Map(logger logger.LogContext, values kipxe.MetaData, req *
 				values[k] = v
 			}
 		}
-		logger.Infof("found values: %s", values)
+		logger.Infof("found machine %s: %s", m.name, values)
 	} else {
 		logger.Infof("no machine found")
 	}
