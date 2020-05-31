@@ -73,6 +73,22 @@ func (this *Config) Prepare() error {
 		if this.Cert.Secret == "" && this.Cert.CertFile == "" {
 			return fmt.Errorf("secret or cerificate file required for TLS mode")
 		}
+	} else {
+		opt := this.set.GetOption("certificate-mode")
+		if !opt.Changed() && this.Cert.Secret == "" && this.Cert.CertFile == "" {
+			this.CertMode = CERT_NONE
+		}
 	}
+	if this.CertMode == CERT_MANAGE {
+		if this.Cert.Secret == "" {
+			return fmt.Errorf("secret required for managed certificate")
+		}
+	}
+	if this.CertMode != CERT_NONE {
+		if this.Cert.Secret == "" && this.Cert.CertFile == "" {
+			return fmt.Errorf("secret or cerificate file required for providing certificate")
+		}
+	}
+
 	return nil
 }

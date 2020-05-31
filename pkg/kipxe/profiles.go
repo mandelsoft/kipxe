@@ -20,6 +20,7 @@ package kipxe
 
 import (
 	"fmt"
+	"regexp"
 	"strings"
 	"sync"
 
@@ -147,15 +148,24 @@ func (this *BootProfiles) DeleteUser(name Name, user Name) {
 ////////////////////////////////////////////////////////////////////////////////
 
 type Deliverable struct {
-	name Name
-	path string
+	name    Name
+	path    string
+	pattern *regexp.Regexp
 }
 
 func NewDeliverable(name Name, path string) *Deliverable {
 	if strings.HasPrefix(path, "/") {
 		path = path[1:]
 	}
-	return &Deliverable{name, path}
+	return &Deliverable{name, path, nil}
+}
+
+func NewDeliverableByPattern(name Name, pattern string) (*Deliverable, error) {
+	re, err := regexp.Compile(pattern)
+	if err != nil {
+		return nil, err
+	}
+	return &Deliverable{name, "", re}, nil
 }
 
 func (this *Deliverable) Name() Name {
@@ -166,6 +176,10 @@ func (this *Deliverable) Path() string {
 	return this.path
 }
 
+func (this *Deliverable) Pattern() *regexp.Regexp {
+	return this.pattern
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 
 type BootProfile struct {
@@ -174,23 +188,32 @@ type BootProfile struct {
 	mapping      Mapping
 	values       simple.Values
 	deliverables map[string]*Deliverable
+	patterns     []*Deliverable
 	paths        map[string]*Deliverable
 }
 
 func NewProfile(name Name, mapping Mapping, values simple.Values, deliverables ...*Deliverable) (*BootProfile, error) {
 	m := map[string]*Deliverable{}
-	p := map[string]*Deliverable{}
+	paths := map[string]*Deliverable{}
+	patterns := []*Deliverable{}
 	for i, d := range deliverables {
 		if strings.TrimSpace(d.name.String()) == "" {
 			return nil, fmt.Errorf("entry %d: empty document name", i)
 		}
 		if strings.TrimSpace(d.path) == "" {
-			return nil, fmt.Errorf("entry %d: empty path", i)
+			if d.pattern == nil {
+				return nil, fmt.Errorf("entry %d: neither path nor pattern specified", i)
+			}
+			patterns = append(patterns, d)
+		} else {
+			if d.pattern != nil {
+				return nil, fmt.Errorf("entry %d: both, path and pattern specified", i)
+			}
+			if old := m[d.path]; old != nil {
+				return nil, fmt.Errorf("duplicate deliverable for path %s (%s and %s)", old.name, d.name)
+			}
+			paths[d.path] = d
 		}
-		if old := m[d.path]; old != nil {
-			return nil, fmt.Errorf("duplicate deliverable for path %s (%s and %s)", old.name, d.name)
-		}
-		p[d.path] = d
 		m[d.name.String()] = d
 	}
 	return &BootProfile{
@@ -198,7 +221,8 @@ func NewProfile(name Name, mapping Mapping, values simple.Values, deliverables .
 		mapping:      mapping,
 		values:       values,
 		deliverables: m,
-		paths:        p,
+		paths:        paths,
+		patterns:     patterns,
 	}, nil
 }
 
@@ -222,8 +246,19 @@ func (this *BootProfile) GetValues() simple.Values {
 	return this.values
 }
 
-func (this *BootProfile) GetDeliverableForPath(path string) *Deliverable {
-	return this.paths[path]
+func (this *BootProfile) GetDeliverableForPath(path string) (*Deliverable, []string) {
+	d := this.paths[path]
+	if d != nil {
+		return d, []string{path}
+	}
+	for _, p := range this.patterns {
+		if list := p.pattern.FindStringSubmatch(path); len(list) > 0 {
+			if list[0] == path || "/"+list[0] == path {
+				return p, list
+			}
+		}
+	}
+	return nil, nil
 }
 
 ////////////////////////////////////////////////////////////////////////////////

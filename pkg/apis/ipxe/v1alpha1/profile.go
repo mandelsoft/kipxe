@@ -59,12 +59,16 @@ type BootProfileSpec struct {
 	// +kubebuilder:validation:XPreserveUnknownFields
 	// +kubebuilder:pruning:PreserveUnknownFields
 	// +optional
-	Mapping   Values           `json:"mapping,omitempty"`
+	Mapping Values `json:"mapping,omitempty"`
+	// +optional
 	Resources []ServedResource `json:"resources,omitempty"`
 }
 
 type ServedResource struct {
-	Path         string `json:"path"`
+	// +optional
+	Path string `json:"path"`
+	// +optional
+	Pattern      string `json:"pattern"`
 	DocumentName string `json:"documentName"`
 }
 

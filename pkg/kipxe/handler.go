@@ -112,9 +112,6 @@ func (this *Handler) serve(w http.ResponseWriter, req *http.Request) error {
 	}
 
 	this.Infof("found %d matchers", len(list))
-	metavalues := simple.Values{}
-	metadata["<<<"] = "(( merge ))"
-	metavalues["metadata"] = simple.Values(metadata)
 
 	for _, m := range list {
 		pname := m.ProfileName()
@@ -124,7 +121,7 @@ func (this *Handler) serve(w http.ResponseWriter, req *http.Request) error {
 			return this.error(w, http.StatusNotFound, "profile %q not found", pname)
 		}
 
-		d := profile.GetDeliverableForPath(path)
+		d, list := profile.GetDeliverableForPath(path)
 		if d == nil {
 			continue
 		}
@@ -137,15 +134,28 @@ func (this *Handler) serve(w http.ResponseWriter, req *http.Request) error {
 		this.Infof("found document %s in profile %s", d.Name(), pname)
 
 		source := doc.GetSource()
+		resmatch := CopyAndNormalize(list)
+		metavalues := simple.Values{}
+		metadata["<<<"] = "(( merge ))"
+		if resmatch != nil {
+			metadata["resource-match"] = resmatch
+		}
+		metavalues["metadata"] = simple.Values(metadata)
 		intermediate := NormValues(metavalues)
 		if !doc.skipProcessing {
 			intermediate, err = mapit(fmt.Sprintf("matcher %s", m.Name()), m.GetMapping(), metavalues, m.GetValues(), intermediate)
 			if err != nil {
 				return this.error(w, http.StatusUnprocessableEntity, err.Error())
 			}
+			if resmatch != nil {
+				intermediate["resource-match"] = resmatch
+			}
 			intermediate, err = mapit(fmt.Sprintf("profile %s", pname), profile.GetMapping(), metavalues, profile.GetValues(), intermediate)
 			if err != nil {
 				return this.error(w, http.StatusUnprocessableEntity, err.Error())
+			}
+			if resmatch != nil {
+				intermediate["resource-match"] = resmatch
 			}
 			intermediate, err = mapit(fmt.Sprintf("profile %s, document %s", pname, d.Name()), doc.GetMapping(), metavalues, doc.GetValues(), intermediate)
 			if err != nil {

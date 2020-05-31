@@ -108,10 +108,26 @@ func NewProfile(m *v1alpha1.BootProfile) (*kipxe.BootProfile, error) {
 	name := resources.NewObjectName(m.Namespace, m.Name)
 	deliverables := []*kipxe.Deliverable{}
 	for i, r := range m.Spec.Resources {
+		var d *kipxe.Deliverable
+		var err error
 		if strings.TrimSpace(r.DocumentName) == "" {
 			return nil, fmt.Errorf("entry %d: empty document name", i)
 		}
-		deliverables = append(deliverables, kipxe.NewDeliverable(resources.NewObjectName(m.Namespace, r.DocumentName), r.Path))
+		if r.Path != "" {
+			if r.Pattern != "" {
+				return nil, fmt.Errorf("entry %d: path and pattern given", i)
+			}
+			d = kipxe.NewDeliverable(resources.NewObjectName(m.Namespace, r.DocumentName), r.Path)
+		} else {
+			if r.Pattern == "" {
+				return nil, fmt.Errorf("entry %d: path or pattern missing", i)
+			}
+			d, err = kipxe.NewDeliverableByPattern(resources.NewObjectName(m.Namespace, r.DocumentName), r.Pattern)
+			if err != nil {
+				return nil, fmt.Errorf("entry %d: invalid path pattern", i, err)
+			}
+		}
+		deliverables = append(deliverables, d)
 	}
 
 	mapping, err := Mapping(fmt.Sprintf("profile %s(mapping)", name), m.Spec.Mapping)

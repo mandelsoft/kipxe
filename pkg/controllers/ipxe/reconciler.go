@@ -52,8 +52,10 @@ var _ reconcile.Interface = &reconciler{}
 
 func (this *reconciler) Setup() {
 	this.infobase.Setup()
-	this.config.Cert.CommonName = this.controller.GetEnvironment().Name()
-	this.config.Cert.Organization = "kipxe"
+	if this.config.CertMode == CERT_MANAGE {
+		this.config.Cert.CommonName = this.controller.GetEnvironment().ControllerManager().GetName()
+		this.config.Cert.Organization = "kipxe"
+	}
 	acc, err := this.config.Cert.CreateAccess(this.controller.GetContext(), this.controller, this.controller.GetMainCluster(), this.controller.GetEnvironment().Namespace(), certsecret.TLSKeys())
 	if err != nil {
 		panic(err)

@@ -147,7 +147,9 @@ func (this *Registry) Map(logger logger.LogContext, values MetaData, req *http.R
 			logger.Errorf("mapping failed: %s", err)
 			break
 		}
-		logger.Infof("mapped to: %s", values)
+		if log {
+			logger.Infof("mapped to: %s", values)
+		}
 	}
 	return values, err
 }
@@ -169,7 +171,7 @@ type defaultMapper struct {
 var _ MetaDataMapper = &defaultMapper{}
 
 func NewDefaultMetaDataMapper(m yaml.Node, values simple.Values, weight int) MetaDataMapper {
-	addMetadataAccess(m)
+	addImplicitAccess(m)
 	return &defaultMapper{
 		NewDefaultMapping(m),
 		values,

@@ -213,9 +213,10 @@ spec:
                       type: string
                     path:
                       type: string
+                    pattern:
+                      type: string
                   required:
                   - documentName
-                  - path
                   type: object
                 type: array
               values:

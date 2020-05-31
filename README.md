@@ -224,6 +224,22 @@ spec:
 
 </details>
 
+A resource may alternatively be declared by a pattern
+([regular expression](https://github.com/google/re2/wiki/Syntax))
+(field `pattern`).
+If a profile is searched for a resource, first the direct (path) matches are 
+checked. If no direct path is found, all patterns in the given order are
+checked for a match. A pattern must match the requested resource path
+completely (with or without the leading slash (`/`)).
+
+The first matching entry is used to resolve the resource
+request. The processing values and the request metadata are enriched by the
+match information of the resource. The field `resource-match` contains a list
+of values of all matched text for the complete pattern and all sub expressions
+in the order they are defined in the pattern.
+
+For exaample a pattern `i(nfo)?` matches the resource `info` with the 
+values `[ "info", "nfo" ]` in the field `resource-match`.
 
 #### Resources
 
@@ -394,7 +410,8 @@ scenarios described above:
   
   The default spiff based mapper (used by the Kubernetes adaption)
   supports several usage modes, all of them have implicit access to the request
-  metadata via the field `metadata`:
+  metadata via the field `metadata` and the previous chained intermediate
+  processing values via the implicit field `current`.
   
   - *pure metadata modification*  
     if the template specifies the `metadata` field as non-temporary field,
@@ -463,6 +480,27 @@ spec:
 
 </details>
 
+## Certificates
+
+The ipxe server can run with http or https.
+For https a TLS secret must be specified for the Kubernetes version of the
+server. It can completely be maintained by the server.
+
+The option `--certificate-mode` can be used to control this behaviour.
+If set to `none`, nothing is done and no certificate is injected into the 
+request metadata. If TLS is requested, nevertleless a secret or certificate
+files must be given.
+
+The server can run without TLS and maintain a TLS secret that can be used
+by an ingress to let the ingress controller do the TLS termination.
+
+If the mode is not equal to `none` (`managed`or `use`) the ca certificate is
+injected into the request metadata using the field `CACERT` and can be used
+to resolve resource requests (for example for a flat resource `cacert`) using
+a default matcher and profile.
+
+
+
 ## Command Line Reference
 
 ```
@@ -473,10 +511,14 @@ Usage:
 
 Flags:
       --bind-address-http string                         HTTP server bind address
+      --cacertfile string                                kipxe server ca certificate file
       --cache-cleanup.pool.resync-period duration        Period for resynchronization for pool cache-cleanup
       --cache-cleanup.pool.size int                      Worker pool size for pool cache-cleanup
       --cache-dir string                                 enable URL caching in a dedicated directory
       --cache-ttl duration                               TTL for cache entries
+      --cakeyfile string                                 kipxe server ca certificate key file
+      --certfile string                                  kipxe server certificate file
+      --certificate-mode string                          mode for cert management
       --config string                                    config file
   -c, --controllers string                               comma separated list of controllers to start (<name>,<group>,all) (default "all")
       --cpuprofile string                                set file for cpu profiling
@@ -484,15 +526,27 @@ Flags:
       --disable-namespace-restriction                    disable access restriction for namespace local access only
       --grace-period duration                            inactivity grace period for detecting end of cleanup for shutdown
   -h, --help                                             help for kipxe
+      --hostname stringArray                             hostname to use for kipxe registration
+      --ipxe.cacertfile string                           kipxe server ca certificate file of controller ipxe
       --ipxe.cache-cleanup.pool.resync-period duration   Period for resynchronization for pool cache-cleanup of controller ipxe (default 1m0s)
       --ipxe.cache-cleanup.pool.size int                 Worker pool size for pool cache-cleanup of controller ipxe (default 1)
       --ipxe.cache-dir string                            enable URL caching in a dedicated directory of controller ipxe
       --ipxe.cache-ttl duration                          TTL for cache entries of controller ipxe (default 10m0s)
+      --ipxe.cakeyfile string                            kipxe server ca certificate key file of controller ipxe
+      --ipxe.certfile string                             kipxe server certificate file of controller ipxe
+      --ipxe.certificate-mode string                     mode for cert management of controller ipxe (default "manage")
       --ipxe.default.pool.size int                       Worker pool size for pool default of controller ipxe (default 5)
+      --ipxe.hostname stringArray                        hostname to use for kipxe registration of controller ipxe
+      --ipxe.keyfile string                              kipxe server certificate key file of controller ipxe
       --ipxe.local-namespace-only                        server only resources in local namespace of controller ipxe
       --ipxe.pool.resync-period duration                 Period for resynchronization of controller ipxe
       --ipxe.pool.size int                               Worker pool size of controller ipxe
       --ipxe.pxe-port int                                pxe server port of controller ipxe (default 8081)
+      --ipxe.secret string                               name of secret to maintain for kipxe server of controller ipxe
+      --ipxe.service string                              name of service to use for kipxe server of controller ipxe
+      --ipxe.trace-requests                              trace mapping of request data of controller ipxe
+      --ipxe.use-tls                                     use https of controller ipxe
+      --keyfile string                                   kipxe server certificate key file
       --kubeconfig string                                default cluster access
       --kubeconfig.disable-deploy-crds                   disable deployment of required crds for cluster default
       --kubeconfig.id string                             id for cluster default
@@ -511,8 +565,13 @@ Flags:
       --pool.resync-period duration                      Period for resynchronization
       --pool.size int                                    Worker pool size
       --pxe-port int                                     pxe server port
+      --secret string                                    name of secret to maintain for kipxe server
       --server-port-http int                             HTTP server port (serving /healthz, /metrics, ...)
+      --service string                                   name of service to use for kipxe server
+      --trace-requests                                   trace mapping of request data
+      --use-tls                                          use https
       --version                                          version for kipxe
+
 ```
 
 Supported controllers are:
