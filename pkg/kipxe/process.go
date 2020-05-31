@@ -20,8 +20,8 @@ package kipxe
 
 import (
 	"encoding/json"
-	"html/template"
 	"strings"
+	"text/template"
 
 	"github.com/gardener/controller-manager-library/pkg/logger"
 	"github.com/gardener/controller-manager-library/pkg/types/infodata/simple"
@@ -56,7 +56,7 @@ func Process(name string, values simple.Values, src Source) (Source, error) {
 		} else {
 			return src, nil
 		}
-	case MIME_TEXT, MIME_GTEXT, MIME_SHELL, MIME_XML:
+	case MIME_TEXT, MIME_GTEXT, MIME_SHELL, MIME_XML, MIME_CACERT, MIME_PEM:
 		b, err := src.Bytes()
 		if err != nil {
 			return nil, err

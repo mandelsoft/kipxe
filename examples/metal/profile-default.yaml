@@ -1,9 +1,9 @@
 apiVersion: ipxe.mandelsoft.org/v1alpha1
 kind: BootProfile
 metadata:
-  name: hdd
+  name: default
   namespace: metal
 spec:
   resources:
-  - documentName: hdd
-    path: ipxe
+    - path: cacert
+      documentName: cacert

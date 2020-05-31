@@ -54,9 +54,11 @@ type BootProfile struct {
 type BootProfileSpec struct {
 	// +kubebuilder:validation:XPreserveUnknownFields
 	// +kubebuilder:pruning:PreserveUnknownFields
+	// +optional
 	Values Values `json:"values,omitempty"`
 	// +kubebuilder:validation:XPreserveUnknownFields
 	// +kubebuilder:pruning:PreserveUnknownFields
+	// +optional
 	Mapping   Values           `json:"mapping,omitempty"`
 	Resources []ServedResource `json:"resources,omitempty"`
 }

@@ -42,7 +42,7 @@ func main() {
 		},
 	}
 
-	V := v1alpha1.Values{v1alpha1.NormValues(v)}
+	V := v1alpha1.Values{kipxe.NormValues(v)}
 	s, _ := json.MarshalIndent(V.DeepCopy(), "", "  ")
 
 	fmt.Printf("%s\n", s)
@@ -90,4 +90,7 @@ func main() {
 	fmt.Printf("false: %t, %t, %t\n", md.Has("key1"), md.Has("foo/x"), md.Has("foo/bar/x"))
 	fmt.Printf("true : %t, %t, %t\n", md.Has("key"), md.Has("foo"), md.Has("foo/bar"))
 	fmt.Printf("val  : %v, %v, %v\n", md.Get("key"), md.Get("foo"), md.Get("foo/bar"))
+
+	I := v1alpha1.Values{}
+	_ = map[string]interface{}(I.Values)
 }

@@ -54,14 +54,17 @@ type MachineSpec struct {
 	UUID string `json:"uuid,omitempty"`
 	// +kubebuilder:validation:XPreserveUnknownFields
 	// +kubebuilder:pruning:PreserveUnknownFields
+	// +optional
 	MACs MachineMACs `json:"macs,omitempty"`
 
 	// +kubebuilder:validation:XPreserveUnknownFields
 	// +kubebuilder:pruning:PreserveUnknownFields
+	// +optional
 	Values Values `json:"values,omitempty"`
 
 	// +kubebuilder:validation:XPreserveUnknownFields
 	// +kubebuilder:pruning:PreserveUnknownFields
+	// +optional
 	Additional Values `json:"additional,omitempty"`
 }
 

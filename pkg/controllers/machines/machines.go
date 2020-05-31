@@ -187,8 +187,8 @@ func (this *Machines) Map(logger logger.LogContext, values kipxe.MetaData, req *
 		if m.uuid != "" {
 			values["uuid"] = m.uuid
 		}
-		attrs := v1alpha1.CopyAndNormalize(m.values).(map[string]interface{})
-		attrs["macs"] = v1alpha1.CopyAndNormalize(m.macs)
+		attrs := kipxe.CopyAndNormalize(m.values).(map[string]interface{})
+		attrs["macs"] = kipxe.CopyAndNormalize(m.macs)
 		values["attributes"] = attrs
 
 		for k, v := range m.additional {

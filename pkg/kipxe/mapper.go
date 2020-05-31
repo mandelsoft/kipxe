@@ -144,8 +144,10 @@ func (this *Registry) Map(logger logger.LogContext, values MetaData, req *http.R
 		logger.Infof("  mapping metadata with %s", m)
 		values, err = m.Map(logger, values, req)
 		if err != nil {
+			logger.Errorf("mapping failed: %s", err)
 			break
 		}
+		logger.Infof("mapped to: %s", values)
 	}
 	return values, err
 }
@@ -181,9 +183,9 @@ func (this *defaultMapper) Weight() int {
 
 func (this *defaultMapper) Map(logger logger.LogContext, values MetaData, req *http.Request) (MetaData, error) {
 	inp := simple.Values{}
-	inp["metadata"] = values
+	inp["metadata"] = NormValues(simple.Values(values))
 
-	r, err := mapit("metadata", this.mapping, inp, this.values, simple.Values(values).DeepCopy())
+	r, err := mapit("metadata", this.mapping, inp, this.values, simple.Values(values))
 	if err != nil {
 		return nil, err
 	}

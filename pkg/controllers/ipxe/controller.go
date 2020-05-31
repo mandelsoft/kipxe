@@ -77,6 +77,14 @@ func Create(controller controller.Interface) (reconcile.Interface, error) {
 		}
 	}
 
+	if config.TLS {
+		controller.Infof("use TLS")
+	}
+	if config.TraceRequest {
+		controller.Infof("trace requests")
+	}
+	kipxe.Trace(config.TraceRequest)
+	controller.Infof("certificate mode: %s", config.CertMode)
 	this := &reconciler{
 		controller: controller,
 		config:     config,

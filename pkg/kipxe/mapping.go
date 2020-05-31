@@ -43,6 +43,9 @@ func NewDefaultMapping(m yaml.Node) Mapping {
 func (this *defaultMapping) Map(name string, values, metavalues, intermediate simple.Values) (simple.Values, error) {
 	var err error
 
+	if intermediate != nil {
+		metavalues["current"] = intermediate
+	}
 	inputs := []yaml.Node{}
 	err = this.AddStub(&inputs, fmt.Sprintf("%s:%s", name, "values"), values)
 	if err != nil {
@@ -66,4 +69,19 @@ func addMetadataAccess(m yaml.Node) {
 			vm["metadata"] = yaml.NewNode("(( &temporary ))", "meta")
 		}
 	}
+}
+
+func mapit(desc string, mapping Mapping, metavalues, values, intermediate simple.Values) (simple.Values, error) {
+	var err error
+	if mapping != nil {
+		intermediate, err = mapping.Map(desc, values, metavalues, intermediate)
+		if err != nil {
+			return nil, err
+		}
+	} else {
+		if values != nil {
+			return merge(intermediate, values), nil
+		}
+	}
+	return intermediate, nil
 }

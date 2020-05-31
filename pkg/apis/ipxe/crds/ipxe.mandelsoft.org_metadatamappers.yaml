@@ -49,15 +49,13 @@ spec:
               URL:
                 type: string
               mapping:
-                description: Values is a workarround for kubebuilder to be able to
-                  generate an API spec. The Values MUST be marked with "-" to avoud
-                  errors.
+                description: Values is used to specify any document structure
                 type: object
+                x-kubernetes-preserve-unknown-fields: true
               values:
-                description: Values is a workarround for kubebuilder to be able to
-                  generate an API spec. The Values MUST be marked with "-" to avoud
-                  errors.
+                description: Values is used to specify any document structure
                 type: object
+                x-kubernetes-preserve-unknown-fields: true
               weight:
                 type: integer
             required:

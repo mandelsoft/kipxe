@@ -4,7 +4,7 @@ metadata:
   name: hdd
   namespace: metal
 spec:
-  weight: 90
   matcher:
     match: (( defined(metadata.attributes.kernel) ))
+  weight: 90
   profileName: hdd

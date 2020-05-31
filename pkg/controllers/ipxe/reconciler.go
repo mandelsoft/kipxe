@@ -21,6 +21,8 @@ package ipxe
 import (
 	"time"
 
+	certsecret "github.com/gardener/controller-manager-library/pkg/certmgmt/secret"
+	"github.com/gardener/controller-manager-library/pkg/certs"
 	"github.com/gardener/controller-manager-library/pkg/controllermanager/controller"
 	"github.com/gardener/controller-manager-library/pkg/controllermanager/controller/reconcile"
 	"github.com/gardener/controller-manager-library/pkg/logger"
@@ -43,12 +45,20 @@ type reconciler struct {
 	controller controller.Interface
 	config     *Config
 	infobase   *InfoBase
+	cert       certs.CertificateSource
 }
 
 var _ reconcile.Interface = &reconciler{}
 
 func (this *reconciler) Setup() {
 	this.infobase.Setup()
+	this.config.Cert.CommonName = this.controller.GetEnvironment().Name()
+	this.config.Cert.Organization = "kipxe"
+	acc, err := this.config.Cert.CreateAccess(this.controller.GetContext(), this.controller, this.controller.GetMainCluster(), this.controller.GetEnvironment().Namespace(), certsecret.TLSKeys())
+	if err != nil {
+		panic(err)
+	}
+	this.cert = acc
 }
 
 func (this *reconciler) Start() {
@@ -64,7 +74,14 @@ func (this *reconciler) Start() {
 	ipxe.RegisterHandler("/", kipxe.NewHandler(this.controller, "/", infobase))
 	ipxe.Register("/ready", ready.Ready)
 
-	ipxe.Start(nil, "", this.config.PXEPort)
+	cert := this.cert
+	if !this.config.TLS {
+		cert = nil
+	}
+	if this.config.CertMode != CERT_NONE {
+		infobase.Registry.Register(NewCertMapper(this))
+	}
+	ipxe.Start(cert, "", this.config.PXEPort)
 	go func() {
 		time.Sleep(2 * time.Second)
 		ready.Register(&Ready{})

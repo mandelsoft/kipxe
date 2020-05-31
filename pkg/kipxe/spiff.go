@@ -27,7 +27,11 @@ import (
 	"github.com/mandelsoft/spiff/yaml"
 )
 
-var log bool
+var log bool = false
+
+func Trace(b bool) {
+	log = b
+}
 
 type SpiffTemplate struct {
 	mapping yaml.Node

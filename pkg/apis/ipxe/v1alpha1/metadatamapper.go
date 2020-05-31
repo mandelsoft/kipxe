@@ -52,8 +52,12 @@ type MetaDataMapper struct {
 
 type MetaDataMapperSpec struct {
 	// +optional
+	// +kubebuilder:validation:XPreserveUnknownFields
+	// +kubebuilder:pruning:PreserveUnknownFields
 	Mapping Values `json:"mapping,omitempty"`
 	// +optional
+	// +kubebuilder:validation:XPreserveUnknownFields
+	// +kubebuilder:pruning:PreserveUnknownFields
 	Values Values `json:"values,omitempty"`
 	// +optional
 	URL    *string `json:"URL,omitempty"`

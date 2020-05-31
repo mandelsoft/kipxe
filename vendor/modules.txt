@@ -17,13 +17,17 @@ github.com/emicklei/go-restful/log
 github.com/evanphx/json-patch
 # github.com/fatih/color v1.7.0
 github.com/fatih/color
-# github.com/gardener/controller-manager-library v0.1.1-0.20200517152919-640aaea59d94
+# github.com/gardener/controller-manager-library v0.1.1-0.20200530212733-faaef5e0a49e
 github.com/gardener/controller-manager-library/hack
 github.com/gardener/controller-manager-library/pkg/certmgmt
+github.com/gardener/controller-manager-library/pkg/certmgmt/secret
 github.com/gardener/controller-manager-library/pkg/certs
+github.com/gardener/controller-manager-library/pkg/certs/access
+github.com/gardener/controller-manager-library/pkg/certs/file
 github.com/gardener/controller-manager-library/pkg/config
 github.com/gardener/controller-manager-library/pkg/configmain
 github.com/gardener/controller-manager-library/pkg/controllermanager
+github.com/gardener/controller-manager-library/pkg/controllermanager/cert
 github.com/gardener/controller-manager-library/pkg/controllermanager/cluster
 github.com/gardener/controller-manager-library/pkg/controllermanager/config
 github.com/gardener/controller-manager-library/pkg/controllermanager/controller

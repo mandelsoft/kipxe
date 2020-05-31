@@ -22,18 +22,14 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
-	"fmt"
-	"reflect"
 
 	"github.com/gardener/controller-manager-library/pkg/types/infodata/simple"
 )
 
-func NormValues(v simple.Values) simple.Values {
-	return simple.Values(CopyAndNormalize(v).(map[string]interface{}))
-}
-
 // Values is a workarround for kubebuilder to be able to generate
 // an API spec. The Values MUST be marked with "-" to avoud errors.
+
+// Values is used to specify any document structure
 type Values struct {
 	simple.Values `json:"-"`
 }
@@ -60,90 +56,4 @@ func (this *Values) UnmarshalJSON(in []byte) error {
 		return json.Unmarshal(in, &this.Values)
 	}
 	return nil
-}
-
-var mapType = reflect.TypeOf(map[string]interface{}{})
-var arrayType = reflect.TypeOf([]interface{}{})
-
-func CopyAndNormalize(in interface{}) interface{} {
-	if in == nil {
-		return in
-	}
-	switch e := in.(type) {
-	case map[string]string:
-		r := map[string]interface{}{}
-		for k, v := range e {
-			r[k] = CopyAndNormalize(v)
-		}
-		return r
-	case map[string]interface{}:
-		r := map[string]interface{}{}
-		for k, v := range e {
-			r[k] = CopyAndNormalize(v)
-		}
-		return r
-	case Values:
-		r := map[string]interface{}{}
-		for k, v := range e.Values {
-			r[k] = CopyAndNormalize(v)
-		}
-		return r
-	case simple.Values:
-		r := map[string]interface{}{}
-		for k, v := range e {
-			r[k] = CopyAndNormalize(v)
-		}
-		return r
-	case []interface{}:
-		r := []interface{}{}
-		for _, v := range e {
-			r = append(r, v)
-		}
-		return r
-	case []string:
-		r := []interface{}{}
-		for _, v := range e {
-			r = append(r, v)
-		}
-		return r
-	case string:
-		return e
-	case int:
-		return int64(e)
-	case int32:
-		return int64(e)
-	case float32:
-		return float64(e)
-
-	case int64, float64:
-		return e
-	default:
-		value := reflect.ValueOf(e)
-		if value.Kind() == reflect.Map {
-			if value.Type().ConvertibleTo(mapType) {
-				return CopyAndNormalize(value.Convert(mapType).Interface())
-			}
-			if value.Type().Key().Kind() == reflect.String {
-				r := map[string]interface{}{}
-				iter := value.MapRange()
-				for iter.Next() {
-					k := iter.Key()
-					v := iter.Value()
-					r[k.Interface().(string)] = CopyAndNormalize(v.Interface())
-				}
-				return r
-			}
-		}
-		if value.Kind() == reflect.Array || value.Kind() == reflect.Slice {
-			if value.Type().ConvertibleTo(arrayType) {
-				return CopyAndNormalize(value.Convert(arrayType).Interface())
-			}
-			r := make([]interface{}, value.Len(), value.Len())
-			for i := 0; i < value.Len(); i++ {
-				r[i] = CopyAndNormalize(value.Index(i))
-			}
-			return r
-		}
-		panic(fmt.Errorf("invalid type %T", e))
-	}
 }

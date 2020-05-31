@@ -19,25 +19,60 @@
 package ipxe
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/gardener/controller-manager-library/pkg/config"
+	"github.com/gardener/controller-manager-library/pkg/controllermanager/cert"
 )
 
+const CERT_NONE = "none"
+const CERT_MANAGE = "manage"
+const CERT_USE = "use"
+
 type Config struct {
+	set config.OptionSet
+
 	LocalNamespaceOnly bool
 	PXEPort            int
 	CacheDir           string
 	CacheTTL           time.Duration
+
+	TraceRequest bool
+
+	CertMode string
+	TLS      bool
+	Cert     *cert.CertConfig
 }
 
 func (this *Config) AddOptionsToSet(set config.OptionSet) {
+	this.set = set
 	set.AddStringOption(&this.CacheDir, "cache-dir", "", "", "enable URL caching in a dedicated directory")
 	set.AddDurationOption(&this.CacheTTL, "cache-ttl", "", 10*time.Minute, "TTL for cache entries")
 	set.AddBoolOption(&this.LocalNamespaceOnly, "local-namespace-only", "", false, "server only resources in local namespace")
+	set.AddBoolOption(&this.TraceRequest, "trace-requests", "", false, "trace mapping of request data")
 	set.AddIntOption(&this.PXEPort, "pxe-port", "", 8081, "pxe server port")
+
+	set.AddBoolOption(&this.TLS, "use-tls", "", false, "use https")
+	set.AddStringOption(&this.CertMode, "certificate-mode", "", "manage", "mode for cert management")
+	this.Cert = cert.NewCertConfig("kipxe", "")
+	this.Cert.AddOptionsToSet(set)
 }
 
 func (this *Config) Prepare() error {
+	if this.TLS {
+		if this.set != nil {
+			opt := this.set.GetOption("pxe-port")
+			if !opt.Changed() {
+				this.PXEPort = 8443
+			}
+		}
+		if this.CertMode == CERT_NONE {
+			return fmt.Errorf("certificate handling required for TLS mode")
+		}
+		if this.Cert.Secret == "" && this.Cert.CertFile == "" {
+			return fmt.Errorf("secret or cerificate file required for TLS mode")
+		}
+	}
 	return nil
 }

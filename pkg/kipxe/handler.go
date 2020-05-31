@@ -71,21 +71,6 @@ func merge(a, b simple.Values) simple.Values {
 	return a
 }
 
-func mapit(desc string, mapping Mapping, metavalues, values, intermediate simple.Values) (simple.Values, error) {
-	var err error
-	if mapping != nil {
-		intermediate, err = mapping.Map(desc, values, metavalues, intermediate)
-		if err != nil {
-			return nil, err
-		}
-	} else {
-		if values != nil {
-			return merge(intermediate, values), nil
-		}
-	}
-	return intermediate, nil
-}
-
 func (this *Handler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	err := this.serve(w, req)
 	if err != nil {
@@ -152,7 +137,7 @@ func (this *Handler) serve(w http.ResponseWriter, req *http.Request) error {
 		this.Infof("found document %s in profile %s", d.Name(), pname)
 
 		source := doc.GetSource()
-		intermediate := metavalues
+		intermediate := NormValues(metavalues)
 		if !doc.skipProcessing {
 			intermediate, err = mapit(fmt.Sprintf("matcher %s", m.Name()), m.GetMapping(), metavalues, m.GetValues(), intermediate)
 			if err != nil {
