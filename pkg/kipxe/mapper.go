@@ -28,7 +28,9 @@ import (
 	"sort"
 	"sync"
 
+	"github.com/gardener/controller-manager-library/pkg/convert"
 	"github.com/gardener/controller-manager-library/pkg/logger"
+	"github.com/gardener/controller-manager-library/pkg/types"
 	"github.com/gardener/controller-manager-library/pkg/types/infodata/simple"
 	"github.com/mandelsoft/spiff/yaml"
 )
@@ -150,6 +152,9 @@ func (this *Registry) Map(logger logger.LogContext, values MetaData, req *http.R
 		if log {
 			logger.Infof("mapped to: %s", values)
 		}
+		if s := convert.BestEffortString(values[REQUEST_REJECT]); s != "" {
+			break
+		}
 	}
 	return values, err
 }
@@ -185,7 +190,7 @@ func (this *defaultMapper) Weight() int {
 
 func (this *defaultMapper) Map(logger logger.LogContext, values MetaData, req *http.Request) (MetaData, error) {
 	inp := simple.Values{}
-	inp["metadata"] = NormValues(simple.Values(values))
+	inp["metadata"] = types.NormValues(simple.Values(values))
 
 	r, err := mapit("metadata", this.mapping, inp, this.values, simple.Values(values))
 	if err != nil {

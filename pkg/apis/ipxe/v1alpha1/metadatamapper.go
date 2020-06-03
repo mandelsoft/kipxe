@@ -19,6 +19,7 @@
 package v1alpha1
 
 import (
+	"github.com/gardener/controller-manager-library/pkg/types"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -54,11 +55,11 @@ type MetaDataMapperSpec struct {
 	// +optional
 	// +kubebuilder:validation:XPreserveUnknownFields
 	// +kubebuilder:pruning:PreserveUnknownFields
-	Mapping Values `json:"mapping,omitempty"`
+	Mapping types.Values `json:"mapping,omitempty"`
 	// +optional
 	// +kubebuilder:validation:XPreserveUnknownFields
 	// +kubebuilder:pruning:PreserveUnknownFields
-	Values Values `json:"values,omitempty"`
+	Values types.Values `json:"values,omitempty"`
 	// +optional
 	URL    *string `json:"URL,omitempty"`
 	Weight int     `json:"weight"`

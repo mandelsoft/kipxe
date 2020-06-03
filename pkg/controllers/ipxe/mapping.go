@@ -22,14 +22,14 @@ import (
 	"fmt"
 	"sort"
 
+	"github.com/gardener/controller-manager-library/pkg/types"
 	"github.com/mandelsoft/spiff/compile"
 	"github.com/mandelsoft/spiff/yaml"
 
-	"github.com/mandelsoft/kipxe/pkg/apis/ipxe/v1alpha1"
 	"github.com/mandelsoft/kipxe/pkg/kipxe"
 )
 
-func Compile(field string, values v1alpha1.Values) (yaml.Node, error) {
+func Compile(field string, values types.Values) (yaml.Node, error) {
 	if values.Values == nil {
 		return nil, nil
 	}
@@ -41,7 +41,7 @@ func Compile(field string, values v1alpha1.Values) (yaml.Node, error) {
 	return mapping, nil
 }
 
-func Mapping(field string, values v1alpha1.Values, required ...string) (kipxe.Mapping, error) {
+func Mapping(field string, values types.Values, required ...string) (kipxe.Mapping, error) {
 	if values.Values == nil {
 		return nil, nil
 	}

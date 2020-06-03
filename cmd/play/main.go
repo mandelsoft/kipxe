@@ -31,6 +31,8 @@ import (
 	"github.com/mandelsoft/kipxe/pkg/kipxe"
 )
 
+type bla string
+
 func main() {
 	v := values.Values{
 		"v": map[string]interface{}{
@@ -93,4 +95,9 @@ func main() {
 
 	I := v1alpha1.Values{}
 	_ = map[string]interface{}(I.Values)
+
+	x := bla("test")
+
+	fmt.Printf("x: %s\n", kipxe.AsString(&x))
+	fmt.Printf("map: %s\n", kipxe.AsString(map[string]interface{}{"a": "b"}))
 }

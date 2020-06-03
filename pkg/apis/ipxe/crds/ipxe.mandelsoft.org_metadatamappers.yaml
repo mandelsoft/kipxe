@@ -49,11 +49,15 @@ spec:
               URL:
                 type: string
               mapping:
-                description: Values is used to specify any document structure
+                description: Values is used to specify an arbitrary document structure
+                  without the need of a regular manifest api group version as part
+                  of a kubernetes resource
                 type: object
                 x-kubernetes-preserve-unknown-fields: true
               values:
-                description: Values is used to specify any document structure
+                description: Values is used to specify an arbitrary document structure
+                  without the need of a regular manifest api group version as part
+                  of a kubernetes resource
                 type: object
                 x-kubernetes-preserve-unknown-fields: true
               weight:

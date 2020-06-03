@@ -23,9 +23,14 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/gardener/controller-manager-library/pkg/convert"
 	"github.com/gardener/controller-manager-library/pkg/logger"
+	"github.com/gardener/controller-manager-library/pkg/types"
 	"github.com/gardener/controller-manager-library/pkg/types/infodata/simple"
 )
+
+const MACHINE_FOUND = "MACHINE-FOUND"
+const REQUEST_REJECT = "REQUEST-REJECT"
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -78,15 +83,9 @@ func (this *Handler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	}
 }
 
-func (this *Handler) serve(w http.ResponseWriter, req *http.Request) error {
-	var err error
-
+func (this *Handler) requestMetadata(req *http.Request) (MetaData, string) {
 	metadata := MetaData{}
 	raw := req.URL.Query()
-
-	if !strings.HasPrefix(req.URL.Path, this.path) {
-		return this.error(w, http.StatusNotFound, "invalid resource")
-	}
 
 	path := req.URL.Path[len(this.path):]
 	metadata["RESOURCE_PATH"] = path
@@ -97,13 +96,28 @@ func (this *Handler) serve(w http.ResponseWriter, req *http.Request) error {
 	fill(metadata, req.Header)
 
 	this.Infof("request %s: %s", path, metadata)
+	return metadata, path
+}
+
+func (this *Handler) serve(w http.ResponseWriter, req *http.Request) error {
+	var err error
+
+	if !strings.HasPrefix(req.URL.Path, this.path) {
+		return this.error(w, http.StatusNotFound, "invalid resource")
+	}
+
+	metadata, path := this.requestMetadata(req)
 
 	if this.infobase.Registry != nil {
 		metadata, err = this.infobase.Registry.Map(this, metadata, req)
 		if err != nil {
 			return this.error(w, http.StatusBadRequest, "cannot map metadata: %s", err)
 		}
+		if s := convert.BestEffortString(metadata[REQUEST_REJECT]); s != "" {
+			return this.error(w, http.StatusNotAcceptable, "%s", s)
+		}
 	}
+
 	this.Infof("matching %s", metadata)
 	list := this.infobase.Matchers.Match(this, metadata)
 	if len(list) == 0 {
@@ -134,14 +148,14 @@ func (this *Handler) serve(w http.ResponseWriter, req *http.Request) error {
 		this.Infof("found document %s in profile %s", d.Name(), pname)
 
 		source := doc.GetSource()
-		resmatch := CopyAndNormalize(list)
+		resmatch := types.CopyAndNormalize(list)
 		metavalues := simple.Values{}
 		metadata["<<<"] = "(( merge ))"
 		if resmatch != nil {
 			metadata["resource-match"] = resmatch
 		}
 		metavalues["metadata"] = simple.Values(metadata)
-		intermediate := NormValues(metavalues)
+		intermediate := types.NormValues(metavalues)
 		if !doc.skipProcessing {
 			intermediate, err = mapit(fmt.Sprintf("matcher %s", m.Name()), m.GetMapping(), metavalues, m.GetValues(), intermediate)
 			if err != nil {

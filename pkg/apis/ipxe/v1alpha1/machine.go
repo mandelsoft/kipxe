@@ -19,6 +19,7 @@
 package v1alpha1
 
 import (
+	"github.com/gardener/controller-manager-library/pkg/types"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -60,12 +61,12 @@ type MachineSpec struct {
 	// +kubebuilder:validation:XPreserveUnknownFields
 	// +kubebuilder:pruning:PreserveUnknownFields
 	// +optional
-	Values Values `json:"values,omitempty"`
+	Values types.Values `json:"values,omitempty"`
 
 	// +kubebuilder:validation:XPreserveUnknownFields
 	// +kubebuilder:pruning:PreserveUnknownFields
 	// +optional
-	Additional Values `json:"additional,omitempty"`
+	Additional types.Values `json:"additional,omitempty"`
 }
 
 type MachineMACs map[string][]string

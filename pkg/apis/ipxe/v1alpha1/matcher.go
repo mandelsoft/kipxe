@@ -19,6 +19,7 @@
 package v1alpha1
 
 import (
+	"github.com/gardener/controller-manager-library/pkg/types"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -55,15 +56,15 @@ type BootProfileMatcherSpec struct {
 	// +kubebuilder:validation:XPreserveUnknownFields
 	// +kubebuilder:pruning:PreserveUnknownFields
 	// +optional
-	Matcher Values `json:"matcher,omitempty"`
+	Matcher types.Values `json:"matcher,omitempty"`
 	// +kubebuilder:validation:XPreserveUnknownFields
 	// +kubebuilder:pruning:PreserveUnknownFields
 	// +optional
-	Mapping Values `json:"mapping,omitempty"`
+	Mapping types.Values `json:"mapping,omitempty"`
 	// +kubebuilder:validation:XPreserveUnknownFields
 	// +kubebuilder:pruning:PreserveUnknownFields
 	// +optional
-	Values Values `json:"values,omitempty"`
+	Values types.Values `json:"values,omitempty"`
 	// +optional
 	Weight  *int   `json:"weight,omitempty"`
 	Profile string `json:"profileName"`

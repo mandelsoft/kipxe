@@ -44,7 +44,9 @@ spec:
           spec:
             properties:
               additional:
-                description: Values is used to specify any document structure
+                description: Values is used to specify an arbitrary document structure
+                  without the need of a regular manifest api group version as part
+                  of a kubernetes resource
                 type: object
                 x-kubernetes-preserve-unknown-fields: true
               macs:
@@ -57,7 +59,9 @@ spec:
               uuid:
                 type: string
               values:
-                description: Values is used to specify any document structure
+                description: Values is used to specify an arbitrary document structure
+                  without the need of a regular manifest api group version as part
+                  of a kubernetes resource
                 type: object
                 x-kubernetes-preserve-unknown-fields: true
             type: object

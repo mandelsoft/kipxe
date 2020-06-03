@@ -23,8 +23,10 @@ import (
 	"sync"
 
 	"github.com/gardener/controller-manager-library/pkg/controllermanager/controller"
+	"github.com/gardener/controller-manager-library/pkg/convert"
 	"github.com/gardener/controller-manager-library/pkg/logger"
 	"github.com/gardener/controller-manager-library/pkg/resources"
+	"github.com/gardener/controller-manager-library/pkg/types"
 	"github.com/gardener/controller-manager-library/pkg/types/infodata/simple"
 	"k8s.io/apimachinery/pkg/labels"
 
@@ -181,14 +183,17 @@ func (this *Machines) String() string {
 }
 
 func (this *Machines) Map(logger logger.LogContext, values kipxe.MetaData, req *http.Request) (kipxe.MetaData, error) {
+	if convert.BestEffortBool(values[kipxe.MACHINE_FOUND]) {
+		return values, nil
+	}
 	values = values.DeepCopy()
 	m := this.Lookup(values)
 	if m != nil {
 		if m.uuid != "" {
 			values["uuid"] = m.uuid
 		}
-		attrs := kipxe.CopyAndNormalize(m.values).(map[string]interface{})
-		attrs["macs"] = kipxe.CopyAndNormalize(m.macs)
+		attrs := types.CopyAndNormalize(m.values).(map[string]interface{})
+		attrs["macs"] = types.CopyAndNormalize(m.macs)
 		values["attributes"] = attrs
 
 		for k, v := range m.additional {
@@ -196,6 +201,7 @@ func (this *Machines) Map(logger logger.LogContext, values kipxe.MetaData, req *
 				values[k] = v
 			}
 		}
+		values[kipxe.MACHINE_FOUND] = true
 		logger.Infof("found machine %s: %s", m.name, values)
 	} else {
 		logger.Infof("no machine found")

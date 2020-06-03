@@ -17,7 +17,7 @@ github.com/emicklei/go-restful/log
 github.com/evanphx/json-patch
 # github.com/fatih/color v1.7.0
 github.com/fatih/color
-# github.com/gardener/controller-manager-library v0.1.1-0.20200530212733-faaef5e0a49e
+# github.com/gardener/controller-manager-library v0.1.1-0.20200601205834-31de0b23fdbc
 github.com/gardener/controller-manager-library/hack
 github.com/gardener/controller-manager-library/pkg/certmgmt
 github.com/gardener/controller-manager-library/pkg/certmgmt/secret
@@ -37,6 +37,7 @@ github.com/gardener/controller-manager-library/pkg/controllermanager/controller/
 github.com/gardener/controller-manager-library/pkg/controllermanager/controller/reconcile
 github.com/gardener/controller-manager-library/pkg/controllermanager/extension
 github.com/gardener/controller-manager-library/pkg/controllermanager/extension/groups
+github.com/gardener/controller-manager-library/pkg/convert
 github.com/gardener/controller-manager-library/pkg/ctxutil
 github.com/gardener/controller-manager-library/pkg/errors
 github.com/gardener/controller-manager-library/pkg/fieldpath
@@ -55,6 +56,7 @@ github.com/gardener/controller-manager-library/pkg/run
 github.com/gardener/controller-manager-library/pkg/server
 github.com/gardener/controller-manager-library/pkg/server/healthz
 github.com/gardener/controller-manager-library/pkg/sync
+github.com/gardener/controller-manager-library/pkg/types
 github.com/gardener/controller-manager-library/pkg/types/infodata
 github.com/gardener/controller-manager-library/pkg/types/infodata/simple
 github.com/gardener/controller-manager-library/pkg/utils
