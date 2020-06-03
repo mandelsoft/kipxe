@@ -1,0 +1,9 @@
+apiVersion: ipxe.mandelsoft.org/v1alpha1
+kind: MetaDataMapper
+metadata:
+  name: metal
+  namespace: {{ .Release.Namespace }}
+spec:
+  weight: 50
+
+  URL: http://metal-lookup/lookup

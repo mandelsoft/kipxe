@@ -1,0 +1,24 @@
+{{- if .Values.Partition }}
+apiVersion: ipxe.mandelsoft.org/v1alpha1
+kind: Machine
+metadata:
+  name: ipxe
+  namespace: {{ .Release.Namespace }}
+spec:
+  uuid: abc-123
+  macs:
+    regular:
+      - ma:c1:23
+  values:
+    commandLine: console=ttyS1
+    initrd: https://metal.com/gardenlinux.img.lz4
+    kernel: https://metal.com/vmlinug
+  additional:
+    partition_info:
+      commandLine": {{ .Values.partition.commandline }}
+      id: {{ .Values.partition.id }}
+      initrd: {{ .Values.partition.initrd }}
+      kernel: {{ .Values.partition.kernel }}
+      name: {{ .Values.partition.name }}
+
+{{- end }}

@@ -1,0 +1,90 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: metal-lookup
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: {{ .Release.Name }}
+    component: metal-lookup
+spec:
+  selector:
+    app: {{ .Release.Name }}
+    component: metal-lookup
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 8080
+---
+
+apiVersion: v1
+kind: Secret
+metadata:
+  name: metalconfig
+  namespace: {{ .Release.Namespace }}
+type: Opaque
+stringData:
+
+  metalconfig.yaml: |+
+    contexts:
+      sap:
+        client_id: ""
+        client_secret: ""
+        hmac: {{ .Values.metalapi.hmac }}
+        issuer_url: ""
+        url: {{ .Values.metalapi.url }}
+    current: sap
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: {{ .Release.Name }}
+    component: metal-lookup
+  name: metal-lookup
+  namespace: {{ .Release.Namespace }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: kipxe
+      component: metal-lookup
+  template:
+    metadata:
+      labels:
+        app: kipxe
+        component: metal-lookup
+    spec:
+      automountServiceAccountToken: false
+      volumes:
+        - name: metalconfig
+          secret:
+            secretName: metalconfig
+            items:
+              - key: metalconfig.yaml
+                path: metalconfig.yaml
+      containers:
+      - name: metal-mapper
+        image: mandelsoft/metal-lookup:latest
+        imagePullPolicy: "Always"
+        args:
+        - --metalconfig=/metal/metalconfig.yaml
+        - --server-port-http=8080
+        livenessProbe:
+          httpGet:
+            path: /healthz
+            port: 8080
+            scheme: HTTP
+          initialDelaySeconds: 30
+          timeoutSeconds: 5
+        ports:
+        - containerPort: 8080
+          protocol: TCP
+        resources:
+          {}
+        volumeMounts:
+          - name: metalconfig
+            mountPath: "/metal"
+            readOnly: true
+
+      terminationGracePeriodSeconds: 120
+

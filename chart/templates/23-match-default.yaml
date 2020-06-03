@@ -1,0 +1,8 @@
+apiVersion: ipxe.mandelsoft.org/v1alpha1
+kind: BootProfileMatcher
+metadata:
+  name: always
+  namespace: {{ .Release.Namespace }}
+spec:
+  weight: 0
+  profileName: default

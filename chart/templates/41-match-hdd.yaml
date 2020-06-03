@@ -1,0 +1,10 @@
+apiVersion: ipxe.mandelsoft.org/v1alpha1
+kind: BootProfileMatcher
+metadata:
+  name: hdd
+  namespace: {{ .Release.Namespace }}
+spec:
+  matcher:
+    match: (( defined(metadata.attributes.kernel) ))
+  weight: 90
+  profileName: hdd

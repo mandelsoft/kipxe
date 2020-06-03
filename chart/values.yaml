@@ -1,0 +1,20 @@
+metalapi:
+  hmac: some hmac
+  url: https://metalapi
+        
+fqdn:
+  kipxe: metal.metal.com
+  ssh: ssh.metal.com
+
+#partition:
+#  name:
+#  id:
+#  commandline:
+#  kernel:
+#  initrd:
+
+senderips: []
+
+sshkeys: 
+  - ssh-rsa somekey uwe.krueger@mandelsoft.org
+
