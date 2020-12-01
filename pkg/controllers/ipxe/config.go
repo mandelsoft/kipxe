@@ -20,6 +20,7 @@ package ipxe
 
 import (
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/gardener/controller-manager-library/pkg/config"
@@ -42,6 +43,7 @@ type Config struct {
 
 	CertMode string
 	TLS      bool
+	BasePath string
 	Cert     *cert.CertConfig
 }
 
@@ -52,6 +54,7 @@ func (this *Config) AddOptionsToSet(set config.OptionSet) {
 	set.AddBoolOption(&this.LocalNamespaceOnly, "local-namespace-only", "", false, "server only resources in local namespace")
 	set.AddBoolOption(&this.TraceRequest, "trace-requests", "", false, "trace mapping of request data")
 	set.AddIntOption(&this.PXEPort, "pxe-port", "", 8081, "pxe server port")
+	set.AddStringOption(&this.BasePath, "base-path", "", "", "pxe server URL base path")
 
 	set.AddBoolOption(&this.TLS, "use-tls", "", false, "use https")
 	set.AddStringOption(&this.CertMode, "certificate-mode", "", "manage", "mode for cert management")
@@ -60,6 +63,13 @@ func (this *Config) AddOptionsToSet(set config.OptionSet) {
 }
 
 func (this *Config) Prepare() error {
+	if this.BasePath == "" {
+		this.BasePath = "/"
+	} else {
+		if !strings.HasPrefix(this.BasePath, "/") {
+			this.BasePath = "/" + this.BasePath
+		}
+	}
 	if this.TLS {
 		if this.set != nil {
 			opt := this.set.GetOption("pxe-port")

@@ -19,6 +19,7 @@
 package ipxe
 
 import (
+	"path"
 	"time"
 
 	certsecret "github.com/gardener/controller-manager-library/pkg/certmgmt/secret"
@@ -73,8 +74,9 @@ func (this *reconciler) Start() {
 		Profiles:  this.infobase.profiles.elements,
 		Matchers:  this.infobase.matchers.elements,
 	}
-	ipxe.RegisterHandler("/", kipxe.NewHandler(this.controller, "/", infobase))
-	ipxe.Register("/ready", ready.Ready)
+
+	ipxe.RegisterHandler(this.config.BasePath, kipxe.NewHandler(this.controller, this.config.BasePath, infobase))
+	ipxe.Register(path.Join(this.config.BasePath, "ready"), ready.Ready)
 
 	cert := this.cert
 	if !this.config.TLS {

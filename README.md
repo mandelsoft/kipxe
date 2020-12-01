@@ -206,9 +206,10 @@ a match to let the boot profile matcher match the metadata.
 
 #### Profiles
 
+A profile describes a set of resources that will be servered when matched by a matcher.
 Here are some examples for profile definitions.
 
-<details><summary>A resource may look like this when using go templates</summary>
+<details><summary>A profile may look like this when using go templates</summary>
 
 ```yaml
 apiVersion: ipxe.mandelsoft.org/v1alpha1
@@ -238,7 +239,7 @@ match information of the resource. The field `resource-match` contains a list
 of values of all matched text for the complete pattern and all sub expressions
 in the order they are defined in the pattern.
 
-For exaample a pattern `i(nfo)?` matches the resource `info` with the 
+For example a pattern `i(nfo)?` matches the resource `info` with the 
 values `[ "info", "nfo" ]` in the field `resource-match`.
 
 #### Resources
@@ -367,11 +368,11 @@ also added with the property `RESOURCE_PATH` .
 This set of metadata is then mapped through the registrations for the 
 [*Discovery API*](#the-discovery-api). The outcome of this mapping
 is the final metadata used for the following matching process.
-The Kubernetes flavor also support metadata mappers by a dedicate resource.
-The may describe a `mapping` field which is translated to a *spiff* based
+The Kubernetes flavor also supports metadata mappers by a dedicated resource.
+It may describe a `mapping` field which is translated to a *spiff* based
 mapping.
 
-But it is also avaiable for the processing step of the identified resource content
+But it is also possible for the processing step of the identified resource content
 at the end of the process just before delivering the content to map
 metadata.
 
@@ -428,7 +429,12 @@ scenarios described above:
     used to create an initial or modify a given set of processing values by
     accessing the original request metadata.
 
-  
+  Spiff mappings always use up to three stubs (if available) in the following order:
+  - (optional) the `values` field describing default values
+  - the metadata 
+  - the intermediate processing values calculated by the last step (initially this
+    is the request metadata)
+
 #### The Resource Processing
 
 After executing all mappings of the matching chain the final processing values
