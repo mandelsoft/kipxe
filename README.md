@@ -56,7 +56,7 @@ elements:
    those paths to *Resource* elements
 - *Resource* elements describe content, either as inline content or based on
    URLs. Resources may be futhermore processed incorporating the metadata before
-   sevring their content.
+   serving their content.
 
 This resolving of requests is a five step approach:
 1) Map the request to some metadata by an optional [*Discovery API*](#the-discovery-api)
@@ -323,10 +323,20 @@ spec:
 
 </details>
 
+If the _kipxe_ server is started with a `--cache-dir` option. The content of
+the URL is cached and serverv from the cache, otherwise the content is forwarded
+directly from the given URL. If the field `volatile` is set to `true`, the
+caching is omitted.
+
+Alternatively the field `redirect` can be set to `true` to the resource 
+to return a redirect response to the given URL. Redirection is not possible,
+if a content mapping is configured.
+
+
 #### Metadata Mappers
 
 The resource `MetaDataMapper` can be used to declare metadadata mappers executed
-before the matching process as Kunernetes objects.
+before the matching process as Kubernetes objects.
 
 Two variants are supported:
 - `spec.URL` if an URL is given a URL mapper is created 

@@ -1,17 +1,7 @@
 /*
- * Copyright 2019 SAP SE or an SAP affiliate company. All rights reserved. This file is licensed under the Apache Software License, v. 2 except as noted otherwise in the LICENSE file
+ * SPDX-FileCopyrightText: 2019 SAP SE or an SAP affiliate company and Gardener contributors
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- *
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package controllermanager
@@ -51,6 +41,8 @@ type ControllerManager struct {
 	context  context.Context
 	config   *areacfg.Config
 	clusters cluster.Clusters
+
+	migrations resources.ClusterIdMigration
 }
 
 var _ extension.ControllerManager = &ControllerManager{}
@@ -63,7 +55,7 @@ func NewControllerManager(ctx context.Context, def *Definition) (*ControllerMana
 	config.Print(logger.Infof, "", cfg.OptionSet)
 	logger.Info("-----------------------")
 	ctx = logger.Set(ctxutil.WaitGroupContext(ctx, "controllermanager"), lgr)
-	ctx = context.WithValue(ctx, resources.ATTR_EVENTSOURCE, def.GetName())
+	ctx = context.WithValue(ctx, resources.ATTR_EVENTSOURCE, def.GetName()) // golint: ignore
 
 	for _, e := range def.extensions {
 		err := e.Validate()
@@ -79,14 +71,11 @@ func NewControllerManager(ctx context.Context, def *Definition) (*ControllerMana
 		logger.Infof("disable namespace restriction for access control")
 	}
 
-	name := def.GetName()
-	if cfg.Name != "" {
-		name = cfg.Name
-	} else {
-		cfg.Name = name
+	if cfg.Name == "" {
+		cfg.Name = def.GetName()
 	}
-	if cfg.Maintainer == "" {
-		cfg.Maintainer = cfg.Name
+	if len(cfg.CRDMaintainer.Idents) == 0 {
+		cfg.CRDMaintainer.Idents = utils.NewStringSet(cfg.Name)
 	}
 
 	namespace := run.GetConfig(maincfg).Namespace
@@ -159,8 +148,31 @@ func NewControllerManager(ctx context.Context, def *Definition) (*ControllerMana
 	if err != nil {
 		return nil, err
 	}
+	reftgtset := utils.StringSet{}
+	for _, e := range cm.extensions {
+		req := e.RequiredClusterIds(clusters)
+		if err != nil {
+			return nil, err
+		}
+		reftgtset.AddSet(req)
+	}
+
+	cm.Infof("enforcing explicit cluster ids for %s", reftgtset)
+	for reftgt := range reftgtset {
+		c := clusters.GetCluster(reftgt)
+		if c != nil {
+			if err = c.EnforceExplicitClusterIdentity(cm); err != nil {
+				return nil, err
+			}
+		}
+	}
 
 	cm.clusters = clusters
+	list := []resources.Cluster{}
+	for c := range clusters.Names() {
+		list = append(list, clusters.GetCluster(c))
+	}
+	cm.migrations = resources.ClusterIdMigrationFor(list...)
 
 	for _, n := range cm.order {
 		e := cm.extensions[n]
@@ -177,8 +189,8 @@ func (this *ControllerManager) GetName() string {
 	return this.config.Name
 }
 
-func (this *ControllerManager) GetMaintainer() string {
-	return this.config.Maintainer
+func (this *ControllerManager) GetMaintainer() extension.MaintainerInfo {
+	return this.config.CRDMaintainer
 }
 
 func (this *ControllerManager) GetNamespace() string {
@@ -207,6 +219,10 @@ func (this *ControllerManager) GetCluster(name string) cluster.Interface {
 
 func (this *ControllerManager) GetClusters() cluster.Clusters {
 	return this.clusters
+}
+
+func (this *ControllerManager) GetClusterIdMigration() resources.ClusterIdMigration {
+	return this.migrations
 }
 
 func (this *ControllerManager) GetDefaultScheme() *runtime.Scheme {

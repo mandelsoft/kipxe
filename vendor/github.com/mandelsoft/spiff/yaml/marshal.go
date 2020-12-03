@@ -6,8 +6,12 @@ import (
 	"fmt"
 	"reflect"
 
-	"github.com/cloudfoundry-incubator/candiedyaml"
+	"github.com/mandelsoft/spiff/legacy/candiedyaml"
 )
+
+func Marshal(node Node) ([]byte, error) {
+	return candiedyaml.Marshal(node)
+}
 
 func ToJSON(root Node) ([]byte, error) {
 	if root == nil {

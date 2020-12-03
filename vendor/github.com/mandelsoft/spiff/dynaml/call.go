@@ -10,10 +10,30 @@ import (
 
 type Function func(arguments []interface{}, binding Binding) (interface{}, EvaluationInfo, bool)
 
-var functions = map[string]Function{}
+type Registry interface {
+	RegisterFunction(name string, f Function)
+	LookupFunction(name string) Function
+}
+type registry struct {
+	functions map[string]Function
+}
+
+func NewRegistry() Registry {
+	return &registry{map[string]Function{}}
+}
+
+func (r *registry) RegisterFunction(name string, f Function) {
+	r.functions[name] = f
+}
+
+func (r *registry) LookupFunction(name string) Function {
+	return r.functions[name]
+}
+
+var functions = NewRegistry()
 
 func RegisterFunction(name string, f Function) {
-	functions[name] = f
+	functions.RegisterFunction(name, f)
 }
 
 type NameArgument struct {
@@ -234,6 +254,9 @@ func (e CallExpr) Evaluate(binding Binding, locally bool) (interface{}, Evaluati
 	case "num_ip":
 		result, sub, ok = func_numIP(values, binding)
 
+	case "contains_ip":
+		result, sub, ok = func_containsIP(values, binding)
+
 	case "makemap":
 		result, sub, ok = func_makemap(values, binding)
 
@@ -288,6 +311,8 @@ func (e CallExpr) Evaluate(binding Binding, locally bool) (interface{}, Evaluati
 
 	case "validate":
 		resolved, result, sub, ok = func_validate(values, binding)
+	case "check":
+		resolved, result, sub, ok = func_check(values, binding)
 
 	case "type":
 		if info.Undefined {
@@ -298,7 +323,14 @@ func (e CallExpr) Evaluate(binding Binding, locally bool) (interface{}, Evaluati
 		}
 
 	default:
-		f := functions[funcName]
+		var f Function
+		ext := binding.GetState().GetFunctions()
+		if ext != nil {
+			f = ext.LookupFunction(funcName)
+		}
+		if f == nil {
+			f = functions.LookupFunction(funcName)
+		}
 		if f == nil {
 			return info.Error("unknown function '%s'", funcName)
 		}

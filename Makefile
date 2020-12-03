@@ -81,8 +81,8 @@ generate:
 
 ### Docker commands
 
-.PHONY: docker-login
-docker-login:
+.PHONY: gcr-login
+gcr-login:
 	@gcloud auth activate-service-account --key-file .kube-secrets/gcr/gcr-readwrite.json
 
 .PHONY: images-dev

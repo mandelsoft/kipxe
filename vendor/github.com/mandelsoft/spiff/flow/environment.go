@@ -275,15 +275,22 @@ func (e DefaultEnvironment) Flow(source yaml.Node, shouldOverride bool) (yaml.No
 }
 
 func (e DefaultEnvironment) Cascade(outer dynaml.Binding, template yaml.Node, partial bool, templates ...yaml.Node) (yaml.Node, error) {
-	return Cascade(outer, template, partial, templates...)
+	return Cascade(outer, template, Options{Partial: partial}, templates...)
 }
 
-func NewEnvironment(stubs []yaml.Node, source string) dynaml.Binding {
-	return NewNestedEnvironment(stubs, source, nil)
+func NewEnvironment(stubs []yaml.Node, source string, optstate ...*State) dynaml.Binding {
+	var state *State
+	if len(optstate) > 0 {
+		state = optstate[0]
+	}
+	if state == nil {
+		state = NewState(os.Getenv("SPIFF_ENCRYPTION_KEY"), MODE_OS_ACCESS|MODE_FILE_ACCESS)
+	}
+	return DefaultEnvironment{state: state, stubs: stubs, sourceName: source, currentSourceName: source, outer: nil, active: true}
 }
 
 func NewProcessLocalEnvironment(stubs []yaml.Node, source string) dynaml.Binding {
-	state := NewState(os.Getenv("SPIFF_ENCRYPTION_KEY"), false)
+	state := NewState(os.Getenv("SPIFF_ENCRYPTION_KEY"), 0)
 	return DefaultEnvironment{state: state, stubs: stubs, sourceName: source, currentSourceName: source, outer: nil, active: true}
 }
 
@@ -297,7 +304,7 @@ func CleanupEnvironment(binding dynaml.Binding) {
 func NewNestedEnvironment(stubs []yaml.Node, source string, outer dynaml.Binding) dynaml.Binding {
 	var state *State
 	if outer == nil {
-		state = NewState(os.Getenv("SPIFF_ENCRYPTION_KEY"), true)
+		state = NewState(os.Getenv("SPIFF_ENCRYPTION_KEY"), MODE_OS_ACCESS|MODE_FILE_ACCESS)
 	}
 	return DefaultEnvironment{state: state, stubs: stubs, sourceName: source, currentSourceName: source, outer: outer, active: true}
 }

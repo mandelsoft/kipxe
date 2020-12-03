@@ -23,14 +23,15 @@ import (
 
 	"github.com/gardener/controller-manager-library/pkg/logger"
 	"github.com/gardener/controller-manager-library/pkg/types/infodata/simple"
-	"github.com/mandelsoft/spiff/flow"
+	"github.com/mandelsoft/spiff/spiffing"
 	"github.com/mandelsoft/spiff/yaml"
 )
 
-var log bool = false
+var forcelog bool = false
+var log bool = forcelog
 
 func Trace(b bool) {
-	log = b
+	log = b || forcelog
 }
 
 type SpiffTemplate struct {
@@ -51,19 +52,22 @@ func (this *SpiffTemplate) AddStub(inp *[]yaml.Node, name string, v simple.Value
 }
 
 func (this *SpiffTemplate) MergeWith(inputs ...yaml.Node) (simple.Values, error) {
-	outer := flow.NewProcessLocalEnvironment(nil, "mapper")
-	stubs, err := flow.PrepareStubs(outer, false, inputs...)
+	ctx := spiffing.New().WithMode(0)
+	stubs, err := ctx.PrepareStubs(inputs...)
+	//outer := flow.NewProcessLocalEnvironment(nil, "mapper")
+	//stubs, err := flow.PrepareStubs(outer, false, inputs...)
 	if err != nil {
 		return nil, err
 	}
 	if log {
-		logger.Infof("=================================")
+		logger.Infof("-----------------------------------")
 		for i, v := range append([]yaml.Node{this.mapping}, stubs...) {
 			r, _ := yaml.Normalize(v)
 			logger.Infof("<- %d: %s", i, simple.Values(r.(map[string]interface{})))
 		}
 	}
-	result, err := flow.Apply(nil, this.mapping, stubs)
+	result, err := ctx.ApplyStubs(this.mapping, stubs)
+	//result, err := flow.Apply(nil, this.mapping, stubs, flow.Options{})
 	if err != nil {
 		return nil, err
 	}
@@ -73,6 +77,9 @@ func (this *SpiffTemplate) MergeWith(inputs ...yaml.Node) (simple.Values, error)
 	}
 	if log {
 		logger.Infof("->: %s", simple.Values(v.(map[string]interface{})))
+	}
+	if log {
+		logger.Infof("===================================")
 	}
 	m := v.(map[string]interface{})
 	if out, ok := m["output"]; ok {

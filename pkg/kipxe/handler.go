@@ -125,11 +125,11 @@ func (this *Handler) serve(w http.ResponseWriter, req *http.Request) error {
 		return this.error(w, http.StatusNotFound, "no matching matcher")
 	}
 
-	this.Infof("found %d matchers", len(list))
+	this.Infof("found %d matchers: %s", len(list), MatcherNameList(list))
 
 	for _, m := range list {
 		pname := m.ProfileName()
-		this.Infof("looking in matcher %s, profile %s", m.Key(), pname)
+		this.Infof("looking in matcher %s -> profile %s", m.Key(), pname)
 		profile := this.infobase.Profiles.Get(pname)
 		if profile == nil {
 			return this.error(w, http.StatusNotFound, "profile %q not found", pname)
@@ -155,7 +155,7 @@ func (this *Handler) serve(w http.ResponseWriter, req *http.Request) error {
 			metadata["resource-match"] = resmatch
 		}
 		metavalues["metadata"] = simple.Values(metadata)
-		intermediate := types.NormValues(metavalues)
+		intermediate := types.NormValues(simple.Values(metadata))
 		if !doc.skipProcessing {
 			intermediate, err = mapit(fmt.Sprintf("matcher %s", m.Name()), m.GetMapping(), metavalues, m.GetValues(), intermediate)
 			if err != nil {
@@ -212,4 +212,14 @@ func fill(dst map[string]interface{}, src map[string][]string) {
 		}
 		dst["__"+k+"__"] = all
 	}
+}
+
+func MatcherNameList(list []*BootProfileMatcher) string {
+	s := ""
+	sep := ""
+	for _, l := range list {
+		s = fmt.Sprintf("%s%s%s", s, sep, l.Name())
+		sep = ", "
+	}
+	return s
 }

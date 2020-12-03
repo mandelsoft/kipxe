@@ -1,22 +1,13 @@
 /*
- * Copyright 2019 SAP SE or an SAP affiliate company. All rights reserved. This file is licensed under the Apache Software License, v. 2 except as noted otherwise in the LICENSE file
+ * SPDX-FileCopyrightText: 2019 SAP SE or an SAP affiliate company and Gardener contributors
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- *
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package resources
 
 import (
+	"context"
 	"reflect"
 	"sync"
 	"time"
@@ -152,6 +143,7 @@ func (f *genericInformerFactory) getClient(gv schema.GroupVersion) (restclient.I
 func (f *genericInformerFactory) newInformer(client restclient.Interface, res *Info, elemType reflect.Type, listType reflect.Type) GenericInformer {
 	logger.Infof("new generic informer for %s (%s) %s (%d seconds)", elemType, res.GroupVersionKind(), listType, f.defaultResync/time.Second)
 	indexers := cache.Indexers{cache.NamespaceIndex: cache.MetaNamespaceIndexFunc}
+	ctx := context.TODO()
 	informer := cache.NewSharedIndexInformer(
 		&cache.ListWatch{
 			ListFunc: func(options metav1.ListOptions) (runtime.Object, error) {
@@ -166,7 +158,7 @@ func (f *genericInformerFactory) newInformer(client restclient.Interface, res *I
 					r = r.Namespace(f.namespace)
 				}
 
-				return result, r.Do().Into(result)
+				return result, r.Do(ctx).Into(result)
 			},
 			WatchFunc: func(options metav1.ListOptions) (watch.Interface, error) {
 				options.Watch = true
@@ -180,7 +172,7 @@ func (f *genericInformerFactory) newInformer(client restclient.Interface, res *I
 					r = r.Namespace(f.namespace)
 				}
 
-				return r.Watch()
+				return r.Watch(ctx)
 			},
 		},
 		reflect.New(elemType).Interface().(runtime.Object),

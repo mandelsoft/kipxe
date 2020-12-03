@@ -5,6 +5,16 @@ import (
 	"github.com/mandelsoft/spiff/yaml"
 )
 
+// Options bundles the options for processing yaml templates
+type Options struct {
+	// PreserveEscapes prevents escaped dynaml expressions to be unescaped for the final output
+	PreserveEscapes bool
+	// PreserveTemporary will keep temporary elements in the final output
+	PreserveTemporary bool
+	// Partial will not treat unevaluated dynaml expressions as error, but keep it in the output.
+	Partial bool
+}
+
 func PrepareStubs(outer dynaml.Binding, partial bool, stubs ...yaml.Node) ([]yaml.Node, error) {
 	for i := len(stubs) - 1; i >= 0; i-- {
 		flowed, err := NestedFlow(outer, stubs[i], stubs[i+1:]...)
@@ -17,22 +27,26 @@ func PrepareStubs(outer dynaml.Binding, partial bool, stubs ...yaml.Node) ([]yam
 	return stubs, nil
 }
 
-func Apply(outer dynaml.Binding, template yaml.Node, prepared []yaml.Node) (yaml.Node, error) {
+func Apply(outer dynaml.Binding, template yaml.Node, prepared []yaml.Node, opts Options) (yaml.Node, error) {
 	result, err := NestedFlow(outer, template, prepared...)
 	if err == nil {
-		result = Cleanup(result, discardTemporary)
-		result = Cleanup(result, unescapeDynaml)
+		if !opts.PreserveTemporary {
+			result = Cleanup(result, discardTemporary)
+		}
+		if !opts.PreserveEscapes {
+			result = Cleanup(result, unescapeDynaml)
+		}
 	}
 	return result, err
 }
 
-func Cascade(outer dynaml.Binding, template yaml.Node, partial bool, stubs ...yaml.Node) (yaml.Node, error) {
-	prepared, err := PrepareStubs(outer, partial, stubs...)
+func Cascade(outer dynaml.Binding, template yaml.Node, opts Options, stubs ...yaml.Node) (yaml.Node, error) {
+	prepared, err := PrepareStubs(outer, opts.Partial, stubs...)
 	if err != nil {
 		return nil, err
 	}
 
-	return Apply(outer, template, prepared)
+	return Apply(outer, template, prepared, opts)
 }
 
 func discardTemporary(node yaml.Node) (yaml.Node, CleanupFunction) {
@@ -91,4 +105,8 @@ func Cleanup(node yaml.Node, test CleanupFunction) yaml.Node {
 		value = r
 	}
 	return yaml.ReplaceValue(value, node)
+}
+
+func DetermineState(node yaml.Node) yaml.Node {
+	return Cleanup(node, DiscardNonState)
 }

@@ -21,6 +21,7 @@ package kipxe
 import (
 	"fmt"
 
+	"github.com/gardener/controller-manager-library/pkg/logger"
 	"github.com/gardener/controller-manager-library/pkg/types/infodata/simple"
 	"github.com/mandelsoft/spiff/yaml"
 )
@@ -77,13 +78,22 @@ func addImplicitAccess(m yaml.Node) {
 func mapit(desc string, mapping Mapping, metavalues, values, intermediate simple.Values) (simple.Values, error) {
 	var err error
 	if mapping != nil {
+		if log {
+			logger.Infof("mapping (mapping) %s...", desc)
+		}
 		intermediate, err = mapping.Map(desc, values, metavalues, intermediate)
 		if err != nil {
 			return nil, err
 		}
 	} else {
 		if values != nil {
+			if log {
+				logger.Infof("mapping (defaulting) %s...", desc)
+			}
 			return merge(intermediate, values), nil
+		}
+		if log {
+			logger.Infof("no mapping for %s", desc)
 		}
 	}
 	return intermediate, nil
