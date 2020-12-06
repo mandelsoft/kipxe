@@ -66,16 +66,6 @@ func (this *Handler) error(w http.ResponseWriter, status int, msg string, args .
 	return ErrorString(msg)
 }
 
-func merge(a, b simple.Values) simple.Values {
-	for k, v := range b {
-		if a[k] == nil {
-			a[k] = v
-		}
-	}
-	delete(a, "metadata")
-	return a
-}
-
 func (this *Handler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	err := this.serve(w, req)
 	if err != nil {
@@ -127,74 +117,75 @@ func (this *Handler) serve(w http.ResponseWriter, req *http.Request) error {
 
 	this.Infof("found %d matchers: %s", len(list), MatcherNameList(list))
 
-	for _, m := range list {
-		pname := m.ProfileName()
-		this.Infof("looking in matcher %s -> profile %s", m.Key(), pname)
+	for _, matcher := range list {
+		pname := matcher.ProfileName()
+		this.Infof("looking in matcher %s -> profile %s", matcher.Key(), pname)
 		profile := this.infobase.Profiles.Get(pname)
 		if profile == nil {
 			return this.error(w, http.StatusNotFound, "profile %q not found", pname)
 		}
 
-		d, list := profile.GetDeliverableForPath(path)
-		if d == nil {
+		deliverable, list := profile.GetDeliverableForPath(path)
+		if deliverable == nil {
 			continue
 		}
 
-		doc := this.infobase.Resources.Get(d.Name())
+		doc := this.infobase.Resources.Get(deliverable.Name())
 		if doc == nil {
-			return this.error(w, http.StatusNotFound, "document %q for profile %q resource %q not found", d.Name(), pname, path)
+			return this.error(w, http.StatusNotFound, "document %q for profile %q resource %q not found", deliverable.Name(), pname, path)
 		}
 
-		this.Infof("found document %s in profile %s", d.Name(), pname)
+		this.Infof("found document %s in profile %s", deliverable.Name(), pname)
 
 		source := doc.GetSource()
-		resmatch := types.CopyAndNormalize(list)
-		metavalues := simple.Values{}
-		metadata["<<<"] = "(( merge ))"
-		if resmatch != nil {
-			metadata["resource-match"] = resmatch
-		}
-		metavalues["metadata"] = simple.Values(metadata)
-		intermediate := types.NormValues(simple.Values(metadata))
-		if !doc.skipProcessing {
-			intermediate, err = mapit(fmt.Sprintf("matcher %s", m.Name()), m.GetMapping(), metavalues, m.GetValues(), intermediate)
+
+		if mappedsource, _ := source.(SourceMapper); !doc.skipProcessing || mappedsource != nil {
+			match_info := map[string]interface{}{}
+			resmatch := types.CopyAndNormalize(list)
+			if resmatch != nil {
+				match_info["resource"] = resmatch
+			}
+			match_info["document"] = deliverable.Name().String()
+			match_info["profile"] = pname.String()
+			match_info["matcher"] = matcher.Name().String()
+
+			metavalues := simple.Values{}
+			metadata["match-info"] = match_info
+			metavalues["<<<"] = "(( merge ))"
+			metavalues["metadata"] = metadata
+			intermediate := NewSimpleIntermediateValues(types.NormValues(simple.Values(metadata).DeepCopy()))
+			intermediate, err = mapit(fmt.Sprintf("matcher %s", matcher.Name()), matcher.GetMapping(), matcher.GetValues(), metavalues, intermediate)
 			if err != nil {
 				return this.error(w, http.StatusUnprocessableEntity, err.Error())
 			}
-			if resmatch != nil {
-				intermediate["resource-match"] = resmatch
-			}
-			intermediate, err = mapit(fmt.Sprintf("profile %s", pname), profile.GetMapping(), metavalues, profile.GetValues(), intermediate)
+			intermediate, err = mapit(fmt.Sprintf("profile %s", pname), profile.GetMapping(), profile.GetValues(), metavalues, intermediate)
 			if err != nil {
 				return this.error(w, http.StatusUnprocessableEntity, err.Error())
 			}
-			if resmatch != nil {
-				intermediate["resource-match"] = resmatch
-			}
-			intermediate, err = mapit(fmt.Sprintf("profile %s, document %s", pname, d.Name()), doc.GetMapping(), metavalues, doc.GetValues(), intermediate)
+			intermediate, err = mapit(fmt.Sprintf("profile %s, document %s", pname, deliverable.Name()), doc.GetMapping(), doc.GetValues(), metavalues, intermediate)
 			if err != nil {
 				return this.error(w, http.StatusUnprocessableEntity, err.Error())
 			}
 
-			if m, ok := source.(SourceMapper); ok {
-				source, err = m.Map(intermediate)
+			v, err := intermediate.Values()
+			if err != nil {
+				return this.error(w, http.StatusUnprocessableEntity, err.Error())
+			}
+			if mappedsource != nil {
+				source, err = mappedsource.Map(v)
 				if err != nil {
-					return err
+					return this.error(w, http.StatusUnprocessableEntity, err.Error())
 				}
 			}
 
-			source, err = Process("document", intermediate, source)
-			if err != nil {
-				return this.error(w, http.StatusUnprocessableEntity, err.Error())
+			if !doc.skipProcessing {
+				source, err = Process("document", v, source)
+				if err != nil {
+					return this.error(w, http.StatusUnprocessableEntity, err.Error())
+				}
 			}
 		}
 
-		if m, ok := source.(SourceMapper); ok {
-			source, err = m.Map(intermediate)
-			if err != nil {
-				return err
-			}
-		}
 		source.Serve(w, req)
 		return nil
 	}

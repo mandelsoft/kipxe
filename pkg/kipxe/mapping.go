@@ -23,11 +23,12 @@ import (
 
 	"github.com/gardener/controller-manager-library/pkg/logger"
 	"github.com/gardener/controller-manager-library/pkg/types/infodata/simple"
+	"github.com/gardener/controller-manager-library/pkg/utils"
 	"github.com/mandelsoft/spiff/yaml"
 )
 
 type Mapping interface {
-	Map(name string, values, metavalues, intermediate simple.Values) (simple.Values, error)
+	Map(name string, values, metavalues simple.Values, intermediate Intermediate) (Intermediate, error)
 }
 
 type defaultMapping struct {
@@ -41,12 +42,11 @@ func NewDefaultMapping(m yaml.Node) Mapping {
 	}
 }
 
-func (this *defaultMapping) Map(name string, values, metavalues, intermediate simple.Values) (simple.Values, error) {
+func (this *defaultMapping) Map(name string, values, metavalues simple.Values, intermediate Intermediate) (Intermediate, error) {
 	var err error
 
-	if intermediate != nil {
-		metavalues["current"] = intermediate
-	}
+	intermediate = intermediate.Wrap()
+
 	inputs := []yaml.Node{}
 	err = this.AddStub(&inputs, fmt.Sprintf("%s:%s", name, "values"), values)
 	if err != nil {
@@ -75,11 +75,19 @@ func addImplicitAccess(m yaml.Node) {
 	}
 }
 
-func mapit(desc string, mapping Mapping, metavalues, values, intermediate simple.Values) (simple.Values, error) {
+func mapit(desc string, mapping Mapping, values, metavalues simple.Values, intermediate Intermediate) (Intermediate, error) {
 	var err error
 	if mapping != nil {
 		if log {
-			logger.Infof("mapping (mapping) %s...", desc)
+			logger.Infof("mapping (by mapping) %s...", desc)
+		}
+		if !utils.IsNil(values) {
+			n := simple.Values{}
+			n["<<<"] = "(( merge ))"
+			for k, v := range values {
+				n[k] = v
+			}
+			values = n
 		}
 		intermediate, err = mapping.Map(desc, values, metavalues, intermediate)
 		if err != nil {
@@ -88,9 +96,9 @@ func mapit(desc string, mapping Mapping, metavalues, values, intermediate simple
 	} else {
 		if values != nil {
 			if log {
-				logger.Infof("mapping (defaulting) %s...", desc)
+				logger.Infof("mapping (by defaulting) %s...", desc)
 			}
-			return merge(intermediate, values), nil
+			return intermediate.Merge(values), nil
 		}
 		if log {
 			logger.Infof("no mapping for %s", desc)

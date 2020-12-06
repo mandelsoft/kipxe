@@ -107,19 +107,15 @@ type BootProfileMatcher struct {
 	Element
 	selector labels.Selector
 	matcher  Mapping
-	mapping  Mapping
-	values   simple.Values
 	profile  Name
 	weight   int
 }
 
 func NewMatcher(name Name, sel labels.Selector, matcher, mapping Mapping, values simple.Values, profile Name, weight int) (*BootProfileMatcher, error) {
 	return &BootProfileMatcher{
-		Element:  NewElement(name),
+		Element:  NewElement(name, values, mapping),
 		selector: sel,
 		matcher:  matcher,
-		mapping:  mapping,
-		values:   values,
 		profile:  profile,
 		weight:   weight,
 	}, nil
@@ -141,7 +137,8 @@ func (this BootProfileMatcher) Matches(logger logger.LogContext, meta MetaData) 
 			logger.Errorf("matcher %s failed: %s", this.Name(), err)
 			return false
 		}
-		if m, ok := r["match"]; ok {
+		m := r.FieldValue("match")
+		if m != nil {
 			//logger.Infof("matcher %s: %v", this.name, m)
 			return toBool(m)
 		}

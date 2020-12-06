@@ -4,7 +4,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.2.4
+    controller-gen.kubebuilder.io/version: v0.2.9
   creationTimestamp: null
   name: bootresources.ipxe.mandelsoft.org
 spec:
@@ -19,6 +19,34 @@ spec:
   scope: Namespaced
   versions:
   - additionalPrinterColumns:
+    - jsonPath: .spec.plain
+      name: Plain
+      priority: 2000
+      type: bool
+    - jsonPath: .spec.URL
+      name: URL
+      priority: 2000
+      type: string
+    - jsonPath: .spec.redirect
+      name: Redirect
+      priority: 2000
+      type: bool
+    - jsonPath: .spec.volatile
+      name: Volatile
+      priority: 2000
+      type: bool
+    - jsonPath: .spec.configMap
+      name: ConfigMap
+      priority: 2000
+      type: string
+    - jsonPath: .spec.secret
+      name: Secret
+      priority: 2000
+      type: string
+    - jsonPath: .spec.fieldName
+      name: Field
+      priority: 2000
+      type: string
     - jsonPath: .status.state
       name: State
       type: string
@@ -27,14 +55,10 @@ spec:
       openAPIV3Schema:
         properties:
           apiVersion:
-            description: 'APIVersion defines the versioned schema of this representation
-              of an object. Servers should convert recognized schemas to the latest
-              internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+            description: 'APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
             type: string
           kind:
-            description: 'Kind is a string value representing the REST resource this
-              object represents. Servers may infer this from the endpoint the client
-              submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+            description: 'Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
             type: string
           metadata:
             type: object
@@ -44,10 +68,12 @@ spec:
                 type: string
               binary:
                 type: string
+              configMap:
+                type: string
+              fieldName:
+                type: string
               mapping:
-                description: Values is used to specify an arbitrary document structure
-                  without the need of a regular manifest api group version as part
-                  of a kubernetes resource
+                description: Values is used to specify an arbitrary document structure without the need of a regular manifest api group version as part of a kubernetes resource
                 type: object
                 x-kubernetes-preserve-unknown-fields: true
               mimeType:
@@ -56,12 +82,12 @@ spec:
                 type: boolean
               redirect:
                 type: boolean
+              secret:
+                type: string
               text:
                 type: string
               values:
-                description: Values is used to specify an arbitrary document structure
-                  without the need of a regular manifest api group version as part
-                  of a kubernetes resource
+                description: Values is used to specify an arbitrary document structure without the need of a regular manifest api group version as part of a kubernetes resource
                 type: object
                 x-kubernetes-preserve-unknown-fields: true
               volatile:

@@ -235,16 +235,31 @@ completely (with or without the leading slash (`/`)).
 
 The first matching entry is used to resolve the resource
 request. The processing values and the request metadata are enriched by the
-match information of the resource. The field `resource-match` contains a list
-of values of all matched text for the complete pattern and all sub expressions
-in the order they are defined in the pattern.
+match information of the resource in the field `match-info`. If is a map
+containing the following fields:
 
-For example a pattern `i(nfo)?` matches the resource `info` with the 
-values `[ "info", "nfo" ]` in the field `resource-match`.
+- `resource`: 
+  contains a list
+  of values of all matched text for the complete pattern and all sub expressions
+  in the order they are defined in the pattern.
+
+  For example a pattern `i(nfo)?` matches the resource `info` with the 
+  values `[ "info", "nfo" ]` in the field `resource-match`.
+  
+  For non-pattern the lust just contains the resource name.
+- `document`: 
+  contains the identity of the matched document
+- `profile`: 
+  contains the identity of the matched profile providing
+  the requested resource
+- `matcher`: contains the identity of the matcher used to
+  match the profile.
 
 #### Resources
 
-here are some examples for resource definitions:
+Resources can be based on given textual content, URL, config maps and secrets.
+
+##### Text
 
 <details><summary>A resource may look like this when using go templates</summary>
 
@@ -265,6 +280,10 @@ spec:
 
 </details>
 
+The text may contain be a go template to substitute values from the
+processingb values of the request.
+
+##### URLs
 
 <details><summary>A resource may look like this when using URL based content</summary>
 
@@ -302,6 +321,50 @@ spec:
 
 </details>
 
+If the _kipxe_ server is started with a `--cache-dir` option. The content of
+the URL is cached and serverv from the cache, otherwise the content is forwarded
+directly from the given URL. If the field `volatile` is set to `true`, the
+caching is omitted.
+
+
+##### Config Maps or Secrets
+
+Alternatively the field `redirect` can be set to `true` to the resource 
+to return a redirect response to the given URL. Redirection is not possible,
+if a content mapping is configured.
+
+
+<details><summary>Config Map Field</summary>
+
+```yaml
+apiVersion: ipxe.mandelsoft.org/v1alpha1
+kind: BootResource
+metadata:
+  name: config
+  namespace: default
+spec:
+  mimeType: application/octet-stream
+  configMap: myconfig
+  fieldName: myconfigfield
+```
+
+</details>
+
+Additionally resources can be served from kubernetes secrets and confgig maps 
+by setting the fields `secret` or `configMap` to the object's name, respectively.
+The namespace is always set to the namespace of the boot resource declaring such
+a resource kind. Optionally a field to serve from the secret or config map can
+be specified in the field `fieldName`. If no such field is given, the complete 
+object is served.
+
+As for URLs the optional field name and othe object name can be constructed
+via go templates.
+
+##### Direct JSON or YAML
+
+If no dedicated document type is chosen the final processing values (including
+the mapping from the boot resource) is served.
+
 <details><summary>Or just a processed json document</summary>
 
 ```yaml
@@ -322,16 +385,6 @@ spec:
 ```
 
 </details>
-
-If the _kipxe_ server is started with a `--cache-dir` option. The content of
-the URL is cached and serverv from the cache, otherwise the content is forwarded
-directly from the given URL. If the field `volatile` is set to `true`, the
-caching is omitted.
-
-Alternatively the field `redirect` can be set to `true` to the resource 
-to return a redirect response to the given URL. Redirection is not possible,
-if a content mapping is configured.
-
 
 #### Metadata Mappers
 

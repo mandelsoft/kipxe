@@ -303,6 +303,10 @@ github.com/mandelsoft/spiff v1.3.0-beta-7.0.20200527095706-5806931d24d7 h1:/cUsj
 github.com/mandelsoft/spiff v1.3.0-beta-7.0.20200527095706-5806931d24d7/go.mod h1:ySrI0I40exZhvVthh/L0KKtYwLzwDG6jAZVypeqHmk4=
 github.com/mandelsoft/spiff v1.3.0-beta-7.0.20201203090003-3687de5100f5 h1:us97CPV7+3Jc9YkXZwktVKu7h7rDPU2DXRFE7sUVp1Q=
 github.com/mandelsoft/spiff v1.3.0-beta-7.0.20201203090003-3687de5100f5/go.mod h1:ySrI0I40exZhvVthh/L0KKtYwLzwDG6jAZVypeqHmk4=
+github.com/mandelsoft/spiff v1.3.0-beta-7.0.20201204101210-ec8801de65ad h1:L7RSZWUb4enqEXyeSy70ZiM+moFPJnlWNEP4Kvd7js4=
+github.com/mandelsoft/spiff v1.3.0-beta-7.0.20201204101210-ec8801de65ad/go.mod h1:ySrI0I40exZhvVthh/L0KKtYwLzwDG6jAZVypeqHmk4=
+github.com/mandelsoft/spiff v1.3.0-beta-7.0.20201204102559-2c5ea71bbbbf h1:267klwrVMLIx657nHt9Ic8z5+JnT04vfaFmwC1JamJo=
+github.com/mandelsoft/spiff v1.3.0-beta-7.0.20201204102559-2c5ea71bbbbf/go.mod h1:ySrI0I40exZhvVthh/L0KKtYwLzwDG6jAZVypeqHmk4=
 github.com/mandelsoft/spiff v1.4.0 h1:CCxvVTmKmMcR6HaiuiseyZ2punPJiaJdPCyw0Xfj4Oo=
 github.com/mandelsoft/spiff v1.4.0/go.mod h1:ySrI0I40exZhvVthh/L0KKtYwLzwDG6jAZVypeqHmk4=
 github.com/mandelsoft/vfs v0.0.0-20201002134249-3c471f64a4d1 h1:M+7aO6jQSNEAQVcWt2VwKG7JTLqqrg2d7IXs4avz6gA=

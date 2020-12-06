@@ -185,8 +185,6 @@ func (this *Deliverable) Pattern() *regexp.Regexp {
 type BootProfile struct {
 	Element
 	error        error
-	mapping      Mapping
-	values       simple.Values
 	deliverables map[string]*Deliverable
 	patterns     []*Deliverable
 	paths        map[string]*Deliverable
@@ -217,9 +215,7 @@ func NewProfile(name Name, mapping Mapping, values simple.Values, deliverables .
 		m[d.name.String()] = d
 	}
 	return &BootProfile{
-		Element:      NewElement(name),
-		mapping:      mapping,
-		values:       values,
+		Element:      NewElement(name, values, mapping),
 		deliverables: m,
 		paths:        paths,
 		patterns:     patterns,

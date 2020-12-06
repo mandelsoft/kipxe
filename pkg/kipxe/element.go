@@ -18,17 +18,26 @@
 
 package kipxe
 
+import (
+	"github.com/gardener/controller-manager-library/pkg/types/infodata/simple"
+)
+
 type ElementChecker func() error
 
 type Element struct {
 	Named
-	error error
+	error   error
+	values  simple.Values
+	mapping Mapping
+	config  []ConfigData
 }
 
-func NewElement(name Name) Element {
+func NewElement(name Name, values simple.Values, mapping Mapping) Element {
 	return Element{
-		Named: NewNamed(name),
-		error: nil,
+		Named:   NewNamed(name),
+		error:   nil,
+		values:  values,
+		mapping: mapping,
 	}
 }
 
@@ -52,4 +61,17 @@ func (this *Element) recheck(checker ElementChecker) bool {
 		}
 	}
 	return true
+}
+
+func (this *BootResource) GetValues() simple.Values {
+	return this.values
+}
+
+func (this *BootResource) GetMapping() Mapping {
+	return this.mapping
+}
+
+func (this *BootResource) AddConfig(cfg ...ConfigData) *BootResource {
+	this.config = append(this.config, cfg...)
+	return this
 }

@@ -37,6 +37,13 @@ type BootResourceList struct {
 // +kubebuilder:object:root=true
 // +kubebuilder:resource:scope=Namespaced,path=bootresources,shortName=bresc,singular=bootresource
 // +kubebuilder:subresource:status
+// +kubebuilder:printcolumn:name=Plain,JSONPath=".spec.plain",priority=2000,type=bool
+// +kubebuilder:printcolumn:name=URL,JSONPath=".spec.URL",priority=2000,type=string
+// +kubebuilder:printcolumn:name=Redirect,JSONPath=".spec.redirect",priority=2000,type=bool
+// +kubebuilder:printcolumn:name=Volatile,JSONPath=".spec.volatile",priority=2000,type=bool
+// +kubebuilder:printcolumn:name=ConfigMap,JSONPath=".spec.configMap",priority=2000,type=string
+// +kubebuilder:printcolumn:name=Secret,JSONPath=".spec.secret",priority=2000,type=string
+// +kubebuilder:printcolumn:name=Field,JSONPath=".spec.fieldName",priority=2000,type=string
 // +kubebuilder:printcolumn:name=State,JSONPath=".status.state",type=string
 // +genclient
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
@@ -72,6 +79,13 @@ type BootResourceSpec struct {
 	Text string `json:"text,omitempty"`
 	// +optional
 	Binary string `json:"binary,omitempty"`
+
+	// +optional
+	ConfigMap string `json:"configMap,omitempty"`
+	// +optional
+	Secret string `json:"secret,omitempty"`
+	// +optional
+	FieldName string `json:"fieldName,omitempty"`
 }
 
 type BootResourceStatus struct {

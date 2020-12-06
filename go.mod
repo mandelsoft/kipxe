@@ -9,7 +9,7 @@ require (
 	github.com/coreos/go-iptables v0.4.5 // indirect
 	github.com/emicklei/go-restful v2.9.5+incompatible
 	github.com/gardener/controller-manager-library v0.2.1-0.20201009144316-bfa57b871e60
-	github.com/mandelsoft/spiff v1.3.0-beta-7.0.20201203090003-3687de5100f5
+	github.com/mandelsoft/spiff v1.3.0-beta-7.0.20201204102559-2c5ea71bbbbf
 	github.com/mandelsoft/vfs v0.0.0-20201002134249-3c471f64a4d1 // indirect
 	github.com/mdlayher/ethernet v0.0.0-20190606142754-0394541c37b7 // indirect
 	github.com/onsi/ginkgo v1.14.0

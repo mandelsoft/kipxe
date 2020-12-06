@@ -192,11 +192,13 @@ func (this *defaultMapper) Map(logger logger.LogContext, values MetaData, req *h
 	inp := simple.Values{}
 	inp["metadata"] = types.NormValues(simple.Values(values))
 
-	r, err := mapit("metadata", this.mapping, inp, this.values, simple.Values(values))
-	if err != nil {
-		return nil, err
+	r, err := mapit("metadata", this.mapping, this.values, inp, NewSimpleIntermediateValues(simple.Values(values)))
+	if err == nil {
+		if inp, err = r.Values(); err == nil {
+			return MetaData(inp), nil
+		}
 	}
-	return MetaData(r), nil
+	return nil, err
 }
 
 ////////////////////////////////////////////////////////////////////////////////

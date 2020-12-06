@@ -23,8 +23,8 @@ import (
 
 	"github.com/gardener/controller-manager-library/pkg/logger"
 	"github.com/gardener/controller-manager-library/pkg/types/infodata/simple"
+	"github.com/gardener/controller-manager-library/pkg/utils"
 	"github.com/mandelsoft/spiff/spiffing"
-	"github.com/mandelsoft/spiff/yaml"
 )
 
 var forcelog bool = false
@@ -35,75 +35,94 @@ func Trace(b bool) {
 }
 
 type SpiffTemplate struct {
-	mapping yaml.Node
+	mapping spiffing.Node
 }
 
-func (this *SpiffTemplate) AddStub(inp *[]yaml.Node, name string, v simple.Values) error {
-	if v == nil {
+func (this *SpiffTemplate) AddStub(inp *[]spiffing.Node, name string, v interface{}) error {
+	var err error
+
+	if utils.IsNil(v) {
 		return nil
 	}
 
-	i, err := yaml.Sanitize(name, v)
-	if err != nil {
-		return fmt.Errorf("%s: invalid values: %s", name, err)
+	var node spiffing.Node
+	if i, ok := v.(Intermediate); ok {
+		if i.IsNil() {
+			return nil
+		}
+		node, err = i.Node()
+		if err != nil {
+			return err
+		}
+	} else {
+		if i, ok := v.(spiffing.Node); ok {
+			if i.Value() == nil {
+				return nil
+			}
+			node = i
+		} else {
+			i, err := spiffing.ToNode(name, v)
+			if err != nil {
+				return fmt.Errorf("%s: invalid values: %s", name, err)
+			}
+			node = i
+		}
 	}
-	*inp = append(*inp, i)
+	*inp = append(*inp, node)
 	return nil
 }
 
-func (this *SpiffTemplate) MergeWith(inputs ...yaml.Node) (simple.Values, error) {
+func (this *SpiffTemplate) MergeWith(inputs ...spiffing.Node) (Intermediate, error) {
 	ctx := spiffing.New().WithMode(0)
-	stubs, err := ctx.PrepareStubs(inputs...)
-	//outer := flow.NewProcessLocalEnvironment(nil, "mapper")
-	//stubs, err := flow.PrepareStubs(outer, false, inputs...)
-	if err != nil {
-		return nil, err
-	}
 	if log {
 		logger.Infof("-----------------------------------")
-		for i, v := range append([]yaml.Node{this.mapping}, stubs...) {
-			r, _ := yaml.Normalize(v)
+		for i, v := range append([]spiffing.Node{this.mapping}, inputs...) {
+			r, _ := ctx.Normalize(v)
 			logger.Infof("<- %d: %s", i, simple.Values(r.(map[string]interface{})))
 		}
+	}
+	stubs, err := ctx.PrepareStubs(inputs...)
+	if err != nil {
+		return nil, err
 	}
 	result, err := ctx.ApplyStubs(this.mapping, stubs)
 	//result, err := flow.Apply(nil, this.mapping, stubs, flow.Options{})
 	if err != nil {
 		return nil, err
 	}
-	v, err := yaml.Normalize(result)
-	if err != nil {
-		return nil, err
-	}
+	i := NewNodeIntermediateValues(result)
 	if log {
-		logger.Infof("->: %s", simple.Values(v.(map[string]interface{})))
-	}
-	if log {
+		v, _ := i.Values()
+		logger.Infof("->: %s", v)
 		logger.Infof("===================================")
 	}
-	m := v.(map[string]interface{})
-	if out, ok := m["output"]; ok {
-		if x, ok := out.(map[string]interface{}); ok {
-			if log {
-				logger.Infof("output ->: %s", simple.Values(x))
-			}
-			return simple.Values(x), nil
+	m, err := i.Field("output")
+	if m != nil {
+		if log {
+			v, _ := i.Values()
+			logger.Infof("output ->: %s", v)
 		}
+		return m, nil
+	}
+	if err != nil {
 		return nil, fmt.Errorf("unexpected type for mapping output")
 	}
-	if out, ok := m["metadata"]; ok {
-		if x, ok := out.(map[string]interface{}); ok {
-			if log {
-				logger.Infof("meta ->: %s", simple.Values(x))
-			}
-			return simple.Values(x), nil
+	m, err = i.Field("metadata")
+	if m != nil {
+		if log {
+			v, _ := i.Values()
+			logger.Infof("meta ->: %s", v)
 		}
+		return m, nil
+	}
+	if err != nil {
 		return nil, fmt.Errorf("unexpected type for mapping metadata")
 	}
+
 	if log {
-		logger.Infof("all ->: %s", m)
+		logger.Infof("meta ->: use complete mapping result (see above)")
 	}
-	return m, nil
+	return i, nil
 }
 
 func toBool(i interface{}) bool {
