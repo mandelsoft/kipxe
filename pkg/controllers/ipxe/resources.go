@@ -133,8 +133,8 @@ func validateType(m *v1alpha1.BootResource) error {
 	if len(found) > 1 {
 		return fmt.Errorf("only one of %v can be used", found)
 	}
-	if m.Spec.FieldName != "" && !field {
-		return fmt.Errorf("field can olny be used together with configMap or secret")
+	if m.Spec.FieldName != "" && !field && len(found) > 0 {
+		return fmt.Errorf("field can only be used together with configMap, secret or metadata document")
 	}
 	return nil
 }
@@ -196,7 +196,7 @@ func NewResource(obj resources.Object, cache kipxe.Cache) (*kipxe.BootResource, 
 		return nil, err
 	}
 	if source == nil {
-		source = kipxe.NewDataSource(mime, nil)
+		source = kipxe.NewMetaDataSource(mime, m.Spec.FieldName)
 	}
 
 	name := resources.NewObjectName(m.Namespace, m.Name)

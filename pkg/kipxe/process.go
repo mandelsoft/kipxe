@@ -19,7 +19,6 @@
 package kipxe
 
 import (
-	"encoding/json"
 	"strings"
 	"text/template"
 
@@ -28,21 +27,34 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
+func MimeType(mime string) string {
+	if strings.HasPrefix(mime, MIME_GTEXT) {
+		mime = MIME_TEXT
+	}
+	if strings.HasSuffix(mime, "+json") {
+		return MIME_JSON
+	}
+	if strings.HasSuffix(mime, "+yaml") {
+		return MIME_YAML
+	}
+	if strings.HasSuffix(mime, "+xml") {
+		return MIME_XML
+	}
+	return mime
+}
+
 func Process(name string, values simple.Values, src Source) (Source, error) {
 	var data []byte
 	var err error
-	mime := src.MimeType()
-	if strings.HasPrefix(mime, MIME_GTEXT) {
-		mime = MIME_GTEXT
-	}
-	switch src.MimeType() {
+	mime := MimeType(src.MimeType())
+	switch mime {
 	case MIME_JSON:
 		in, err := src.Bytes()
 		if err != nil {
 			return nil, err
 		}
 		if in == nil {
-			data, err = json.Marshal(values)
+			data, err = MarshalJSON(values)
 		} else {
 			return src, nil
 		}
@@ -61,8 +73,11 @@ func Process(name string, values simple.Values, src Source) (Source, error) {
 		if err != nil {
 			return nil, err
 		}
+		if b == nil {
+			b = []byte{}
+		}
 		logger.Infof("go template (len %d) with %s\n", len(b), values)
-		t, err := template.New(name).Parse(string(b))
+		t, err := template.New(name).Option("missingkey=error").Parse(string(b))
 		if err != nil {
 			return nil, err
 		}

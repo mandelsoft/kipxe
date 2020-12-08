@@ -21,6 +21,7 @@ package kipxe
 import (
 	"bytes"
 	"encoding/base64"
+	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
@@ -30,7 +31,9 @@ import (
 
 	"github.com/emicklei/go-restful"
 	"github.com/gardener/controller-manager-library/pkg/logger"
+	"github.com/gardener/controller-manager-library/pkg/types"
 	"github.com/gardener/controller-manager-library/pkg/types/infodata/simple"
+	"github.com/ghodss/yaml"
 )
 
 const MIME_OCTET = restful.MIME_OCTET
@@ -342,4 +345,78 @@ func NewFilteredSource(src Source, data []byte) Source {
 		DataSource: NewNestedDataSource(src.MimeType(), data),
 		source:     src,
 	}
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+type metaDataSource struct {
+	SourceSupport
+	fieldName string
+}
+
+var _ SourceMapper = &metaDataSource{}
+
+func NewMetaDataSource(mime string, fieldName string) Source {
+	return &metaDataSource{
+		SourceSupport: NewSourceSupport(mime),
+		fieldName:     fieldName,
+	}
+}
+
+func (this *metaDataSource) Bytes() ([]byte, error) {
+	return nil, fmt.Errorf("cannot serve metadata template")
+}
+
+func (this *metaDataSource) Serve(w http.ResponseWriter, r *http.Request) {
+	w.WriteHeader(http.StatusUnprocessableEntity)
+	w.Write([]byte("cannot serve metaDataSource template\n"))
+}
+
+func (this *metaDataSource) Map(values simple.Values) (Source, error) {
+	var value interface{}
+	var err error
+
+	value = map[string]interface{}(types.NormValues(values))
+	if this.fieldName != "" {
+		for _, p := range strings.Split(this.fieldName, ".") {
+			if v, ok := value.(map[string]interface{}); ok {
+				value = v[p]
+				if value != nil {
+					continue
+				}
+			}
+			return nil, fmt.Errorf("field %q not found", this.fieldName)
+		}
+	}
+	var data []byte
+	switch v := value.(type) {
+	case map[string]interface{}, []interface{}:
+		switch MimeType(this.mime) {
+		case MIME_JSON, MIME_TEXT:
+			data, err = MarshalJSON(value)
+		case MIME_YAML:
+			data, err = yaml.Marshal(value)
+		default:
+			err = fmt.Errorf("invalid mime type for metadata")
+		}
+	default:
+		data = []byte(fmt.Sprintf("%v", v))
+	}
+
+	if err != nil {
+		return nil, err
+	}
+	return NewDataSource(this.mime, data), nil
+}
+
+func MarshalJSON(data interface{}) ([]byte, error) {
+	buf := &bytes.Buffer{}
+	encoder := json.NewEncoder(buf)
+	encoder.SetEscapeHTML(false)
+	err := encoder.Encode(data)
+	if err != nil {
+		return nil, err
+	}
+	return buf.Bytes(), nil
+
 }

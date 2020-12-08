@@ -221,7 +221,7 @@ func (this *urlMapper) Weight() int {
 }
 
 func (this *urlMapper) Map(logger logger.LogContext, values MetaData, req *http.Request) (MetaData, error) {
-	data, err := json.Marshal(values)
+	data, err := MarshalJSON(values)
 	if err != nil {
 		return nil, err
 	}
