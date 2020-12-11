@@ -106,16 +106,31 @@ The cache supports a simple TTL for house keeping.
 
 ## The Kubernetes Backend
 
-This project offers two kubernetes controllers:
-- a controller to offer an HTTP server and matching engine which is
+This project offers an iPXE server based on kubernetes resources.
+This server is based on two controllers
+- a controller `ipxe` to offer an HTTP server and matching engine which is
   configured by kubernetes resources.
-- a controller implementing the [*Discovery API*](#the-discovery-api) of the
-  matching engine based on a *Machine* resource.
+- a controller `machineinfos` providing a machine indexer based on
+  a *MachineInfo* resource. This controller is taken from project
+  [onmetal/j8s-machines](https://github.com/onmetal/k8s-machines)
+  which implements a machine index based on dedicated kubernetes resources.
+  
+  
+If an indexer is available in the context of the controller manager it is used
+by the iPXE server to register an implementation of the
+[*Discovery API*](#the-discovery-api) based on this indexer. 
+
+If the indexer is disabled the machine info objects are not evaluated to enrich
+iPXE request metadata. Then only the explicit metadata mappers defined by 
+the appropriate kubernetes resource is used.
 
 ### The HTTP server
 
 The provided Kubernetes controller uses three dedicated kinds of Kubernetes
 resources to describe *Matchers*, *Profiles* and *Resources*.
+
+Additionally a *MetaDataMapper* resource is used to describe explicit
+[metadata mappers](#Metadata-Mappers).
 
 Every change here will automatically be used to reconfigure the matching engine
 of the provided http server.

@@ -9,7 +9,7 @@ package mappings
 import (
 	"fmt"
 
-	"github.com/gardener/controller-manager-library/pkg/controllermanager/controller/groups"
+	"github.com/gardener/controller-manager-library/pkg/controllermanager/extension/groups"
 	"github.com/gardener/controller-manager-library/pkg/utils"
 )
 
@@ -21,7 +21,6 @@ type Definitions interface {
 const CLUSTER_MAIN = "<MAIN>"
 
 const TYPE_GROUP = "group"
-const TYPE_CONTROLLER = "controller"
 
 type Definition interface {
 	Type() string
@@ -32,33 +31,25 @@ type Definition interface {
 	String() string
 }
 
-type _Definition struct {
+type DefinitionImpl struct {
 	dtype    string
 	name     string
 	mappings map[string]string
 }
 
-func newDefinition(mtype, name string) *_Definition {
-	return &_Definition{mtype, name, map[string]string{}}
+func NewDefinition(mtype, name string) *DefinitionImpl {
+	return &DefinitionImpl{mtype, name, map[string]string{}}
 }
 
-func newDefinitionForGroup(name string) *_Definition {
-	return newDefinition(TYPE_GROUP, name)
-}
-
-func newDefinitionForController(name string) *_Definition {
-	return newDefinition(TYPE_CONTROLLER, name)
-}
-
-func (this *_Definition) Type() string {
+func (this *DefinitionImpl) Type() string {
 	return this.dtype
 }
 
-func (this *_Definition) Name() string {
+func (this *DefinitionImpl) Name() string {
 	return this.name
 }
 
-func (this *_Definition) MapCluster(name string) string {
+func (this *DefinitionImpl) MapCluster(name string) string {
 	t := this.mappings[name]
 	if t != "" {
 		return t
@@ -66,7 +57,7 @@ func (this *_Definition) MapCluster(name string) string {
 	return name
 }
 
-func (this *_Definition) MapInfo(name string) string {
+func (this *DefinitionImpl) MapInfo(name string) string {
 	t := this.mappings[name]
 	if t != "" {
 		return fmt.Sprintf("%q (mapped to %q)", ClusterName(name), t)
@@ -74,7 +65,7 @@ func (this *_Definition) MapInfo(name string) string {
 	return name
 }
 
-func (this *_Definition) MappedClusters() utils.StringSet {
+func (this *DefinitionImpl) MappedClusters() utils.StringSet {
 	clusters := utils.StringSet{}
 	for c := range this.mappings {
 		clusters.Add(c)
@@ -82,14 +73,29 @@ func (this *_Definition) MappedClusters() utils.StringSet {
 	return clusters
 }
 
-func (this *_Definition) String() string {
+func (this *DefinitionImpl) String() string {
 	return fmt.Sprintf("%v", this.mappings)[3:]
+}
+
+/// internal
+
+func (this *DefinitionImpl) Copy() {
+	new := map[string]string{}
+	for k, v := range this.mappings {
+		new[k] = v
+	}
+	this.mappings = new
+}
+
+func (this *DefinitionImpl) SetMapping(cluster, to string) {
+	this.mappings[cluster] = to
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 
 type aggregation struct {
-	list []Definition
+	elemType string
+	list     []Definition
 }
 
 var _ Definition = &aggregation{}
@@ -99,7 +105,7 @@ func (this *aggregation) Definition() Definition {
 }
 
 func (this *aggregation) Type() string {
-	return TYPE_CONTROLLER
+	return this.elemType
 }
 
 func (this *aggregation) Name() string {
@@ -149,8 +155,8 @@ func (this *_Definitions) GetEffective(controller string, grps groups.Definition
 	this.lock.RLock()
 	defer this.lock.RUnlock()
 
-	aggr := &aggregation{}
-	direct, ok := this.definitions[TYPE_CONTROLLER][controller]
+	aggr := &aggregation{elemType: this.elemType}
+	direct, ok := this.definitions[this.elemType][controller]
 	if ok {
 		aggr.list = append(aggr.list, direct)
 	}

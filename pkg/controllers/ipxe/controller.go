@@ -26,7 +26,6 @@ import (
 	"github.com/gardener/controller-manager-library/pkg/controllermanager/controller/reconcile"
 	"github.com/gardener/controller-manager-library/pkg/resources"
 	"github.com/gardener/controller-manager-library/pkg/resources/apiextensions"
-
 	_apps "k8s.io/api/apps/v1"
 
 	"github.com/mandelsoft/kipxe/pkg/apis/ipxe/crds"
@@ -91,5 +90,6 @@ func Create(controller controller.Interface) (reconcile.Interface, error) {
 		infobase:   GetSharedInfoBase(controller),
 	}
 	this.infobase.cache = cache
+
 	return this, nil
 }

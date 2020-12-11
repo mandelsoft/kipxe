@@ -23,28 +23,25 @@ import (
 	"github.com/gardener/controller-manager-library/pkg/controllermanager/controller/reconcile"
 	"github.com/gardener/controller-manager-library/pkg/resources/apiextensions"
 
-	_apps "k8s.io/api/apps/v1"
-
-	"github.com/mandelsoft/kipxe/pkg/apis/ipxe/crds"
-	api "github.com/mandelsoft/kipxe/pkg/apis/ipxe/v1alpha1"
+	"github.com/onmetal/k8s-machines/pkg/apis/machines/crds"
+	api "github.com/onmetal/k8s-machines/pkg/apis/machines/v1alpha1"
+	"github.com/onmetal/k8s-machines/pkg/controllers"
 )
 
-const NAME = "machines"
+const NAME = "machineinfos"
 
 func init() {
 	crds.AddToRegistry(apiextensions.DefaultRegistry())
 }
 
 func init() {
-	_ = _apps.Deployment{}
 	controller.Configure(NAME).
-		RequireLease().
 		Reconciler(Create).
 		DefaultWorkerPool(5, 0).
 		OptionsByExample("options", &Config{}).
-		MainResourceByGK(api.MACHINE).
-		CustomResourceDefinitions(api.MACHINE).
-		MustRegister()
+		MainResourceByGK(api.MACHINEINFO).
+		CustomResourceDefinitions(api.MACHINEINFO).
+		MustRegister(controllers.GROUP_MACHINES)
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -56,7 +53,7 @@ func Create(controller controller.Interface) (reconcile.Interface, error) {
 	this := &reconciler{
 		controller: controller,
 		config:     config,
-		machines:   newMachines(controller),
+		machines:   controllers.GetOrCreateMachineIndex(controller.GetEnvironment()),
 	}
 	return this, nil
 }

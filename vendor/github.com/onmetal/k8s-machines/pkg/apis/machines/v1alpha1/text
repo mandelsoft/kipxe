@@ -1,0 +1,65 @@
+
+Multiple Machine CRD for dedicated purposes:
+
+
+1. Inventory CRD
+
+   UUID: string
+   NICS:
+     - mac: string
+       name: string
+       bandwidth: int
+   CPUS:
+     - cpuinfo: string  (Intel(R) Xeon(R) Silver 4208 CPU @ 2.10GHz)
+       bogomips: 4190
+       mhz: 2095
+       cores: 8
+
+   MEMORY:
+      size: 824299626496
+      numa:
+      - <key/value>
+
+
+   DISKS:
+      - id: string
+        name: string
+        type: ssd
+        size: 1600321314816
+
+   ADDITIONALVALUES:
+     <key/value> deep structure
+
+
+
+
+2. OOB CRD
+  UUID:
+  address: 192.168.10.179:623
+  mac: 08:94:ef:a9:38:1b
+  password: <hidden>
+  user: metal
+
+
+
+ipmi:
+    address: 192.168.10.179:623
+    bmcversion: "4.00"
+    fru:
+        boardmfg: DETA
+        boardmfgserial: ""
+        boardpartnumber: SP57A53437
+        chassispartnumber: ""
+        chassispartserial: S4BMU399
+        productmanufacturer: Intel(R) Corporation
+        productpartnumber: "10621240"
+        productserial: S4BMU399
+    interface: lanplus
+    mac: 08:94:ef:a9:38:1b
+    password: <hidden>
+    user: metal
+ledstate:
+    description: Machine registered
+    value: LED-OFF
+
+3. Benchmark CRD

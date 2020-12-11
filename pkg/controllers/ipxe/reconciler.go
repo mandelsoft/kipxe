@@ -33,7 +33,10 @@ import (
 	"github.com/mandelsoft/kipxe/pkg/apis/ipxe/v1alpha1"
 	"github.com/mandelsoft/kipxe/pkg/controllers"
 	"github.com/mandelsoft/kipxe/pkg/controllers/ipxe/ready"
+	"github.com/mandelsoft/kipxe/pkg/indexmapper"
 	"github.com/mandelsoft/kipxe/pkg/kipxe"
+
+	mach "github.com/onmetal/k8s-machines/pkg/controllers"
 )
 
 type Ready struct{}
@@ -75,6 +78,10 @@ func (this *reconciler) Start() {
 		Matchers:  this.infobase.matchers.elements,
 	}
 
+	indexer := mach.GetMachineIndex(this.controller.GetEnvironment())
+	if indexer != nil {
+		infobase.Registry.Register(indexmapper.NewIndexMapper(indexer, 100))
+	}
 	ipxe.RegisterHandler(this.config.BasePath, kipxe.NewHandler(this.controller, this.config.BasePath, infobase))
 	ipxe.Register(path.Join(this.config.BasePath, "ready"), ready.Ready)
 

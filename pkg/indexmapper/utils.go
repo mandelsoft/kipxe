@@ -16,20 +16,34 @@
  *  limitations under the License.
  */
 
-package machines
+package indexmapper
 
 import (
-	"github.com/gardener/controller-manager-library/pkg/config"
+	"encoding/json"
+	"fmt"
+	"reflect"
+
+	"github.com/gardener/controller-manager-library/pkg/utils"
 )
 
-type Config struct {
-	LocalNamespaceOnly bool
-}
-
-func (this *Config) AddOptionsToSet(set config.OptionSet) {
-	set.AddBoolOption(&this.LocalNamespaceOnly, "local-namespace-only", "", false, "server only resources in local namespace")
-}
-
-func (this *Config) Prepare() error {
-	return nil
+func ObjectToValues(o interface{}, kind string) (interface{}, error) {
+	if utils.IsNil(o) {
+		return nil, nil
+	}
+	var values interface{}
+	data, err := json.Marshal(o)
+	if err != nil {
+		return nil, fmt.Errorf("error marshalling %s: %s", kind, err)
+	}
+	v := reflect.ValueOf(o)
+	if v.Kind() == reflect.Array || v.Kind() == reflect.Slice {
+		values = []interface{}{}
+	} else {
+		values = map[string]interface{}{}
+	}
+	err = json.Unmarshal(data, &values)
+	if err != nil {
+		return nil, fmt.Errorf("error unmarshalling %s: %s", kind, err)
+	}
+	return values, nil
 }
